@@ -1,0 +1,5 @@
+config.env
+cookies.txt
+accounts/
+credentials.json
+token.pickle
