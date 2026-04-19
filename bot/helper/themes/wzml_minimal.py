@@ -136,8 +136,8 @@ class WZMLStyle:
 ------------------------------------------\n\n"""
 
     # async def __msg_to_reply(self): ---> pyrogramEngine.py
-    PM_START = "➲ <b><u>Task Started :</u></b>\n┃\n┖ <b>Link:</b> <a href='{msg_link}'>Click Here</a>"
-    L_LOG_START = "➲ <b><u>Leech Started :</u></b>\n┃\n┠ <b>User :</b> {mention} ( #ID{uid} )\n┖ <b>Source :</b> <a href='{msg_link}'>Click Here</a>"
+    PM_START = "➲ <b><u>Task Started 🏁</u></b>\n┃\n┖ <b>Link:</b> <a href='{msg_link}'>Click Here</a>"
+    L_LOG_START = "➲ <b><u>Leech Started 🏁</u></b>\n┃\n┠ <b>User :</b> {mention} ( #ID{uid} )\n┖ <b>Source :</b> <a href='{msg_link}'>Click Here</a>"
 
     # async def onUploadComplete(): ---> tasks_listener.py
     NAME = "<blockquote><b><i>{Name}</i></b>\n"
@@ -213,7 +213,7 @@ class WZMLStyle:
     ####------FOOTER--------
     FOOTER = "⌬ <b><i>Bot Stats</i></b>\n"
     TASKS = "┠ <b>Tasks:</b> {Tasks}\n"
-    BOT_TASKS = "<blockquote>┠ <b>Tasks:</b> {Tasks}/{Ttask} | <b>AVL:</b> {Free}</blockquote>\n"
+    BOT_TASKS = "<blockquote>┠ <b>Tasks:</b> {Tasks}/{Ttask} | <b>AVL:</b> {Free} | Page {Page}</blockquote>\n"
     Cpu = "<blockquote>┎ <b>CPU:</b> {cpu}% | "
     FREE = "<b>F:</b> {free} [{free_p}%]"
     Ram = "\n┠ <b>RAM:</b> {ram}% | "
@@ -222,9 +222,9 @@ class WZMLStyle:
     UL = "<b>UL:</b> {UL}/s</blockquote>"
 
     ###--------BUTTONS-------
-    PREVIOUS = "⫷"
+    PREVIOUS = "◀️"
     REFRESH = "♻️" # {Page}
-    NEXT = "⫸"
+    NEXT = "▶️"
     # ---------------------
 
     # STOP_DUPLICATE_MSG: ---> clone.py, aria2_listener.py, task_manager.py
