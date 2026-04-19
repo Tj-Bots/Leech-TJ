@@ -213,7 +213,7 @@ class WZMLStyle:
     ####------FOOTER--------
     FOOTER = "⌬ <b><i>Bot Stats</i></b>\n"
     TASKS = "┠ <b>Tasks:</b> {Tasks}\n"
-    BOT_TASKS = "<blockquote>┠ <b>Tasks:</b> {Tasks}/{Ttask} | <b>AVL:</b> {Free} | Page {Page}</blockquote>\n"
+    BOT_TASKS = "<blockquote>➲ <b>Tasks:</b> {Tasks}/{Ttask} | <b>AVL:</b> {Free} | Page {Page}</blockquote>\n"
     Cpu = "<blockquote>┎ <b>CPU:</b> {cpu}% | "
     FREE = "<b>F:</b> {free} [{free_p}%]"
     Ram = "\n┠ <b>RAM:</b> {ram}% | "
