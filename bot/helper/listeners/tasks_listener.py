@@ -742,10 +742,10 @@ class MirrorLeechListener:
                 if is_DDL := isinstance(link, dict):
                     for dlup, dlink in link.items():
                         buttons.ubutton(BotTheme("DDL_LINK", Serv=dlup), dlink)
-      #          elif link and (
-      #              user_id == OWNER_ID or not config_dict["DISABLE_DRIVE_LINK"]
-      #          ):
-      #              buttons.ubutton(BotTheme("CLOUD_LINK"), link)
+                elif link and (
+                    user_id == OWNER_ID or not config_dict["DISABLE_DRIVE_LINK"]
+                ):
+                    buttons.ubutton(BotTheme("CLOUD_LINK"), link)
                 else:
                     msg += BotTheme("RCPATH", RCpath=rclonePath)
                 if rclonePath and (RCLONE_SERVE_URL := config_dict["RCLONE_SERVE_URL"]):
