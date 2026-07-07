@@ -163,7 +163,7 @@ class WZMLStyle:
     M_CC = "╰ <b>By: </b>{Tag}\n\n</blockquote>"
     M_BOT_MSG = "➲ <b><i>Link(s) have been Sent to Bot PM (Private)</i></b>"
     # ----- BUTTONS -------
-    CLOUD_LINK = "☁️ Cloud Link"
+    CLOUD_LINK = ""
     SAVE_MSG = "📨 Save Message"
     RCLONE_LINK = "♻️ RClone Link"
     DDL_LINK = "📎 {Serv} Link"
