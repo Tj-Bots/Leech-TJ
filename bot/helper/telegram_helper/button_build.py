@@ -9,36 +9,36 @@ class ButtonMaker:
         self.__last_body_button = []
         self.__footer_button = []
 
-    def ubutton(self, key, link, position=None):
+    def ubutton(self, key, link, position=None, button_style=None):
         if not position:
-            self.__button.append(InlineKeyboardButton(text=key, url=link))
+            self.__button.append(InlineKeyboardButton(text=key, url=link, button_style=button_style))
         elif position == "header":
-            self.__header_button.append(InlineKeyboardButton(text=key, url=link))
+            self.__header_button.append(InlineKeyboardButton(text=key, url=link, button_style=button_style))
         elif position == "f_body":
-            self.__first_body_button.append(InlineKeyboardButton(text=key, url=link))
+            self.__first_body_button.append(InlineKeyboardButton(text=key, url=link, button_style=button_style))
         elif position == "l_body":
-            self.__last_body_button.append(InlineKeyboardButton(text=key, url=link))
+            self.__last_body_button.append(InlineKeyboardButton(text=key, url=link, button_style=button_style))
         elif position == "footer":
-            self.__footer_button.append(InlineKeyboardButton(text=key, url=link))
+            self.__footer_button.append(InlineKeyboardButton(text=key, url=link, button_style=button_style))
 
-    def ibutton(self, key, data, position=None):
+    def ibutton(self, key, data, position=None, button_style=None):
         if not position:
-            self.__button.append(InlineKeyboardButton(text=key, callback_data=data))
+            self.__button.append(InlineKeyboardButton(text=key, callback_data=data, button_style=button_style))
         elif position == "header":
             self.__header_button.append(
-                InlineKeyboardButton(text=key, callback_data=data)
+                InlineKeyboardButton(text=key, callback_data=data, button_style=button_style)
             )
         elif position == "f_body":
             self.__first_body_button.append(
-                InlineKeyboardButton(text=key, callback_data=data)
+                InlineKeyboardButton(text=key, callback_data=data, button_style=button_style)
             )
         elif position == "l_body":
             self.__last_body_button.append(
-                InlineKeyboardButton(text=key, callback_data=data)
+                InlineKeyboardButton(text=key, callback_data=data, button_style=button_style)
             )
         elif position == "footer":
             self.__footer_button.append(
-                InlineKeyboardButton(text=key, callback_data=data)
+                InlineKeyboardButton(text=key, callback_data=data, button_style=button_style)
             )
 
     def build_menu(self, b_cols=1, h_cols=8, fb_cols=2, lb_cols=2, f_cols=8):
