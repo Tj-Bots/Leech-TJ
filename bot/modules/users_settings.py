@@ -319,8 +319,8 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             USERTD=user_tds,
         )
 
-        buttons.ibutton("◀️", f"userset {user_id} back", "footer")
-        buttons.ibutton("❌", f"userset {user_id} close", "footer")
+        buttons.ibutton("◀️", f"userset {user_id} back", "footer", button_style="primary")
+        buttons.ibutton("❌", f"userset {user_id} close", "footer", button_style="danger")
         button = buttons.build_menu(2)
     elif key == "leech":
         if (
