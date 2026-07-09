@@ -9,22 +9,22 @@ class ButtonMaker:
         self.__last_body_button = []
         self.__footer_button = []
         
-        self._supports_style = "button_style" in inspect.signature(InlineKeyboardButton.__init__).parameters
+        self._supports_style = "style" in inspect.signature(InlineKeyboardButton.__init__).parameters
 
-    def _create_button(self, text, url=None, callback_data=None, button_style=None):
+    def _create_button(self, text, url=None, callback_data=None, style=None):
         kwargs = {"text": text}
         if url:
             kwargs["url"] = url
         if callback_data:
             kwargs["callback_data"] = callback_data
         
-        if button_style and self._supports_style:
-            kwargs["button_style"] = button_style
+        if style and self._supports_style:
+            kwargs["style"] = style
             
         return InlineKeyboardButton(**kwargs)
 
-    def ubutton(self, key, link, position=None, button_style=None):
-        btn = self._create_button(text=key, url=link, button_style=button_style)
+    def ubutton(self, key, link, position=None, style=None):
+        btn = self._create_button(text=key, url=link, style=style)
         if not position:
             self.__button.append(btn)
         elif position == "header":
@@ -36,8 +36,8 @@ class ButtonMaker:
         elif position == "footer":
             self.__footer_button.append(btn)
 
-    def ibutton(self, key, data, position=None, button_style=None):
-        btn = self._create_button(text=key, callback_data=data, button_style=button_style)
+    def ibutton(self, key, data, position=None, style=None):
+        btn = self._create_button(text=key, callback_data=data, style=style)
         if not position:
             self.__button.append(btn)
         elif position == "header":
