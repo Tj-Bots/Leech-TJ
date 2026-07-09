@@ -1,5 +1,5 @@
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-import inspect
+From pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
 
 class ButtonMaker:
     def __init__(self):
@@ -8,46 +8,38 @@ class ButtonMaker:
         self.__first_body_button = []
         self.__last_body_button = []
         self.__footer_button = []
-        
-        self._supports_style = "style" in inspect.signature(InlineKeyboardButton.__init__).parameters
 
-    def _create_button(self, text, url=None, callback_data=None, style=None):
-        kwargs = {"text": text}
-        if url:
-            kwargs["url"] = url
-        if callback_data:
-            kwargs["callback_data"] = callback_data
-        
-        if style and self._supports_style:
-            kwargs["style"] = style
-            
-        return InlineKeyboardButton(**kwargs)
-
-    def ubutton(self, key, link, position=None, style=None):
-        btn = self._create_button(text=key, url=link, style=style)
+    def ubutton(self, key, link, position=None):
         if not position:
-            self.__button.append(btn)
+            self.__button.append(InlineKeyboardButton(text=key, url=link))
         elif position == "header":
-            self.__header_button.append(btn)
+            self.__header_button.append(InlineKeyboardButton(text=key, url=link))
         elif position == "f_body":
-            self.__first_body_button.append(btn)
+            self.__first_body_button.append(InlineKeyboardButton(text=key, url=link))
         elif position == "l_body":
-            self.__last_body_button.append(btn)
+            self.__last_body_button.append(InlineKeyboardButton(text=key, url=link))
         elif position == "footer":
-            self.__footer_button.append(btn)
+            self.__footer_button.append(InlineKeyboardButton(text=key, url=link))
 
-    def ibutton(self, key, data, position=None, style=None):
-        btn = self._create_button(text=key, callback_data=data, style=style)
+    def ibutton(self, key, data, position=None):
         if not position:
-            self.__button.append(btn)
+            self.__button.append(InlineKeyboardButton(text=key, callback_data=data))
         elif position == "header":
-            self.__header_button.append(btn)
+            self.__header_button.append(
+                InlineKeyboardButton(text=key, callback_data=data)
+            )
         elif position == "f_body":
-            self.__first_body_button.append(btn)
+            self.__first_body_button.append(
+                InlineKeyboardButton(text=key, callback_data=data)
+            )
         elif position == "l_body":
-            self.__last_body_button.append(btn)
+            self.__last_body_button.append(
+                InlineKeyboardButton(text=key, callback_data=data)
+            )
         elif position == "footer":
-            self.__footer_button.append(btn)
+            self.__footer_button.append(
+                InlineKeyboardButton(text=key, callback_data=data)
+            )
 
     def build_menu(self, b_cols=1, h_cols=8, fb_cols=2, lb_cols=2, f_cols=8):
         menu = [
@@ -87,4 +79,3 @@ class ButtonMaker:
             else:
                 menu.append(self.__footer_button)
         return InlineKeyboardMarkup(menu)
-    
