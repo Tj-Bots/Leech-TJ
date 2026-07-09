@@ -2,6 +2,7 @@
 from datetime import datetime
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 from pyrogram.filters import command, regex, create
+from pyrogram.enums import ButtonStyle
 from aiofiles import open as aiopen
 from aiofiles.os import remove as aioremove, path as aiopath, mkdir
 from langcodes import Language
@@ -320,7 +321,7 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
         )
 
         buttons.ibutton("◀️", f"userset {user_id} back", "footer")
-        buttons.ibutton("❌", f"userset {user_id} close", "footer")
+        buttons.ibutton("❌", f"userset {user_id} close", "footer", style=ButtonStyle.DANGER)
         button = buttons.build_menu(2)
     elif key == "leech":
         if (
