@@ -1,4 +1,4 @@
-From pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 class ButtonMaker:
