@@ -212,7 +212,7 @@ class WZMLStyle:
     CANCEL = "\n╰ {Cancel}</blockquote>\n\n"
 
     ####------FOOTER--------
-    FOOTER = "⌬ <b><i>Bot Stats</i></b>\n"
+    FOOTER = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬" # "⌬ <b><i>Bot Stats</i></b>\n"
     TASKS = "┊ <b>Tasks:</b> {Tasks}\n"
     BOT_TASKS = "<blockquote>➲ <b>Tasks:</b> {Tasks}/{Ttask} | <b>AVL:</b> {Free}</blockquote>\n"
     Cpu = "<blockquote>╭ <b>CPU:</b> {cpu}% | "
@@ -253,9 +253,9 @@ class WZMLStyle:
     # async def mirror_status(_, message): ----> status.py
     NO_ACTIVE_DL = """<i>No Active Downloads!</i>
     
-⌬ <b><i>Bot Stats</i></b>
+<blockquote>⌬ <b><i>Bot Stats</i></b>
 ┊ <b>CPU:</b> {cpu}% | <b>F:</b> {free} [{free_p}%]
-╰ <b>RAM:</b> {ram} | <b>UPTIME:</b> {uptime}
+╰ <b>RAM:</b> {ram} | <b>UPTIME:</b> {uptime}</blockquote>
     """
     # ---------------------
 
