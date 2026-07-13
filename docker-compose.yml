@@ -33,5 +33,12 @@ services:
     command: bash start.sh
     restart: on-failure
     ports:
-      - "80:80"
-      - "8080:8080"
+      - "8181:80"
+      - "8282:8080"
+    volumes:
+      - /dev/null:/root/.lk21-requests-cache.sqlite
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
