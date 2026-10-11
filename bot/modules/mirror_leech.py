@@ -18,7 +18,11 @@ from bot import (
     categories_dict,
     user_data,
 )
-from bot.helper.ext_utils.user_tools import resolve_upload_path, user_rc_path
+from bot.helper.ext_utils.user_tools import (
+    resolve_ffmpeg_cmds,
+    resolve_upload_path,
+    user_rc_path,
+)
 from bot.helper.mirror_utils.download_utils.direct_downloader import add_direct_download
 from bot.helper.ext_utils.bot_utils import (
     is_url,
@@ -123,6 +127,7 @@ async def _mirror_leech(
         "-screenshots": "",
         "-t": "",
         "-thumb": "",
+        "-ff": "",
     }
 
     args = arg_parser(input_list[1:], arg_base)
@@ -488,6 +493,15 @@ async def _mirror_leech(
         source_url=org_link or link,
         leech_utils={"screenshots": sshots, "thumb": thumb},
     )
+    if args["-ff"]:
+        listener.ffmpeg_cmds = resolve_ffmpeg_cmds(message.from_user.id, args["-ff"])
+        if not listener.ffmpeg_cmds:
+            await sendMessage(
+                message,
+                f"<i>No FFmpeg Cmd named <code>{args['-ff']}</code> in your User Settings!</i>",
+            )
+            await delete_links(message)
+            return
 
     if file_ is not None:
         await delete_links(message)

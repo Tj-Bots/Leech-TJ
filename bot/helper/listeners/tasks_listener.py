@@ -61,7 +61,12 @@ from bot.helper.ext_utils.leech_utils import (
 )
 from bot.helper.ext_utils.exceptions import NotSupportedExtractionArchive
 from bot.helper.ext_utils.task_manager import start_from_queued
-from bot.helper.ext_utils.user_tools import parse_extensions, remove_excluded
+from bot.helper.ext_utils.user_tools import (
+    parse_extensions,
+    remove_excluded,
+    run_ffmpeg_cmds,
+)
+from bot.helper.mirror_utils.status_utils.ffmpeg_status import FFmpegStatus
 from bot.helper.mirror_utils.status_utils.extract_status import ExtractStatus
 from bot.helper.mirror_utils.status_utils.zip_status import ZipStatus
 from bot.helper.mirror_utils.status_utils.split_status import SplitStatus
@@ -139,6 +144,7 @@ class MirrorLeechListener:
         self.user_dict = user_data.get(self.user_id, {})
         self.isPM = config_dict["BOT_PM"] or self.user_dict.get("bot_pm")
         self.suproc = None
+        self.ffmpeg_cmds = []
         self.sameDir = sameDir
         self.rcFlags = rcFlags
         self.upPath = upPath
@@ -406,6 +412,21 @@ class MirrorLeechListener:
                 LOGGER.info("Not any valid archive, uploading file as it is.")
                 self.newDir = ""
                 up_path = dl_path
+
+        if self.ffmpeg_cmds:
+            ff_path = up_path or dl_path
+            async with download_dict_lock:
+                download_dict[self.uid] = FFmpegStatus(name, size, gid, self)
+            await update_all_messages()
+            ff_path = await run_ffmpeg_cmds(self, ff_path, self.ffmpeg_cmds)
+            if ff_path is None or self.suproc == "cancelled":
+                return
+            self.suproc = None
+            if up_path:
+                up_path = ff_path
+            else:
+                dl_path = ff_path
+            name = ospath.basename(ff_path)
 
         if metadata := self.user_dict.get("lmeta") or config_dict["METADATA"]:
             meta_path = up_path or dl_path

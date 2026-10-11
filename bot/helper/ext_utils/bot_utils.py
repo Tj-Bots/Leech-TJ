@@ -89,6 +89,7 @@ class MirrorStatus:
     STATUS_CHECKING = "CheckUp"
     STATUS_SEEDING = "Seed"
     STATUS_METADATA = "Metadata"
+    STATUS_FFMPEG = "FFmpeg"
 
 
 class setInterval:
@@ -286,6 +287,7 @@ def get_readable_message():
             MirrorStatus.STATUS_SPLITTING,
             MirrorStatus.STATUS_SEEDING,
             MirrorStatus.STATUS_METADATA,
+            MirrorStatus.STATUS_FFMPEG,
         ]:
             msg += BotTheme(
                 "BAR",

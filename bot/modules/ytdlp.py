@@ -10,6 +10,7 @@ from time import time
 
 from bot import DOWNLOAD_DIR, bot, categories_dict, config_dict, user_data, LOGGER
 from bot.helper.ext_utils.user_tools import (
+    resolve_ffmpeg_cmds,
     resolve_upload_path,
     user_cookie,
     user_rc_path,
@@ -310,6 +311,7 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
         "-screenshots": "",
         "-t": "",
         "-thumb": "",
+        "-ff": "",
     }
 
     args = arg_parser(input_list[1:], arg_base)
@@ -555,6 +557,15 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
         source_url=link,
         leech_utils={"screenshots": sshots, "thumb": thumb},
     )
+    if args["-ff"]:
+        listener.ffmpeg_cmds = resolve_ffmpeg_cmds(user_id, args["-ff"])
+        if not listener.ffmpeg_cmds:
+            await sendMessage(
+                message,
+                f"<i>No FFmpeg Cmd named <code>{args['-ff']}</code> in your User Settings!</i>",
+            )
+            await delete_links(message)
+            return
 
     if "mdisk.me" in link:
         name, link = await _mdisk(link, name)

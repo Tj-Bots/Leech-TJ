@@ -205,3 +205,147 @@ def user_cookie(user_id):
     if user_data.get(user_id, {}).get("cookies") and ospath.exists(path):
         return path
     return "cookies.txt"
+
+
+def resolve_ffmpeg_cmds(user_id, arg):
+    """-ff value -> list of ffmpeg arg strings from the user's FFmpeg Cmds."""
+    if not arg or not isinstance(arg, str):
+        return []
+    saved = user_data.get(user_id, {}).get("ffmpeg_cmds") or {}
+    cmds = []
+    for name in arg.replace(",", " ").split():
+        for key, cmd in saved.items():
+            if key.casefold() == name.casefold():
+                cmds.append(cmd)
+                break
+    return cmds
+
+
+async def _media_kind(path):
+    from bot.helper.ext_utils.leech_utils import get_document_type
+
+    try:
+        is_video, is_audio, _ = await get_document_type(path)
+    except Exception:
+        return None
+    if is_video:
+        return "video"
+    if is_audio:
+        return "audio"
+    return None
+
+
+def _wanted(path, kind, want):
+    if want == "all":
+        return True
+    if want in ("video", "audio"):
+        return kind == want
+    return path.lower().endswith(want)
+
+
+async def run_ffmpeg_cmds(listener, path, cmds):
+    """Run the user's ffmpeg commands on path (file or folder).
+    Returns the path to upload, or None when cancelled."""
+    from asyncio import create_subprocess_exec
+    from asyncio.subprocess import PIPE
+    from shlex import split as ssplit
+
+    from aiofiles.os import makedirs, rename
+    from aioshutil import move
+
+    for raw in cmds:
+        try:
+            parts = ssplit(raw)
+        except ValueError as e:
+            LOGGER.error(f"FFmpeg Cmds: bad command {raw}: {e}")
+            continue
+        delete_src = "-del" in parts
+        parts = [p for p in parts if p != "-del"]
+        if "-i" not in parts or parts.index("-i") + 1 >= len(parts):
+            LOGGER.error(f"FFmpeg Cmds: skipping command without -i: {raw}")
+            continue
+        in_idx = parts.index("-i") + 1
+        in_token = parts[in_idx]
+        if in_token.endswith(".video"):
+            want = "video"
+        elif in_token.endswith(".audio"):
+            want = "audio"
+        elif "." not in in_token:
+            want = "all"
+        else:
+            want = ospath.splitext(in_token)[1].lower()
+
+        single = await aiopath.isfile(path)
+        if single:
+            files = [path]
+        else:
+            files = []
+            for dirpath, _, fnames in await sync_to_async(walk, path):
+                files.extend(ospath.join(dirpath, f) for f in sorted(fnames))
+
+        for f_path in files:
+            if listener.suproc == "cancelled":
+                return None
+            kind = await _media_kind(f_path)
+            if kind is None or not _wanted(f_path, kind, want):
+                continue
+            base, ext = ospath.splitext(f_path)
+            fdir, fbase = ospath.split(base)
+            cmd = list(parts)
+            cmd[in_idx] = f_path
+            outputs = []
+            for idx, token in enumerate(cmd):
+                if idx == in_idx or not token.startswith("mltb"):
+                    continue
+                tbase, text = ospath.splitext(token)
+                if token == "mltb" or tbase == "mltb" and text == ext:
+                    out = ospath.join(fdir, f"ffmpeg{idx}.{fbase}{text or ext}")
+                else:
+                    out = ospath.join(fdir, token.replace("mltb", fbase, 1))
+                    if not text:
+                        out += ext
+                cmd[idx] = out
+                outputs.append(out)
+            if not outputs:
+                LOGGER.error(f"FFmpeg Cmds: no mltb output in: {raw}")
+                break
+            existed = {out for out in outputs if await aiopath.exists(out)}
+            LOGGER.info(f"FFmpeg Cmds: running on {f_path}")
+            listener.suproc = await create_subprocess_exec(
+                "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", *cmd,
+                stdout=PIPE, stderr=PIPE,
+            )
+            _, stderr = await listener.suproc.communicate()
+            code = listener.suproc.returncode
+            if listener.suproc == "cancelled" or code == -9:
+                return None
+            if code != 0:
+                LOGGER.error(
+                    f"FFmpeg Cmds failed for {f_path}: {stderr.decode(errors='ignore').strip()}"
+                )
+                for out in outputs:
+                    if out not in existed and await aiopath.exists(out):
+                        await aioremove(out)
+                continue
+            if delete_src:
+                await aioremove(f_path)
+                if len(outputs) == 1 and ospath.basename(outputs[0]).startswith(
+                    "ffmpeg"
+                ):
+                    clean = ospath.join(
+                        fdir, ospath.basename(outputs[0]).split(".", 1)[1]
+                    )
+                    await rename(outputs[0], clean)
+                    outputs = [clean]
+            if single:
+                if delete_src and len(outputs) == 1:
+                    path = outputs[0]
+                else:
+                    # keep the original and the new files together
+                    folder = base if not await aiopath.exists(base) else f"{base}_ff"
+                    await makedirs(folder, exist_ok=True)
+                    for item in ([] if delete_src else [f_path]) + outputs:
+                        await move(item, ospath.join(folder, ospath.basename(item)))
+                    path = folder
+                break
+    return path
