@@ -529,6 +529,7 @@ default_desp = {'AS_DOCUMENT': 'Default type of Telegram file upload. Default is
                 'JIODRIVE_TOKEN': 'Set token for the jiodrive.xyz to download the files. str',
                 'USER_TD_MODE': 'Enable User GDrive TD to Use. Default is False',
                 'USER_TD_SA': 'Add Global SA mail for User to give Permissions to Bot for UserTD Upload. Like wzmlx@googlegroups.com. Str',
+                'TMDB_ACCESS_TOKEN': "TMDB API Key or Read Access Token, used for Auto Thumbnail (movie/series poster) in User Settings. Get it from https://www.themoviedb.org/settings/api",
                 'HELPER_TOKENS': "Extra bot tokens for Hyper download/upload, separated by space. Add all of them as admins in LEECH_LOG_ID chat.\n\n<b>NOTE:</b> Restart required.",
                 'HELPER_STRINGS': "Extra user session strings for Hyper download/upload, separated by space. Premium accounts are the fastest. Add all of them to LEECH_LOG_ID chat.\n\n<b>NOTE:</b> Restart required.",
                 'USE_HYPER': "Use Hyper (parallel multi client) download and upload for Telegram files. Works with HELPER_TOKENS, HELPER_STRINGS or USER_SESSION_STRING. Default is True.",

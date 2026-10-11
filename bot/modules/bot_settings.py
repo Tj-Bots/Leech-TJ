@@ -320,6 +320,7 @@ async def load_config():
     HYPER_CHUNK = int(HYPER_CHUNK) if HYPER_CHUNK.isdigit() else 0
     HYPER_PIPELINE = environ.get("HYPER_PIPELINE", "")
     HYPER_PIPELINE = int(HYPER_PIPELINE) if HYPER_PIPELINE.isdigit() else 0
+    TMDB_ACCESS_TOKEN = environ.get("TMDB_ACCESS_TOKEN", "").strip()
 
     TORRENT_TIMEOUT = environ.get("TORRENT_TIMEOUT", "")
     downloads = aria2.get_downloads()
@@ -805,6 +806,7 @@ async def load_config():
             "HYPER_THREADS": HYPER_THREADS,
             "HYPER_CHUNK": HYPER_CHUNK,
             "HYPER_PIPELINE": HYPER_PIPELINE,
+            "TMDB_ACCESS_TOKEN": TMDB_ACCESS_TOKEN,
             "USER_TD_MODE": USER_TD_MODE,
             "USER_TD_SA": USER_TD_SA,
             "USE_SERVICE_ACCOUNTS": USE_SERVICE_ACCOUNTS,

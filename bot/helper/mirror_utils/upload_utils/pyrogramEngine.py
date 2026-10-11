@@ -41,6 +41,7 @@ from bot.helper.mirror_utils.hyper_utils import (
     transfer_mode,
 )
 from bot.helper.ext_utils.user_tools import get_grid_thumb
+from bot.helper.ext_utils.tmdb_utils import get_auto_thumbnail
 from bot.helper.themes import BotTheme
 from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.telegram_helper.message_utils import (
@@ -617,6 +618,15 @@ class TgUploader:
                     thumb = thumb_path
                 elif is_audio and not is_video:
                     thumb = await get_audio_thumb(self.__up_path)
+
+            if (
+                not is_image
+                and thumb is None
+                and user_data.get(self.__user_id, {}).get("auto_thumb")
+            ):
+                thumb = await get_auto_thumbnail(
+                    file, force_document or self.__as_doc or not is_video
+                )
 
             if (
                 self.__as_doc

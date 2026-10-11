@@ -495,6 +495,10 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
 
         extra_button(buttons, user_dict, user_id, "excluded_ext")
         extra_button(buttons, user_dict, user_id, "thumb_layout")
+        buttons.ibutton(
+            f"{'✅️' if user_dict.get('auto_thumb') else ''} Auto Thumbnail",
+            f"userset {user_id} auto_thumb",
+        )
 
         buttons.ibutton("Leech Dump", f"userset {user_id} ldump")
         ldump = "Not Exists" if (val := user_dict.get("ldump", "")) == "" else len(val)
@@ -972,6 +976,20 @@ async def edit_user_settings(client, query):
     elif data[2] == "doc":
         update_user_ldata(user_id, "as_doc", not user_dict.get("as_doc", False))
         await query.answer()
+        await update_user_settings(query, "leech")
+        if DATABASE_URL:
+            await DbManger().update_user_data(user_id)
+    elif data[2] == "auto_thumb":
+        handler_dict[user_id] = False
+        if not user_dict.get("auto_thumb") and not config_dict.get(
+            "TMDB_ACCESS_TOKEN"
+        ):
+            return await query.answer(
+                "Owner must set TMDB_ACCESS_TOKEN in Bot Settings first!",
+                show_alert=True,
+            )
+        await query.answer()
+        update_user_ldata(user_id, "auto_thumb", not user_dict.get("auto_thumb", False))
         await update_user_settings(query, "leech")
         if DATABASE_URL:
             await DbManger().update_user_data(user_id)
