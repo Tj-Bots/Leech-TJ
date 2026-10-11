@@ -141,7 +141,10 @@ def _build_command_usage(help_dict, command_key):
         temp_store.append(buttons.build_menu(2))
         buttons.reset()
 
-    COMMAND_USAGE[command_key] = [help_dict["main"], *temp_store]
+    COMMAND_USAGE[command_key] = [
+        f"<blockquote>{help_dict['main']}</blockquote>",
+        *temp_store,
+    ]
 
 
 def create_help_buttons():

@@ -39,9 +39,14 @@ async def arg_usage(_, query):
         back_key, help_dict = info[data[1]]
         button = ButtonMaker()
         button.data_button("◀️", f"help back {back_key} {pg_no}")
-        await edit_message(message, help_dict[data[2]], button.build_menu())
+        await edit_message(
+            message, f"<blockquote>{help_dict[data[2]]}</blockquote>", button.build_menu()
+        )
 
 
 @new_task
 async def bot_help(_, message):
-    await send_message(message, help_string)
+    await send_message(
+        message,
+        f"㊂ <b><i>Help Guide Menu!</i></b>\n\n<blockquote expandable>{help_string}</blockquote>",
+    )
