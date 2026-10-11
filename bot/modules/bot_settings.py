@@ -28,6 +28,9 @@ from bot import (
     aria2_options,
     aria2c_global,
     IS_PREMIUM_USER,
+    user,
+    helper_bots,
+    helper_users,
     download_dict,
     qbit_options,
     get_client,
@@ -60,6 +63,9 @@ STATE = "view"
 handler_dict = {}
 default_values = {
     "AUTO_DELETE_MESSAGE_DURATION": 30,
+    "HYPER_THREADS": 0,
+    "HYPER_CHUNK": 0,
+    "HYPER_PIPELINE": 0,
     "DEFAULT_UPLOAD": "gd",
     "DOWNLOAD_DIR": "/usr/src/app/downloads/",
     "LEECH_SPLIT_SIZE": MAX_SPLIT_SIZE,
@@ -75,8 +81,17 @@ default_values = {
     "TITLE_NAME": "WZ Mirror/Leech X",
     "GD_INFO": "Uploaded by WZML-X",
 }
+HYPER_VARS = [
+    "USE_HYPER",
+    "HELPER_TOKENS",
+    "HELPER_STRINGS",
+    "HYPER_THREADS",
+    "HYPER_CHUNK",
+    "HYPER_PIPELINE",
+]
 bool_vars = [
     "AS_DOCUMENT",
+    "USE_HYPER",
     "BOT_PM",
     "STOP_DUPLICATE",
     "SET_COMMANDS",
@@ -295,6 +310,16 @@ async def load_config():
     CMD_SUFFIX = environ.get("CMD_SUFFIX", "")
 
     USER_SESSION_STRING = environ.get("USER_SESSION_STRING", "")
+
+    HELPER_TOKENS = environ.get("HELPER_TOKENS", "").strip()
+    HELPER_STRINGS = environ.get("HELPER_STRINGS", "").strip()
+    USE_HYPER = environ.get("USE_HYPER", "True").lower() == "true"
+    HYPER_THREADS = environ.get("HYPER_THREADS", "")
+    HYPER_THREADS = int(HYPER_THREADS) if HYPER_THREADS.isdigit() else 0
+    HYPER_CHUNK = environ.get("HYPER_CHUNK", "")
+    HYPER_CHUNK = int(HYPER_CHUNK) if HYPER_CHUNK.isdigit() else 0
+    HYPER_PIPELINE = environ.get("HYPER_PIPELINE", "")
+    HYPER_PIPELINE = int(HYPER_PIPELINE) if HYPER_PIPELINE.isdigit() else 0
 
     TORRENT_TIMEOUT = environ.get("TORRENT_TIMEOUT", "")
     downloads = aria2.get_downloads()
@@ -774,6 +799,12 @@ async def load_config():
             "UPSTREAM_BRANCH": UPSTREAM_BRANCH,
             "UPGRADE_PACKAGES": UPGRADE_PACKAGES,
             "USER_SESSION_STRING": USER_SESSION_STRING,
+            "HELPER_TOKENS": HELPER_TOKENS,
+            "HELPER_STRINGS": HELPER_STRINGS,
+            "USE_HYPER": USE_HYPER,
+            "HYPER_THREADS": HYPER_THREADS,
+            "HYPER_CHUNK": HYPER_CHUNK,
+            "HYPER_PIPELINE": HYPER_PIPELINE,
             "USER_TD_MODE": USER_TD_MODE,
             "USER_TD_SA": USER_TD_SA,
             "USE_SERVICE_ACCOUNTS": USE_SERVICE_ACCOUNTS,
@@ -794,6 +825,7 @@ async def get_buttons(key=None, edit_type=None, edit_mode=None, mess=None):
         buttons.ibutton("Private Files", "botset private")
         buttons.ibutton("Qbit Settings", "botset qbit")
         buttons.ibutton("Aria2c Settings", "botset aria")
+        buttons.ibutton("Hyper Settings ⚡", "botset hyper")
         buttons.ibutton("Close", "botset close")
         msg = "<b><i>Bot Settings:</i></b>"
     elif key == "var":
@@ -808,6 +840,29 @@ async def get_buttons(key=None, edit_type=None, edit_mode=None, mess=None):
                 f"{int(x/10)+1}", f"botset start var {x}", position="footer"
             )
         msg = f"<b>Config Variables</b> | <b>Page: {int(START/10)+1}</b>"
+    elif key == "hyper":
+        for k in HYPER_VARS:
+            buttons.ibutton(k, f"botset editvar {k}")
+        buttons.ibutton("◀️", "botset back", position="footer")
+        buttons.ibutton("❌", "botset close", position="footer")
+        clients = len(helper_bots) + len(helper_users) + (1 if user else 0)
+        chunk = config_dict["HYPER_CHUNK"]
+        msg = f"""㊂ <b><u>Hyper Settings :</u></b>
+
+<blockquote>╭<b> Hyper Mode :</b> <code>{"Enabled" if config_dict["USE_HYPER"] else "Disabled"}</code>
+┊<b> Helper Bots :</b> <code>{len(helper_bots)}</code>
+┊<b> Helper Users :</b> <code>{len(helper_users)}</code>
+┊<b> User Session :</b> <code>{("Premium" if IS_PREMIUM_USER else "Normal") if user else "None"}</code>
+╰<b> Total Clients :</b> <code>{clients}</code></blockquote>
+
+<blockquote>╭<b> Threads :</b> <code>{config_dict["HYPER_THREADS"] or "Auto"}</code>
+┊<b> Chunk Size :</b> <code>{f"{chunk // 1024} KB" if chunk else "256 KB"}</code>
+┊<b> Pipeline :</b> <code>{config_dict["HYPER_PIPELINE"] or 32}</code>
+╰<b> Dump Chat :</b> <code>{config_dict["LEECH_LOG_ID"] or "Not Set"}</code></blockquote>
+
+<blockquote>➲ <b>NOTE:</b> <i>Add all helper bots/users to LEECH_LOG_ID chat. Changes in tokens/sessions need restart.</i></blockquote>"""
+        if not clients:
+            msg += "\n\n<i>⚠️ No clients! Add HELPER_TOKENS, HELPER_STRINGS or USER_SESSION_STRING to use Hyper.</i>"
     elif key == "private":
         buttons.ibutton("Back", "botset back")
         buttons.ibutton("Close", "botset close")
@@ -859,7 +914,11 @@ async def get_buttons(key=None, edit_type=None, edit_mode=None, mess=None):
             buttons.ibutton(
                 "View Var Value", f"botset showvar {key}", position="header"
             )
-        buttons.ibutton("Back", "botset back var", position="footer")
+        buttons.ibutton(
+            "Back",
+            f"botset back {'hyper' if key in HYPER_VARS else 'var'}",
+            position="footer",
+        )
         if key not in bool_vars:
             if not edit_mode:
                 buttons.ibutton("Edit Value", f"botset editvar {key} edit")
@@ -876,6 +935,8 @@ async def get_buttons(key=None, edit_type=None, edit_mode=None, mess=None):
             "CMD_SUFFIX",
             "OWNER_ID",
             "USER_SESSION_STRING",
+            "HELPER_TOKENS",
+            "HELPER_STRINGS",
             "TELEGRAM_HASH",
             "TELEGRAM_API",
             "AUTHORIZED_CHATS",
@@ -1235,7 +1296,7 @@ async def edit_bot_settings(client, query):
         if key is None:
             globals()["START"] = 0
         await update_buttons(message, key)
-    elif data[1] in ["var", "aria", "qbit"]:
+    elif data[1] in ["var", "aria", "qbit", "hyper"]:
         await query.answer()
         await update_buttons(message, data[1])
     elif data[1] == "resetvar":
