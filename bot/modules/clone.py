@@ -311,11 +311,10 @@ class Clone(TaskListener):
             if limit_exceeded := await limit_checker(self):
                 await send_message(
                     self.message,
-                    f"""〶 <b><i><u>Limit Breached:</u></i></b>
-│
-┟ <b>Task Size</b> → {get_readable_file_size(self.size)}
-┠ <b>In Mode</b> → {self.mode[0]}
-┠ <b>Out Mode</b> → {self.mode[1]}
+                    f"""<i><b>〶 Limit Breached!</b></i>
+
+<blockquote>╭ <b>Size:</b> {get_readable_file_size(self.size)}
+╰ <b>Mode:</b> {self.mode[0]} → {self.mode[1]}</blockquote>
 {limit_exceeded}""",
                 )
                 return

@@ -63,11 +63,11 @@ def _restart_header(now, is_restart_chat=False):
     title = "Restarted Successfully!" if is_restart_chat else "Bot Restarted!"
     return (
         f"⌬ <b><i>{title}</i></b>\n"
-        f"┟ <b>Date:</b> {now.strftime('%d/%m/%y')}\n"
-        f"┠ <b>Time:</b> {now.strftime('%I:%M:%S %p')}\n"
-        f"┠ <b>TimeZone:</b> {Config.TIMEZONE}\n"
-        f"┠ <b>Branch:</b> {Config.UPSTREAM_BRANCH}\n"
-        f"┖ <b>Version:</b> {get_version()}"
+        f"<blockquote>╭ <b>Date:</b> {now.strftime('%d/%m/%y')}\n"
+        f"┊ <b>Time:</b> {now.strftime('%I:%M:%S %p')}\n"
+        f"┊ <b>TimeZone:</b> {Config.TIMEZONE}\n"
+        f"┊ <b>Branch:</b> {Config.UPSTREAM_BRANCH}\n"
+        f"╰ <b>Version:</b> {get_version()}</blockquote>"
     )
 
 
@@ -124,7 +124,7 @@ async def _notify_tasks(notifier_dict, restart_chat_id, now):
         header = _restart_header(now, is_restart_chat)
         msg = header + "\n\n⌬ <b><i>Incomplete Tasks!</i></b>"
         for tag, tasks in data.items():
-            entry = f"\n➲ <b>User:</b> {tag}\n┖ <b>Tasks:</b>"
+            entry = f"\n➲ <b>User:</b> {tag}\n╰ <b>Tasks:</b>"
             for index, task in enumerate(tasks, start=1):
                 link = task.get("link", "")
                 entry += f" {index}. <a href='{link}'>L</a> |"

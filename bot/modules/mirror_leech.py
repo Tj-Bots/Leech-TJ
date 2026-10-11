@@ -803,12 +803,12 @@ async def seedr_link(client, message):
 
         buttons = ButtonMaker()
         text_lines = [
-            f"<b><i>{escape(title or contents[0]['filename'])}</i></b>\n│",
-            f"┟ <b>Task Size</b> → {get_readable_file_size(total_size)}",
-            f"┠ <b>Time Taken</b> → {get_readable_time(time() - message.date.timestamp())}",
-            "┠ <b>In Mode</b> → Seedr Cloud",
-            f"┠ <b>Total Files</b> → {len(contents)}",
-            f"┖ <b>Task By</b> → {tag}\n",
+            f"<blockquote>╭ <b>Name:</b> <code>{escape(title or contents[0]['filename'])}</code>",
+            f"┊ <b>Size:</b> {get_readable_file_size(total_size)}",
+            f"┊ <b>Elapsed:</b> {get_readable_time(time() - message.date.timestamp())}",
+            "┊ <b>Mode:</b> Seedr Cloud",
+            f"┊ <b>Total Files:</b> {len(contents)}",
+            f"╰ <b>By:</b> {tag}</blockquote>\n",
             "〶 <b><u>Files List :</u></b>",
         ]
 
@@ -840,10 +840,9 @@ async def seedr_link(client, message):
         await _delete_seedr_folder(seedr_client, folder_id)
         await edit_message(
             msg,
-            "<i><b>〶 Seedr Link Stopped!</b></i>"
-            "\n│"
-            f"\n┟ <b>Due To</b> → {escape(str(e))}"
-            f"\n┠ <b>Time Taken</b> → {get_readable_time(time() - message.date.timestamp())}"
-            "\n┠ <b>In Mode</b> → Seedr Cloud"
-            f"\n┖ <b>Task By</b> → {tag}",
+            "<i><b>〶 Seedr Link Stopped!</b></i>\n"
+            f"\n<blockquote>╭ <b>Task for:</b> {tag}"
+            f"\n┊ <b>Due To:</b> {escape(str(e))}"
+            "\n┊ <b>Mode:</b> Seedr Cloud"
+            f"\n╰ <b>Elapsed:</b> {get_readable_time(time() - message.date.timestamp())}</blockquote>",
         )

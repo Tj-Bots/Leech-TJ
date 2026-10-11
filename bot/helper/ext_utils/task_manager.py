@@ -183,11 +183,11 @@ async def limit_checker(listener, yt_playlist=0):
             if condition and (limit := getattr(Config, attr, 0)):
                 if attr == "PLAYLIST_LIMIT":
                     if yt_playlist >= limit:
-                        limit_exceeded = f"┠ <b>{name} Limit Count</b> → {limit}"
+                        limit_exceeded = f"╭ <b>{name} Limit Count :</b> {limit}"
                 else:
                     byte_limit = limit * 1024**3
                     if size >= byte_limit:
-                        limit_exceeded = f"┠ <b>{name} Limit</b> → {get_readable_file_size(byte_limit)}"
+                        limit_exceeded = f"╭ <b>{name} Limit :</b> {get_readable_file_size(byte_limit)}"
 
                 LOGGER.info(
                     f"{name} Limit Breached: {listener.name} & Size: {get_readable_file_size(size)}"
@@ -223,10 +223,10 @@ async def limit_checker(listener, yt_playlist=0):
             if not await check_storage_threshold(
                 size, limit, any([listener.compress, listener.extract])
             ):
-                limit_exceeded = f"┠ <b>Threshold Storage Limit</b> → {get_readable_file_size(limit)}"
+                limit_exceeded = f"╭ <b>Threshold Storage Limit :</b> {get_readable_file_size(limit)}"
 
     if limit_exceeded:
-        return limit_exceeded + f"\n┖ <b>Task By</b> → {listener.tag}"
+        return f"<blockquote>{limit_exceeded}\n╰ <b>By :</b> {listener.tag}</blockquote>"
 
 
 """
@@ -255,11 +255,15 @@ async def pre_task_check(message):
 
     def _format_result():
         username = message.from_user.mention
-        parts = [f"⌬ <b>Task Checks :</b>\n│\n┟ <b>Name</b> → {username}\n┃\n"]
+        parts = [f"㊂ <b><u>Task Checks :</u></b>\n\n<blockquote>╭ <b>Name :</b> {username}"]
         for i, m_part in enumerate(msg, 1):
             parts.append(m_part)
+        text = "\n".join(parts)
+        head, sep, tail = text.rpartition("\n┊ ")
+        if sep:
+            text = f"{head}\n╰ {tail}"
         menu = button.build_menu(2) if button is not None else None
-        return "\n".join(parts), menu
+        return f"{text}</blockquote>", menu
 
     if await CustomFilters.sudo("", message):
         if Config.BOT_PM or user_dict.get("BOT_PM"):
@@ -291,7 +295,7 @@ async def pre_task_check(message):
         ut := await user_interval_check(user_id)
     ):
         msg.append(
-            f"┠ <b>Waiting Time</b> → {get_readable_time(ut)}\n┠ <i>User's Time Interval Restrictions</i> → {get_readable_time(uti)}"
+            f"┊ <b>Waiting Time :</b> {get_readable_time(ut)}\n┊ <i>User's Time Interval Restrictions :</i> {get_readable_time(uti)}"
         )
 
     all_tasks = list(task_dict.values())
@@ -299,14 +303,14 @@ async def pre_task_check(message):
     bmax_tasks = safe_int(user_dict.get("bmax_tasks", Config.BOT_MAX_TASKS))
     if bmax_tasks > 0 and all_tasks_len >= bmax_tasks:
         msg.append(
-            f"┠ Max Concurrent Bot's Tasks Limit exceeded.\n┃ Bot Tasks Limit : {bmax_tasks} task"
+            f"┊ Max Concurrent Bot's Tasks Limit exceeded.\n┊ <b>Bot Tasks Limit :</b> {bmax_tasks} task"
         )
     maxtask = safe_int(user_dict.get("maxtask", Config.USER_MAX_TASKS))
     if maxtask > 0:
         user_tasks = [tk for tk in all_tasks if tk.listener.user_id == user_id]
         if len(user_tasks) >= maxtask:
             msg.append(
-                f"┠ Max Concurrent User's Task(s) Limit exceeded! \n┃ User Task Limit : {maxtask} tasks"
+                f"┊ Max Concurrent User's Task(s) Limit exceeded!\n┊ <b>User Task Limit :</b> {maxtask} tasks"
             )
 
     if msg:
