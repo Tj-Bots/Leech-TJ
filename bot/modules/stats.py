@@ -256,9 +256,9 @@ async def get_stats(event, key="home"):
             "♻️", f"stats {user_id} systasks", "header", style=ButtonStyle.SUCCESS
         )
     if key != "home":
-        btns.data_button("Back", f"stats {user_id} home", "footer")
+        btns.data_button("◀️", f"stats {user_id} home", "footer")
     btns.data_button(
-        "Close", f"stats {user_id} close", "footer", style=ButtonStyle.DANGER
+        "❌", f"stats {user_id} close", "footer", style=ButtonStyle.DANGER
     )
     return msg, btns.build_menu(8 if key == "systasks" else 2)
 
@@ -275,7 +275,7 @@ async def stats_pages(_, query):
     message = query.message
     user_id = query.from_user.id
     if user_id != int(data[1]):
-        await query.answer("Not Yours!", show_alert=True)
+        await query.answer("𝙏𝙝𝙖𝙩'𝙨 𝙉𝙤𝙩 𝙔𝙤𝙪𝙧𝙨...😤", show_alert=True)
     elif data[2] == "close":
         await query.answer()
         await delete_message(message, message.reply_to_message)

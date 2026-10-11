@@ -137,7 +137,7 @@ def _build_command_usage(help_dict, command_key):
                 buttons.data_button("⫷", f"help pre {command_key} {i - 1}", "l_body")
             if i < len(cmd_pages) - 1:
                 buttons.data_button("⫸", f"help nex {command_key} {i + 1}", "l_body")
-        buttons.data_button("Close", "help close", "footer", style=ButtonStyle.DANGER)
+        buttons.data_button("❌", "help close", "footer", style=ButtonStyle.DANGER)
         temp_store.append(buttons.build_menu(2))
         buttons.reset()
 

@@ -153,7 +153,7 @@ async def rss_menu(event):
             buttons.data_button("Shutdown Rss", f"rss shutdown {user_id}")
         else:
             buttons.data_button("Start Rss", f"rss start {user_id}")
-    buttons.data_button("Close", f"rss close {user_id}", style=ButtonStyle.DANGER)
+    buttons.data_button("❌", f"rss close {user_id}", style=ButtonStyle.DANGER)
     button = buttons.build_menu(2)
     if chat := Config.RSS_CHAT:
         if isinstance(chat, int):
@@ -431,8 +431,8 @@ async def rss_list(query, start, all_users=False):
                     f"<b>Sensitive:</b> <code>{data.get('sensitive', False)}</code>\n"
                 )
                 list_feed += f"<b>Paused:</b> <code>{data['paused']}</code>\n"
-    buttons.data_button("Back", f"rss back {user_id}")
-    buttons.data_button("Close", f"rss close {user_id}", style=ButtonStyle.DANGER)
+    buttons.data_button("◀️", f"rss back {user_id}")
+    buttons.data_button("❌", f"rss close {user_id}", style=ButtonStyle.DANGER)
     if keysCount > 5:
         for x in range(0, keysCount, 5):
             buttons.data_button(
@@ -608,8 +608,8 @@ async def rss_listener(client, query):
         await query.answer()
         handler_dict[user_id] = False
         buttons = ButtonMaker()
-        buttons.data_button("Back", f"rss back {user_id}")
-        buttons.data_button("Close", f"rss close {user_id}", style=ButtonStyle.DANGER)
+        buttons.data_button("◀️", f"rss back {user_id}")
+        buttons.data_button("❌", f"rss close {user_id}", style=ButtonStyle.DANGER)
         button = buttons.build_menu(2)
         await edit_message(message, RSS_HELP_MESSAGE, button)
         pfunc = partial(rss_sub, pre_event=query)
@@ -629,9 +629,9 @@ async def rss_listener(client, query):
         else:
             await query.answer()
             buttons = ButtonMaker()
-            buttons.data_button("Back", f"rss back {user_id}")
+            buttons.data_button("◀️", f"rss back {user_id}")
             buttons.data_button(
-                "Close", f"rss close {user_id}", style=ButtonStyle.DANGER
+                "❌", f"rss close {user_id}", style=ButtonStyle.DANGER
             )
             button = buttons.build_menu(2)
             await edit_message(
@@ -648,7 +648,7 @@ async def rss_listener(client, query):
         else:
             await query.answer()
             buttons = ButtonMaker()
-            buttons.data_button("Back", f"rss back {user_id}")
+            buttons.data_button("◀️", f"rss back {user_id}")
             if data[1] == "pause":
                 buttons.data_button("Pause AllMyFeeds", f"rss uallpause {user_id}")
             elif data[1] == "resume":
@@ -656,7 +656,7 @@ async def rss_listener(client, query):
             elif data[1] == "unsubscribe":
                 buttons.data_button("Unsub AllMyFeeds", f"rss uallunsub {user_id}")
             buttons.data_button(
-                "Close", f"rss close {user_id}", style=ButtonStyle.DANGER
+                "❌", f"rss close {user_id}", style=ButtonStyle.DANGER
             )
             button = buttons.build_menu(2)
             await edit_message(
@@ -673,9 +673,9 @@ async def rss_listener(client, query):
         else:
             await query.answer()
             buttons = ButtonMaker()
-            buttons.data_button("Back", f"rss back {user_id}")
+            buttons.data_button("◀️", f"rss back {user_id}")
             buttons.data_button(
-                "Close", f"rss close {user_id}", style=ButtonStyle.DANGER
+                "❌", f"rss close {user_id}", style=ButtonStyle.DANGER
             )
             button = buttons.build_menu(2)
             msg = """Send one or more rss titles with new filters or command separated by new line.
@@ -749,9 +749,9 @@ Timeout: 60 sec. Argument -c for command and arguments
         else:
             await query.answer()
             buttons = ButtonMaker()
-            buttons.data_button("Back", f"rss back {user_id}")
+            buttons.data_button("◀️", f"rss back {user_id}")
             buttons.data_button(
-                "Close", f"rss close {user_id}", style=ButtonStyle.DANGER
+                "❌", f"rss close {user_id}", style=ButtonStyle.DANGER
             )
             button = buttons.build_menu(2)
             msg = "Send one or more user_id separated by space to delete their resources.\nTimeout: 60 sec."

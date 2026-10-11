@@ -147,7 +147,7 @@ SECTIONS = {
 async def anime_callback(_, query):
     data = query.data.split()
     if len(data) < 4 or query.from_user.id != int(data[1]):
-        return await query.answer("Not Yours!", show_alert=True)
+        return await query.answer("𝙏𝙝𝙖𝙩'𝙨 𝙉𝙤𝙩 𝙔𝙤𝙪𝙧𝙨...😤", show_alert=True)
 
     action, site_id = data[2], data[3]
     await query.answer()
@@ -219,7 +219,7 @@ async def character_command(_, message):
 async def character_callback(_, query):
     data = query.data.split()
     if len(data) < 4 or query.from_user.id != int(data[1]):
-        return await query.answer("Not Yours!", show_alert=True)
+        return await query.answer("𝙏𝙝𝙖𝙩'𝙨 𝙉𝙤𝙩 𝙔𝙤𝙪𝙧𝙨...😤", show_alert=True)
 
     person = await fetch_character(id=int(data[3]))
     if not person:

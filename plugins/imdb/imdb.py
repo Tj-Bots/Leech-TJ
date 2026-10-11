@@ -79,7 +79,7 @@ async def imdb_search(_, message):
                     f"imdb {user_id} movie {movie.id}",
                 )
         buttons.data_button(
-            "Close", f"imdb {user_id} close", style=ButtonStyle.DANGER
+            "❌", f"imdb {user_id} close", style=ButtonStyle.DANGER
         )
         await edit_message(
             k, "<b><i>Search Results found on IMDb.com</i></b>", buttons.build_menu(1)
@@ -368,7 +368,7 @@ async def imdb_callback(_, query):
         await delete_message(message)
         return
     if user_id != int(data[1]):
-        await query.answer("Not Yours!", show_alert=True)
+        await query.answer("𝙏𝙝𝙖𝙩'𝙨 𝙉𝙤𝙩 𝙔𝙤𝙪𝙧𝙨...😤", show_alert=True)
     elif data[2] == "movie":
         await query.answer("Processing...")
         imdb = await sync_to_async(get_poster, query=data[3], id=True)
@@ -392,7 +392,7 @@ async def imdb_callback(_, query):
                     "IMDb Trailer", imdb["trailer"], style=ButtonStyle.PRIMARY
                 )
         buttons.data_button(
-            "Close", f"imdb {user_id} close", style=ButtonStyle.DANGER
+            "❌", f"imdb {user_id} close", style=ButtonStyle.DANGER
         )
         buttons = buttons.build_menu(1)
 

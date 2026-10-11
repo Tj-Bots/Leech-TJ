@@ -38,7 +38,7 @@ async def arg_usage(_, query):
         }
         back_key, help_dict = info[data[1]]
         button = ButtonMaker()
-        button.data_button("Back", f"help back {back_key} {pg_no}")
+        button.data_button("◀️", f"help back {back_key} {pg_no}")
         await edit_message(message, help_dict[data[2]], button.build_menu())
 
 

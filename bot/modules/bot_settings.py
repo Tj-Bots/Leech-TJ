@@ -406,38 +406,38 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
         buttons.data_button("Aria2c Settings", "botset aria")
         buttons.data_button("Sabnzbd Settings", "botset nzb")
         buttons.data_button("JDownloader Sync", "botset syncjd")
-        buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+        buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
         msg = "Bot Settings:"
     elif edit_type is not None:
         if edit_type == "ariavar":
-            buttons.data_button("Back", "botset aria", style=ButtonStyle.PRIMARY)
+            buttons.data_button("◀️", "botset aria", style=ButtonStyle.PRIMARY)
             if key != "newkey":
                 buttons.data_button("Empty String", f"botset emptyaria {key}")
-            buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+            buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
             msg = (
                 "<i>Send a key with value.</i> Example: <code>https-proxy-user:value</code>\n┖ <b>Time Left :</b> <code>60 sec</code>"
                 if key == "newkey"
                 else f"<i>Send a valid value for <code>{key}</code>.</i> Current value is <code>{aria2_options[key]}</code>\n┖ <b>Time Left :</b> <code>60 sec</code>"
             )
         elif edit_type == "qbitvar":
-            buttons.data_button("Back", "botset qbit", style=ButtonStyle.PRIMARY)
+            buttons.data_button("◀️", "botset qbit", style=ButtonStyle.PRIMARY)
             buttons.data_button("Empty String", f"botset emptyqbit {key}")
-            buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+            buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
             msg = f"<i>Send a valid value for <code>{key}</code>.</i> Current value is <code>{qbit_options[key]}</code>\n┖ <b>Time Left :</b> <code>60 sec</code>"
         elif edit_type == "nzbvar":
-            buttons.data_button("Back", "botset nzb", style=ButtonStyle.PRIMARY)
+            buttons.data_button("◀️", "botset nzb", style=ButtonStyle.PRIMARY)
             buttons.data_button("Default", f"botset resetnzb {key}")
             buttons.data_button("Empty String", f"botset emptynzb {key}")
-            buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+            buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
             msg = f"<i>Send a valid value for <code>{key}</code>.</i> Current value is <code>{nzb_options[key]}</code>\nIf the value is list then separate them by space or ,\nExample: <code>.exe,info</code> or <code>.exe .info</code>\n┖ <b>Time Left :</b> <code>60 sec</code>"
         elif edit_type.startswith("nzbsevar"):
             index = 0 if key == "newser" else int(edit_type.replace("nzbsevar", ""))
             buttons.data_button(
-                "Back", f"botset nzbser{index}", style=ButtonStyle.PRIMARY
+                "◀️", f"botset nzbser{index}", style=ButtonStyle.PRIMARY
             )
             if key != "newser":
                 buttons.data_button("Empty", f"botset emptyserkey {index} {key}")
-            buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+            buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
             if key == "newser":
                 msg = "<i>Send one server as dictionary <code>{}</code>, like in config.py without <code>[]</code>.</i>\n┖ <b>Time Left :</b> <code>60 sec</code>"
             else:
@@ -453,7 +453,7 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
                 "View Value", f"botset showvar {key}", position="header"
             )
             buttons.data_button(
-                "Back",
+                "◀️",
                 f"botset back {'setlimit' if key in LIMIT_VARS else 'var'}",
                 position="footer",
             )
@@ -473,7 +473,7 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
             if key not in BOOL_VARS and key not in PROTECTED_VARS:
                 buttons.data_button("Reset", f"botset resetvar {key}")
             buttons.data_button(
-                "Close", "botset close", position="footer", style=ButtonStyle.DANGER
+                "❌", "botset close", position="footer", style=ButtonStyle.DANGER
             )
             if edit_mode and key in RESTART_VARS:
                 msg += (
@@ -490,8 +490,8 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
         all_keys = list(conf_dict.keys())
         for k in all_keys[start : 10 + start]:
             buttons.data_button(k, f"botset editvar {k}")
-        buttons.data_button("Back", "botset back")
-        buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+        buttons.data_button("◀️", "botset back")
+        buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
         for x in range(0, len(all_keys), 10):
             buttons.data_button(
                 f"{int(x / 10) + 1}", f"botset start var {x}", position="footer"
@@ -500,9 +500,9 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
     elif key == "setonoff":
         buttons.data_button("On/Off Settings", "botset settoggle")
         buttons.data_button("Limit Settings", "botset setlimit")
-        buttons.data_button("Back", "botset back", position="footer")
+        buttons.data_button("◀️", "botset back", position="footer")
         buttons.data_button(
-            "Close", "botset close", position="footer", style=ButtonStyle.DANGER
+            "❌", "botset close", position="footer", style=ButtonStyle.DANGER
         )
         msg = "⌬ <b><u>Module Settings</u></b>"
     elif key == "settoggle":
@@ -521,9 +521,9 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
                     f"botset toggleonoff {k} off",
                     style=ButtonStyle.DANGER,
                 )
-        buttons.data_button("Back", "botset back setonoff", position="footer")
+        buttons.data_button("◀️", "botset back setonoff", position="footer")
         buttons.data_button(
-            "Close", "botset close", position="footer", style=ButtonStyle.DANGER
+            "❌", "botset close", position="footer", style=ButtonStyle.DANGER
         )
         msg = "⌬ <b><u>On/Off Settings</u></b>"
     elif key == "setlimit":
@@ -534,9 +534,9 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
                 f"botset editvar {k}",
                 style=ButtonStyle.SUCCESS if Config.get(k) else None,
             )
-        buttons.data_button("Back", "botset back setonoff", position="footer")
+        buttons.data_button("◀️", "botset back setonoff", position="footer")
         buttons.data_button(
-            "Close", "botset close", position="footer", style=ButtonStyle.DANGER
+            "❌", "botset close", position="footer", style=ButtonStyle.DANGER
         )
         if start:
             buttons.data_button(
@@ -635,9 +635,9 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
         else:
             buttons.data_button("Create New File", "botset private new")
             buttons.data_button("Add/Delete File", "botset private edit")
-        buttons.data_button("Back", "botset back", position="footer")
+        buttons.data_button("◀️", "botset back", position="footer")
         buttons.data_button(
-            "Close", "botset close", position="footer", style=ButtonStyle.DANGER
+            "❌", "botset close", position="footer", style=ButtonStyle.DANGER
         )
         txt = "\n┠ ".join(
             [
@@ -675,8 +675,8 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
         else:
             buttons.data_button("View", "botset view aria")
         buttons.data_button("Add new key", "botset ariavar newkey")
-        buttons.data_button("Back", "botset back")
-        buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+        buttons.data_button("◀️", "botset back")
+        buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
         for x in range(0, len(aria2_options), 10):
             buttons.data_button(
                 f"{int(x / 10)}", f"botset start aria {x}", position="footer"
@@ -690,8 +690,8 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
         else:
             buttons.data_button("View", "botset view qbit")
         buttons.data_button("Sync Qbittorrent", "botset syncqbit")
-        buttons.data_button("Back", "botset back")
-        buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+        buttons.data_button("◀️", "botset back")
+        buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
         for x in range(0, len(qbit_options), 10):
             buttons.data_button(
                 f"{int(x / 10)}", f"botset start qbit {x}", position="footer"
@@ -706,8 +706,8 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
             buttons.data_button("View", "botset view nzb")
         buttons.data_button("Servers", "botset nzbserver")
         buttons.data_button("Sync Sabnzbd", "botset syncnzb")
-        buttons.data_button("Back", "botset back")
-        buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+        buttons.data_button("◀️", "botset back")
+        buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
         for x in range(0, len(nzb_options), 10):
             buttons.data_button(
                 f"{int(x / 10)}", f"botset start nzb {x}", position="footer"
@@ -721,8 +721,8 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
             for index, k in enumerate(servers[start : 10 + start]):
                 buttons.data_button(k["name"], f"botset nzbser{index}")
         buttons.data_button("Add New", "botset nzbsevar newser")
-        buttons.data_button("Back", "botset nzb")
-        buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+        buttons.data_button("◀️", "botset nzb")
+        buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
         if len(servers) > 10:
             for x in range(0, len(servers), 10):
                 buttons.data_button(
@@ -743,8 +743,8 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
         else:
             buttons.data_button("View", f"botset view {key}")
         buttons.data_button("Remove Server", f"botset remser {index}")
-        buttons.data_button("Back", "botset nzbserver")
-        buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+        buttons.data_button("◀️", "botset nzbserver")
+        buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
         if len(servers[index].keys()) > 10:
             for x in range(0, len(servers[index]), 10):
                 buttons.data_button(

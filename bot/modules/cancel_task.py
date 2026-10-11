@@ -67,7 +67,7 @@ async def cancel_multi(_, query):
     data = query.data.split()
     user_id = query.from_user.id
     if user_id != int(data[1]) and not await CustomFilters.sudo("", query):
-        await query.answer("Not Yours!", show_alert=True)
+        await query.answer("𝙏𝙝𝙖𝙩'𝙨 𝙉𝙤𝙩 𝙔𝙤𝙪𝙧𝙨...😤", show_alert=True)
         return
     tag = int(data[2])
     if tag in multi_tags:
@@ -127,7 +127,7 @@ def create_cancel_buttons(is_sudo, user_id=""):
             buttons.data_button("All Added Tasks", f"canall bot ms {user_id}")
         else:
             buttons.data_button("My Tasks", f"canall user ms {user_id}")
-    buttons.data_button("Close", f"canall close ms {user_id}", style=ButtonStyle.DANGER)
+    buttons.data_button("❌", f"canall close ms {user_id}", style=ButtonStyle.DANGER)
     return buttons.build_menu(2)
 
 
@@ -152,7 +152,7 @@ async def cancel_all_update(_, query):
     user_id = int(data[3]) if len(data) > 3 else ""
     is_sudo = await CustomFilters.sudo("", query)
     if not is_sudo and user_id and user_id != query.from_user.id:
-        await query.answer("Not Yours!", show_alert=True)
+        await query.answer("𝙏𝙝𝙖𝙩'𝙨 𝙉𝙤𝙩 𝙔𝙤𝙪𝙧𝙨...😤", show_alert=True)
         return
     await query.answer()
     if data[1] == "close":
@@ -171,9 +171,9 @@ async def cancel_all_update(_, query):
         buttons.data_button(
             "Yes!", f"canall {data[2]} confirm {user_id}", style=ButtonStyle.SUCCESS
         )
-        buttons.data_button("Back", f"canall back confirm {user_id}")
+        buttons.data_button("◀️", f"canall back confirm {user_id}")
         buttons.data_button(
-            "Close", f"canall close confirm {user_id}", style=ButtonStyle.DANGER
+            "❌", f"canall close confirm {user_id}", style=ButtonStyle.DANGER
         )
         button = buttons.build_menu(2)
         await edit_message(

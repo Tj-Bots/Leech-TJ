@@ -247,7 +247,7 @@ class RcloneList:
                 style=ButtonStyle.SUCCESS,
             )
         if self.path or len(self._sections) > 1 or self._rc_user and self._rc_owner:
-            buttons.data_button("Back", "rcq back pa", position="footer")
+            buttons.data_button("◀️", "rcq back pa", position="footer")
         if self.path:
             buttons.data_button(
                 "Back To Root", "rcq root", position="footer", style=ButtonStyle.SUCCESS
@@ -342,7 +342,7 @@ class RcloneList:
             for remote in self._sections:
                 buttons.data_button(remote, f"rcq re {remote}:")
             if self._rc_user and self._rc_owner:
-                buttons.data_button("Back", "rcq back re", position="footer")
+                buttons.data_button("◀️", "rcq back re", position="footer")
             buttons.data_button(
                 "Cancel", "rcq cancel", position="footer", style=ButtonStyle.DANGER
             )

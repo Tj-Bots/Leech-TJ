@@ -1,3 +1,5 @@
+from pyrogram.enums import ButtonStyle
+
 from ..core.config_manager import Config
 from ..helper.ext_utils.bot_utils import handleIndex, new_task
 from ..helper.ext_utils.db_handler import database
@@ -59,7 +61,7 @@ async def pictures(_, message):
         buttons.data_button("\u00ab", f"images {user_id} turn -1")
         buttons.data_button("\u00bb", f"images {user_id} turn 1")
         buttons.data_button("Remove Image", f"images {user_id} remov 0")
-        buttons.data_button("Close", f"images {user_id} close")
+        buttons.data_button("❌", f"images {user_id} close", style=ButtonStyle.DANGER)
         buttons.data_button("Remove All", f"images {user_id} removall", "footer")
         await delete_message(to_edit)
         total = len(Config.IMAGES)
@@ -96,7 +98,7 @@ async def pics_callback(_, query):
         buttons.data_button("\u00ab", f"images {data[1]} turn {ind - 1}")
         buttons.data_button("\u00bb", f"images {data[1]} turn {ind + 1}")
         buttons.data_button("Remove Image", f"images {data[1]} remov {ind}")
-        buttons.data_button("Close", f"images {data[1]} close")
+        buttons.data_button("❌", f"images {data[1]} close", style=ButtonStyle.DANGER)
         buttons.data_button("Remove All", f"images {data[1]} removall", "footer")
         if message.media:
             await edit_message(
@@ -131,7 +133,7 @@ async def pics_callback(_, query):
         buttons.data_button("\u00ab", f"images {data[1]} turn {ind - 1}")
         buttons.data_button("\u00bb", f"images {data[1]} turn {ind + 1}")
         buttons.data_button("Remove Image", f"images {data[1]} remov {ind}")
-        buttons.data_button("Close", f"images {data[1]} close")
+        buttons.data_button("❌", f"images {data[1]} close", style=ButtonStyle.DANGER)
         buttons.data_button("Remove All", f"images {data[1]} removall", "footer")
         if message.media:
             await edit_message(

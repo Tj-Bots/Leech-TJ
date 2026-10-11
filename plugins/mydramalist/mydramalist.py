@@ -2,6 +2,7 @@ from collections import OrderedDict
 from time import time
 from urllib.parse import quote
 
+from pyrogram.enums import ButtonStyle
 from pyrogram.errors import MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
 
 from bot import LOGGER
@@ -133,7 +134,7 @@ async def mydramalist_command(_, message):
             f"{drama.get('title')} ({drama.get('year')})",
             f"mdl {user_id} drama {drama.get('slug')}",
         )
-    buttons.data_button("Close", f"mdl {user_id} close", position="footer")
+    buttons.data_button("❌", f"mdl {user_id} close", position="footer", style=ButtonStyle.DANGER)
     await edit_message(
         status, "<b><i>Dramas found on MyDramaList</i></b>", buttons.build_menu(1)
     )
@@ -143,7 +144,7 @@ async def mydramalist_command(_, message):
 async def mydramalist_callback(_, query):
     data = query.data.split()
     if len(data) < 3 or query.from_user.id != int(data[1]):
-        return await query.answer("Not Yours!", show_alert=True)
+        return await query.answer("𝙏𝙝𝙖𝙩'𝙨 𝙉𝙤𝙩 𝙔𝙤𝙪𝙧𝙨...😤", show_alert=True)
 
     message = query.message
     if data[2] != "drama":
@@ -161,7 +162,7 @@ async def mydramalist_callback(_, query):
     caption = fill(template, fields)
 
     buttons = ButtonMaker()
-    buttons.data_button("Close", f"mdl {data[1]} close", position="footer")
+    buttons.data_button("❌", f"mdl {data[1]} close", position="footer", style=ButtonStyle.DANGER)
     target = message.reply_to_message or message
     poster = fields.get("poster")
     if poster:

@@ -198,7 +198,7 @@ class GoogleDriveClean(GoogleDriveHelper):
             buttons.data_button("<< Previous", "gdc pre", position="footer")
             buttons.data_button("Next >>", "gdc nex", position="footer")
         if len(self.parents) > 1:
-            buttons.data_button("Back", "gdc back", position="footer")
+            buttons.data_button("◀️", "gdc back", position="footer")
         if len(self.parents) > 1:
             buttons.data_button(
                 "Back To Root",
@@ -262,7 +262,7 @@ class GoogleDriveClean(GoogleDriveHelper):
             msg = "Service accounts Doesn't have access to any drive!"
             buttons = ButtonMaker()
             if self._token_user and self._token_owner:
-                buttons.data_button("Back", "gdc back", position="footer")
+                buttons.data_button("◀️", "gdc back", position="footer")
             buttons.data_button(
                 "Cancel", "gdc cancel", position="footer", style=ButtonStyle.DANGER
             )
@@ -289,7 +289,7 @@ class GoogleDriveClean(GoogleDriveHelper):
                 self.drives.append({"id": item["id"], "name": item["name"]})
                 buttons.data_button(item["name"], f"gdc dr {index}")
             if self._token_user and self._token_owner:
-                buttons.data_button("Back", "gdc back", position="footer")
+                buttons.data_button("◀️", "gdc back", position="footer")
             buttons.data_button(
                 "Cancel", "gdc cancel", position="footer", style=ButtonStyle.DANGER
             )

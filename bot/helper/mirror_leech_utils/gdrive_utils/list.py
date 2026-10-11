@@ -210,7 +210,7 @@ class GoogleDriveList(GoogleDriveHelper):
             or self._token_user
             and self._token_owner
         ):
-            buttons.data_button("Back", "gdq back pa", position="footer")
+            buttons.data_button("◀️", "gdq back pa", position="footer")
         if len(self.parents) > 1:
             buttons.data_button(
                 "Back To Root", "gdq root", position="footer", style=ButtonStyle.SUCCESS
@@ -279,7 +279,7 @@ class GoogleDriveList(GoogleDriveHelper):
             msg = "Service accounts Doesn't have access to any drive!"
             buttons = ButtonMaker()
             if self._token_user and self._token_owner:
-                buttons.data_button("Back", "gdq back dr", position="footer")
+                buttons.data_button("◀️", "gdq back dr", position="footer")
             buttons.data_button(
                 "Cancel", "gdq cancel", position="footer", style=ButtonStyle.DANGER
             )
@@ -310,7 +310,7 @@ class GoogleDriveList(GoogleDriveHelper):
                 self.drives.append({"id": item["id"], "name": item["name"]})
                 buttons.data_button(item["name"], f"gdq dr {index}")
             if self._token_user and self._token_owner:
-                buttons.data_button("Back", "gdq back dr", position="footer")
+                buttons.data_button("◀️", "gdq back dr", position="footer")
             buttons.data_button(
                 "Cancel", "gdq cancel", position="footer", style=ButtonStyle.DANGER
             )

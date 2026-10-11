@@ -128,7 +128,7 @@ async def build_menu(user_id, view="main", arg=""):
                 "Install", f"plugins {user_id} install", style=ButtonStyle.PRIMARY
             )
         buttons.data_button(
-            "Close", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
+            "❌", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
         )
         rows = [("Installed", str(total)), ("Enabled", str(on))]
         if len(records) - on:
@@ -154,9 +154,9 @@ async def build_menu(user_id, view="main", arg=""):
             buttons.data_button(
                 "Rescan", f"plugins {user_id} rescan", position="l_body"
             )
-        buttons.data_button("Back", f"plugins {user_id} main", position="footer")
+        buttons.data_button("◀️", f"plugins {user_id} main", position="footer")
         buttons.data_button(
-            "Close", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
+            "❌", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
         )
 
         if not records and not idle:
@@ -210,9 +210,9 @@ async def build_menu(user_id, view="main", arg=""):
             buttons.data_button(
                 "Uninstall", f"plugins {user_id} rmask {arg}", style=ButtonStyle.DANGER
             )
-        buttons.data_button("Back", f"plugins {user_id} list", position="footer")
+        buttons.data_button("◀️", f"plugins {user_id} list", position="footer")
         buttons.data_button(
-            "Close", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
+            "❌", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
         )
         man = rec.manifest
         version = f"<code>{man.version}</code>"
@@ -248,9 +248,9 @@ async def build_menu(user_id, view="main", arg=""):
                 "Uninstall", f"plugins {user_id} rmask {arg}", style=ButtonStyle.DANGER
             )
             buttons.data_button("Rescan", f"plugins {user_id} rescan")
-        buttons.data_button("Back", f"plugins {user_id} list", position="footer")
+        buttons.data_button("◀️", f"plugins {user_id} list", position="footer")
         buttons.data_button(
-            "Close", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
+            "❌", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
         )
         if man is None:
             rows = [
@@ -304,9 +304,9 @@ async def build_menu(user_id, view="main", arg=""):
                     position="f_body",
                 )
         buttons.data_button("Refresh", f"plugins {user_id} refresh", position="l_body")
-        buttons.data_button("Back", f"plugins {user_id} main", position="footer")
+        buttons.data_button("◀️", f"plugins {user_id} main", position="footer")
         buttons.data_button(
-            "Close", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
+            "❌", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
         )
 
         installed = len([e for e in entries if manager.get(e["id"])])
@@ -340,9 +340,9 @@ async def build_menu(user_id, view="main", arg=""):
                 f"plugins {user_id} get {arg}",
                 style=ButtonStyle.PRIMARY,
             )
-        buttons.data_button("Back", f"plugins {user_id} mkt 0", position="footer")
+        buttons.data_button("◀️", f"plugins {user_id} mkt 0", position="footer")
         buttons.data_button(
-            "Close", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
+            "❌", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
         )
         rows = [("Version", f"<code>{item.get('version', '?')}</code>")]
         if item.get("author"):
@@ -357,9 +357,9 @@ async def build_menu(user_id, view="main", arg=""):
     if view == "install":
         buttons.data_button("Upload a .zip", f"plugins {user_id} upload")
         buttons.data_button("From GitHub", f"plugins {user_id} github")
-        buttons.data_button("Back", f"plugins {user_id} main", position="footer")
+        buttons.data_button("◀️", f"plugins {user_id} main", position="footer")
         buttons.data_button(
-            "Close", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
+            "❌", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
         )
         rows = [
             ("Needs", "a folder with <code>wzml_plugin.yml</code>"),
@@ -397,9 +397,9 @@ async def build_menu(user_id, view="main", arg=""):
                     style=ButtonStyle.SUCCESS,
                 )
                 rows.append((man.name, f"<code>{man.version}</code>"))
-        buttons.data_button("Back", f"plugins {user_id} install", position="footer")
+        buttons.data_button("◀️", f"plugins {user_id} install", position="footer")
         buttons.data_button(
-            "Close", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
+            "❌", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
         )
         head = [("Source", f"<code>{state.get('label') or state.get('url')}</code>")]
         return (
@@ -461,9 +461,9 @@ async def build_menu(user_id, view="main", arg=""):
             buttons.data_button(
                 "Reset All", f"plugins {user_id} cfgr {arg}", position="l_body"
             )
-        buttons.data_button("Back", f"plugins {user_id} view {arg}", position="footer")
+        buttons.data_button("◀️", f"plugins {user_id} view {arg}", position="footer")
         buttons.data_button(
-            "Close", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
+            "❌", f"plugins {user_id} close", position="footer", style=ButtonStyle.DANGER
         )
         note = "" if items else "This plugin has no settings."
         return _wz(f"{_var(arg)} Settings", rows, note), buttons.build_menu(2, lb_cols=1)
@@ -684,7 +684,7 @@ async def edit_plugins_menu(client, query):
     user_id = query.from_user.id
     data = query.data.split()
     if len(data) < 3 or user_id != int(data[1]):
-        return await query.answer("Not yours!", show_alert=True)
+        return await query.answer("𝙏𝙝𝙖𝙩'𝙨 𝙉𝙤𝙩 𝙔𝙤𝙪𝙧𝙨...😤", show_alert=True)
 
     action = data[2]
     arg = data[3] if len(data) > 3 else ""

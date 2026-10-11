@@ -84,7 +84,7 @@ def _menu(user_id, view="main"):
             )
         buttons.data_button("Free Memory", f"mem {user_id} trim")
         buttons.data_button(
-            "Close", f"mem {user_id} close", position="footer", style=ButtonStyle.DANGER
+            "❌", f"mem {user_id} close", position="footer", style=ButtonStyle.DANGER
         )
         note = ""
         if snap["pressure"] >= 0.85:
@@ -107,9 +107,9 @@ def _menu(user_id, view="main"):
         rows.append(("GC Counts", " / ".join(str(c) for c in snap["gc"]["counts"])))
         if Config.MEM_DEEP_STATS:
             rows.append(("Tracked Objects", f"{snap['gc']['objects']:,}"))
-        buttons.data_button("Back", f"mem {user_id} main", position="footer")
+        buttons.data_button("◀️", f"mem {user_id} main", position="footer")
         buttons.data_button(
-            "Close", f"mem {user_id} close", position="footer", style=ButtonStyle.DANGER
+            "❌", f"mem {user_id} close", position="footer", style=ButtonStyle.DANGER
         )
         note = "" if Config.MEM_DEEP_STATS else "Set MEM_DEEP_STATS for object counts."
         return _wz("Memory Breakdown", rows, note), buttons.build_menu(2)
@@ -121,9 +121,9 @@ def _menu(user_id, view="main"):
         if not rows:
             rows = [("Profiler", "not running")]
         buttons.data_button("Refresh", f"mem {user_id} top", position="header")
-        buttons.data_button("Back", f"mem {user_id} main", position="footer")
+        buttons.data_button("◀️", f"mem {user_id} main", position="footer")
         buttons.data_button(
-            "Close", f"mem {user_id} close", position="footer", style=ButtonStyle.DANGER
+            "❌", f"mem {user_id} close", position="footer", style=ButtonStyle.DANGER
         )
         seen = f"since {int(time() - profiler.started_at)}s ago" if profiler.started_at else ""
         return (
@@ -145,7 +145,7 @@ async def memory_callback(_, query):
     user_id = query.from_user.id
     data = query.data.split()
     if len(data) < 3 or user_id != int(data[1]):
-        return await query.answer("Not yours!", show_alert=True)
+        return await query.answer("𝙏𝙝𝙖𝙩'𝙨 𝙉𝙤𝙩 𝙔𝙤𝙪𝙧𝙨...😤", show_alert=True)
 
     action = data[2]
     if action == "close":
