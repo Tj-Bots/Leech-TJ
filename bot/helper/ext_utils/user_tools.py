@@ -111,3 +111,59 @@ def show_user_setting(key, value):
             for i, (k, v) in enumerate(value.items(), start=1)
         )
     return f"<code>{escape(str(value))}</code>"
+
+
+async def get_grid_thumb(video_file, duration, layout):
+    """Thumbnail made of cols x rows frames of the video. None on failure."""
+    from asyncio import create_subprocess_exec, wait_for
+    from asyncio.subprocess import PIPE
+
+    from bot.helper.ext_utils.leech_utils import take_ss
+
+    if not (layout := parse_layout(layout)):
+        return None
+    cols, rows = (int(x) for x in layout.split("x"))
+    total = cols * rows
+    res = await take_ss(video_file, duration, total=total, gen_ss=True)
+    if not res:
+        return None
+    des_dir = res[0]
+    output = ospath.join(des_dir, "grid.jpg")
+    cmd = [
+        "ffmpeg",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-start_number",
+        "1",
+        "-i",
+        ospath.join(des_dir, "wz_thumb_%d.jpg"),
+        "-vf",
+        f"scale={max(640 // cols, 64)}:-2,tile={layout}",
+        "-frames:v",
+        "1",
+        "-q:v",
+        "2",
+        output,
+    ]
+    try:
+        proc = await create_subprocess_exec(*cmd, stderr=PIPE)
+        _, err = await wait_for(proc.communicate(), timeout=60)
+        if proc.returncode != 0 or not await aiopath.exists(output):
+            LOGGER.error(f"Thumbnail Layout failed for {video_file}: {err.decode()}")
+            output = None
+    except Exception as e:
+        LOGGER.error(f"Thumbnail Layout failed for {video_file}: {e}")
+        output = None
+    for no in range(1, total + 1):
+        frame = ospath.join(des_dir, f"wz_thumb_{no}.jpg")
+        if await aiopath.exists(frame):
+            await aioremove(frame)
+    if output is None:
+        from aiofiles.os import rmdir
+
+        try:
+            await rmdir(des_dir)
+        except Exception:
+            pass
+    return output

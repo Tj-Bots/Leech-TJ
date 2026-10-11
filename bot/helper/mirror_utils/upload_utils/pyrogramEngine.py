@@ -40,6 +40,7 @@ from bot.helper.mirror_utils.hyper_utils import (
     release_upload_client,
     transfer_mode,
 )
+from bot.helper.ext_utils.user_tools import get_grid_thumb
 from bot.helper.themes import BotTheme
 from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.telegram_helper.message_utils import (
@@ -419,6 +420,12 @@ class TgUploader:
             f'Uploading Media {">" if self.__prm_media else "<"} 2GB by {"Hyper" if self.__hyper_idx is not None else "User" if self.__client is user else "Bot"} Client'
         )
 
+    async def __layout_thumb(self, duration):
+        layout = user_data.get(self.__user_id, {}).get("thumb_layout")
+        if not layout:
+            return None
+        return await get_grid_thumb(self.__up_path, duration, layout)
+
     async def __release_hyper(self):
         if self.__hyper_idx is not None:
             await release_upload_client(self.__hyper_idx)
@@ -618,7 +625,9 @@ class TgUploader:
             ):
                 key = "documents"
                 if is_video and thumb is None:
-                    thumb = await take_ss(self.__up_path, None)
+                    thumb = await self.__layout_thumb(None) or await take_ss(
+                        self.__up_path, None
+                    )
                 if self.__is_cancelled:
                     return
                 buttons = await self.__buttons(self.__up_path, is_video)
@@ -655,7 +664,9 @@ class TgUploader:
                 key = "videos"
                 duration = (await get_media_info(self.__up_path))[0]
                 if thumb is None:
-                    thumb = await take_ss(self.__up_path, duration)
+                    thumb = await self.__layout_thumb(duration) or await take_ss(
+                        self.__up_path, duration
+                    )
                 if thumb is not None:
                     with Image.open(thumb) as img:
                         width, height = img.size
