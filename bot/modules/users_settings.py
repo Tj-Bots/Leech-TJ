@@ -1458,7 +1458,7 @@ async def send_users_settings(client, message):
             msg += f"\n\n<code>{user}</code>:"
             if data:
                 for key, value in data.items():
-                    if key in ["token", "time", "ddl_servers", "usess"]:
+                    if key in ["token", "time", "ddl_servers", "usess", "mega_login"]:
                         continue
                     msg += f"\n<b>{key}</b>: <code>{escape(str(value))}</code>"
             else:
@@ -1479,7 +1479,7 @@ async def send_users_settings(client, message):
             buttons.ibutton("❌", f"userset {message.from_user.id} close")
             button = buttons.build_menu(1)
             for key, value in data.items():
-                if key in ["token", "time", "ddl_servers", "usess"]:
+                if key in ["token", "time", "ddl_servers", "usess", "mega_login"]:
                     continue
                 msg += f"\n<b>{key}</b>: <code>{escape(str(value))}</code>"
         else:

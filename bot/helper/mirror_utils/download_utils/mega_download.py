@@ -142,6 +142,11 @@ class AsyncExecutor:
 async def add_mega_download(mega_link, path, listener, name):
     MEGA_EMAIL = config_dict["MEGA_EMAIL"]
     MEGA_PASSWORD = config_dict["MEGA_PASSWORD"]
+    if (mega_login := listener.user_dict.get("mega_login")) and isinstance(
+        mega_login, dict
+    ):
+        MEGA_EMAIL = mega_login.get("email") or MEGA_EMAIL
+        MEGA_PASSWORD = mega_login.get("password") or MEGA_PASSWORD
 
     executor = AsyncExecutor()
     api = MegaApi(None, None, None, "WZML-X")
