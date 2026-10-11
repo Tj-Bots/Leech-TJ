@@ -4,7 +4,7 @@ os.environ["LK21_REQUESTS_CACHE"] = "/dev/null"
 from tzlocal import get_localzone
 from pytz import timezone
 from datetime import datetime
-from inspect import signature
+from inspect import iscoroutine, signature
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pyrogram import Client as tgClient, enums, utils as pyroutils
 from pymongo import MongoClient
@@ -248,13 +248,21 @@ def wztgClient(*args, **kwargs):
     return tgClient(*args, **kwargs)
 
 
+def start_client(client):
+    # pyrofork/pyrotgfork return the started client, wzgram returns a coroutine
+    started = client.start()
+    if iscoroutine(started):
+        started = bot_loop.run_until_complete(started)
+    return started
+
+
 IS_PREMIUM_USER = False
 user = ""
 USER_SESSION_STRING = environ.get("USER_SESSION_STRING", "")
 if len(USER_SESSION_STRING) != 0:
     log_info("Creating client from USER_SESSION_STRING")
     try:
-        user = bot_loop.run_until_complete(
+        user = start_client(
             wztgClient(
                 "user",
                 TELEGRAM_API,
@@ -262,7 +270,7 @@ if len(USER_SESSION_STRING) != 0:
                 session_string=USER_SESSION_STRING,
                 parse_mode=enums.ParseMode.HTML,
                 no_updates=True,
-            ).start()
+            )
         )
         IS_PREMIUM_USER = user.me.is_premium
     except Exception as e:
@@ -897,7 +905,7 @@ else:
     qb_client.app_set_preferences(qb_opt)
 
 log_info("Creating client from BOT_TOKEN")
-bot = bot_loop.run_until_complete(
+bot = start_client(
     wztgClient(
         "bot",
         TELEGRAM_API,
@@ -905,7 +913,7 @@ bot = bot_loop.run_until_complete(
         bot_token=BOT_TOKEN,
         workers=1000,
         parse_mode=enums.ParseMode.HTML,
-    ).start()
+    )
 )
 bot_name = bot.me.username
 scheduler = AsyncIOScheduler(timezone=str(get_localzone()), event_loop=bot_loop)
