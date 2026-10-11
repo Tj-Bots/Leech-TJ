@@ -28,7 +28,7 @@ async def _get(client, url, params, headers):
 
 
 TMDB_SEARCH_URL = "https://api.themoviedb.org/3/search/multi"
-TMDB_IMAGE_URL = "https://image.tmdb.org/t/p/w780"
+TMDB_IMAGE_URL = "https://image.tmdb.org/t/p/original"
 
 _QUALITY_TAGS = re.compile(
     r"\b(?:\d{3,4}p|4k|x26[45]|h\.?26[45]|hevc|avc|xvid|divx|aac\d?|ac3|eac3|ddp?\d(?:\.\d)?"
@@ -197,8 +197,18 @@ async def get_tmdb_poster_link(title, year=None, as_doc=False):
     return None
 
 
+def get_auto_cover(thumb):
+    """Full quality cover saved next to an auto thumbnail."""
+    if thumb and ospath.basename(thumb) == "auto_thumb.jpg":
+        cover = ospath.join(ospath.dirname(thumb), "auto_cover.jpg")
+        if ospath.exists(cover):
+            return cover
+    return None
+
+
 async def get_auto_thumbnail(filename, as_doc=False):
-    """Poster/backdrop from TMDB as a telegram ready jpg. None if not found."""
+    """Poster/backdrop from TMDB as a telegram ready jpg (max 320px, under
+    200KB) plus the original image as auto_cover.jpg. None if not found."""
     if not _tmdb_token():
         return None
     title, year = clean_poster_title(filename)
@@ -215,7 +225,7 @@ async def get_auto_thumbnail(filename, as_doc=False):
         _poster_cache[key] = poster_url
     LOGGER.info(f"Auto thumbnail for '{title}': {poster_url}")
     try:
-        async with ClientSession(timeout=ClientTimeout(total=30)) as client:
+        async with ClientSession(timeout=ClientTimeout(total=60)) as client:
             async with client.get(poster_url) as r:
                 if r.status != 200:
                     return None
@@ -223,12 +233,22 @@ async def get_auto_thumbnail(filename, as_doc=False):
         des_dir = ospath.join("Thumbnails", f"{time()}")
         await makedirs(des_dir, exist_ok=True)
         output = ospath.join(des_dir, "auto_thumb.jpg")
+        cover = ospath.join(des_dir, "auto_cover.jpg")
 
         def _save():
             with Image.open(BytesIO(raw)) as img:
                 img = img.convert("RGB")
-                img.thumbnail((320, 320))
-                img.save(output, "JPEG", quality=90)
+                # cover: original resolution, telegram photo limit is 10MB
+                if max(img.size) > 4096:
+                    img.thumbnail((4096, 4096), Image.LANCZOS)
+                img.save(cover, "JPEG", quality=95, optimize=True)
+                # thumb: telegram allows max 320px and 200KB
+                thumb = img.copy()
+                thumb.thumbnail((320, 320), Image.LANCZOS)
+                for quality in (95, 90, 85, 75):
+                    thumb.save(output, "JPEG", quality=quality, optimize=True)
+                    if ospath.getsize(output) < 200 * 1024:
+                        break
 
         await sync_to_async(_save)
         return output

@@ -41,7 +41,13 @@ from bot.helper.mirror_utils.hyper_utils import (
     transfer_mode,
 )
 from bot.helper.ext_utils.user_tools import get_grid_thumb
-from bot.helper.ext_utils.tmdb_utils import get_auto_thumbnail
+from bot.helper.ext_utils.tmdb_utils import get_auto_cover, get_auto_thumbnail
+from pyrogram import Client as _PyroClient
+from inspect import signature as _signature
+
+# wzgram calls it video_cover, pyrofork/pyrotgfork call it cover
+_VIDEO_PARAMS = _signature(_PyroClient.send_video).parameters
+COVER_KWARG = next((k for k in ("video_cover", "cover") if k in _VIDEO_PARAMS), None)
 from bot.helper.themes import BotTheme
 from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.telegram_helper.message_utils import (
@@ -610,6 +616,8 @@ class TgUploader:
 
             if self.__leech_utils["thumb"]:
                 thumb = await self.get_custom_thumb(self.__leech_utils["thumb"])
+            # user's own thumbnail is also used as the video cover
+            cover = thumb
 
             if not is_image and thumb is None:
                 file_name = ospath.splitext(file)[0]
@@ -627,6 +635,7 @@ class TgUploader:
                 thumb = await get_auto_thumbnail(
                     file, force_document or self.__as_doc or not is_video
                 )
+                cover = get_auto_cover(thumb)
 
             if (
                 self.__as_doc
@@ -716,6 +725,7 @@ class TgUploader:
                     disable_notification=True,
                     progress=self.__upload_progress,
                     reply_markup=buttons,
+                    **({COVER_KWARG: cover} if cover and COVER_KWARG else {}),
                 )
                 if (self.__prm_media or self.__hyper_up) and (
                     self.__has_buttons or not self.__leechmsg
@@ -795,6 +805,8 @@ class TgUploader:
                 and thumb is not None
                 and await aiopath.exists(thumb)
             ):
+                if auto_cover := get_auto_cover(thumb):
+                    await aioremove(auto_cover)
                 await aioremove(thumb)
                 if (
                     (dir_name := ospath.dirname(thumb))
@@ -813,6 +825,8 @@ class TgUploader:
                 and thumb is not None
                 and await aiopath.exists(thumb)
             ):
+                if auto_cover := get_auto_cover(thumb):
+                    await aioremove(auto_cover)
                 await aioremove(thumb)
                 if (
                     (dir_name := ospath.dirname(thumb))
