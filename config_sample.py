@@ -31,7 +31,9 @@ WEB_ACCESS_PASSWORD = (
 )
 
 # Hyper Tg Downloader
-HELPER_TOKENS = ""
+HELPER_TOKENS = ""  # Extra bot tokens for Hyper DL/UL, space separated
+HELPER_STRINGS = ""  # Extra user sessions (premium = faster), space separated
+HELPER_USER_PROXIES = ""
 STREAM_TOKENS = ""
 USE_HYPER = True
 
