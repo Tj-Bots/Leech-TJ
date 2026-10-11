@@ -3,7 +3,7 @@ from os import walk, path as ospath
 
 from aiofiles.os import remove as aioremove, path as aiopath
 
-from bot import LOGGER
+from bot import LOGGER, config_dict, user_data
 from bot.helper.ext_utils.bot_utils import sync_to_async
 
 
@@ -167,3 +167,34 @@ async def get_grid_thumb(video_file, duration, layout):
         except Exception:
             pass
     return output
+
+
+def stop_dup_enabled(user_id):
+    user_dict = user_data.get(user_id, {})
+    if "stop_duplicate" in user_dict:
+        return bool(user_dict["stop_duplicate"])
+    return bool(config_dict["STOP_DUPLICATE"])
+
+
+def any_stop_dup():
+    return bool(config_dict["STOP_DUPLICATE"]) or any(
+        ud.get("stop_duplicate") for ud in list(user_data.values())
+    )
+
+
+def user_rc_path(user_id):
+    return user_data.get(user_id, {}).get("rclone_path") or config_dict["RCLONE_PATH"]
+
+
+def user_rc_flags(user_id):
+    return user_data.get(user_id, {}).get("rclone_flags") or config_dict["RCLONE_FLAGS"]
+
+
+def resolve_upload_path(user_id, up):
+    if not up or not isinstance(up, str):
+        return up
+    paths = user_data.get(user_id, {}).get("upload_paths") or {}
+    for name, dest in paths.items():
+        if name.casefold() == up.casefold():
+            return dest
+    return up

@@ -5,6 +5,7 @@ from aiofiles.os import remove as aioremove, path as aiopath
 
 from bot import aria2, download_dict_lock, download_dict, LOGGER, config_dict
 from bot.helper.ext_utils.task_manager import limit_checker
+from bot.helper.ext_utils.user_tools import any_stop_dup, stop_dup_enabled
 from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
 from bot.helper.mirror_utils.status_utils.aria2_status import Aria2Status
 from bot.helper.ext_utils.fs_utils import get_base_name, clean_unwanted
@@ -76,7 +77,7 @@ async def __onDownloadStarted(api, gid):
             if limit_exceeded := await limit_checker(size, listener):
                 await listener.onDownloadError(limit_exceeded)
                 await sync_to_async(api.remove, [download], force=True, files=True)
-    if config_dict["STOP_DUPLICATE"]:
+    if any_stop_dup():
         await sleep(1)
         if dl is None:
             dl = await getDownloadByGid(gid)
@@ -87,7 +88,12 @@ async def __onDownloadStarted(api, gid):
                 )
                 return
             listener = dl.listener()
-            if not listener.isLeech and not listener.select and listener.upPath == "gd":
+            if (
+                not listener.isLeech
+                and not listener.select
+                and listener.upPath == "gd"
+                and stop_dup_enabled(listener.user_id)
+            ):
                 download = await sync_to_async(api.get_download, gid)
                 if not download.is_torrent:
                     await sleep(3)

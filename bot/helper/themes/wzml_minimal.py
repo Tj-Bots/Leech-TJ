@@ -289,7 +289,12 @@ class WZMLStyle:
 ┊<b> DDL Server(s) :</b> <i>{DDL_SERVER}</i>
 ┊<b> User TD Mode :</b> <i>{TMODE}</i>
 ┊<b> Total User TD(s) :</b> <i>{USERTD}</i>
-╰<b> Daily Mirror :</b> <code>{DM}</code> per day</blockquote>"""
+╰<b> Daily Mirror :</b> <code>{DM}</code> per day</blockquote>
+
+<blockquote>╭<b> Rclone Path :</b> <code>{RCPATH}</code>
+┊<b> Rclone Flags :</b> <code>{RCFLAGS}</code>
+┊<b> Upload Paths :</b> <i>{UPATHS}</i>
+╰<b> Stop Duplicate :</b> <i>{STOPDUP}</i></blockquote>"""
 
     LEECH = """㊂ <b><u>Leech Settings for {NAME}</u></b>
 

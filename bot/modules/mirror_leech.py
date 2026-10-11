@@ -18,6 +18,7 @@ from bot import (
     categories_dict,
     user_data,
 )
+from bot.helper.ext_utils.user_tools import resolve_upload_path, user_rc_path
 from bot.helper.mirror_utils.download_utils.direct_downloader import add_direct_download
 from bot.helper.ext_utils.bot_utils import (
     is_url,
@@ -147,7 +148,7 @@ async def _mirror_leech(
     compress = (
         args["-z"] or args["-zip"] or (not extract and ("z" in cmd or "zip" in cmd))
     )
-    up = args["-up"] or args["-upload"]
+    up = resolve_upload_path(message.from_user.id, args["-up"] or args["-upload"])
     rcf = args["-rcf"]
     drive_id = args["-id"]
     index_link = args["-index"]
@@ -378,7 +379,7 @@ async def _mirror_leech(
 
     if not isLeech:
         if config_dict["DEFAULT_UPLOAD"] == "rc" and not up or up == "rc":
-            up = config_dict["RCLONE_PATH"]
+            up = user_rc_path(message.from_user.id)
         elif config_dict["DEFAULT_UPLOAD"] == "ddl" and not up or up == "ddl":
             up = "ddl"
         if not up and config_dict["DEFAULT_UPLOAD"] == "gd":
@@ -578,7 +579,7 @@ async def wzmlxcb(_, query):
             )
             await editReplyMarkup(message, btn.build_menu(1))
         else:
-            LOGGER.error(f"Web Paste Failed : {str(err)}")
+            LOGGER.error(f"Web Paste Failed : {resp}")
     elif data[2] == "botpm":
         await query.answer(url=f"https://t.me/{bot_name}?start=wzmlx")
     elif data[2] == "help":

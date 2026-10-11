@@ -28,11 +28,12 @@ from bot.helper.ext_utils.bot_utils import (
 from bot.helper.telegram_helper.message_utils import forcesub, check_botpm
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.themes import BotTheme
+from bot.helper.ext_utils.user_tools import stop_dup_enabled
 
 
 async def stop_duplicate_check(name, listener):
     if (
-        not config_dict["STOP_DUPLICATE"]
+        not stop_dup_enabled(listener.user_id)
         or listener.isLeech
         or listener.upPath != "gd"
         or listener.select

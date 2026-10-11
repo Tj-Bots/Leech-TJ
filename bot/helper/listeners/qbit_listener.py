@@ -23,6 +23,7 @@ from bot.helper.ext_utils.bot_utils import (
 )
 from bot.helper.ext_utils.fs_utils import clean_unwanted
 from bot.helper.ext_utils.task_manager import limit_checker, stop_duplicate_check
+from bot.helper.ext_utils.user_tools import any_stop_dup
 
 
 async def __remove_torrent(client, hash_, tag):
@@ -151,7 +152,7 @@ async def __qb_listener():
                     elif state == "downloading":
                         QbTorrents[tag]["stalled_time"] = time()
                         if (
-                            config_dict["STOP_DUPLICATE"]
+                            any_stop_dup()
                             and not QbTorrents[tag]["stop_dup_check"]
                         ):
                             QbTorrents[tag]["stop_dup_check"] = True

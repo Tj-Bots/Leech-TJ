@@ -9,6 +9,7 @@ from functools import partial
 from time import time
 
 from bot import DOWNLOAD_DIR, bot, categories_dict, config_dict, user_data, LOGGER
+from bot.helper.ext_utils.user_tools import resolve_upload_path, user_rc_path
 from bot.helper.ext_utils.task_manager import task_utils
 from bot.helper.telegram_helper.message_utils import (
     sendMessage,
@@ -320,7 +321,7 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
     opt = args["-opt"] or args["-options"]
     folder_name = args["-m"] or args["-sd"] or args["-samedir"]
     name = args["-n"] or args["-name"]
-    up = args["-up"] or args["-upload"]
+    up = resolve_upload_path(message.from_user.id, args["-up"] or args["-upload"])
     rcf = args["-rcf"]
     link = args["link"]
     compress = args["-z"] or args["-zip"] or "z" in cmd or "zip" in cmd
@@ -452,7 +453,7 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
 
     if not isLeech:
         if config_dict["DEFAULT_UPLOAD"] == "rc" and not up or up == "rc":
-            up = config_dict["RCLONE_PATH"]
+            up = user_rc_path(message.from_user.id)
         elif config_dict["DEFAULT_UPLOAD"] == "ddl" and not up or up == "ddl":
             up = "ddl"
         if not up and config_dict["DEFAULT_UPLOAD"] == "gd":

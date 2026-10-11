@@ -28,7 +28,12 @@ from bot import (
     user,
 )
 from bot.helper.mirror_utils.hyper_utils import TRANSFER_MODES, transfer_mode
-from bot.helper.ext_utils.user_tools import parse_user_setting, show_user_setting
+from bot.helper.ext_utils.user_tools import (
+    parse_user_setting,
+    show_user_setting,
+    stop_dup_enabled,
+    user_rc_path,
+)
 from bot.helper.telegram_helper.message_utils import (
     sendMessage,
     sendCustomMsg,
@@ -363,6 +368,15 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
         user_tds = len(val) if (val := user_dict.get("user_tds", False)) else 0
         buttons.ibutton("User TDs", f"userset {user_id} user_tds")
 
+        extra_button(buttons, user_dict, user_id, "rclone_path")
+        extra_button(buttons, user_dict, user_id, "rclone_flags")
+        extra_button(buttons, user_dict, user_id, "upload_paths")
+        stop_dup = stop_dup_enabled(user_id)
+        buttons.ibutton(
+            f"{'✅️' if stop_dup else ''} Stop Duplicate",
+            f"userset {user_id} stop_duplicate",
+        )
+
         text = BotTheme(
             "MIRROR",
             NAME=name,
@@ -374,6 +388,10 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             MSUFFIX=escape(msuffix),
             TMODE=tds_mode,
             USERTD=user_tds,
+            RCPATH=escape(user_rc_path(user_id) or "Not Exists"),
+            RCFLAGS=escape(user_dict.get("rclone_flags") or "Not Exists"),
+            UPATHS=len(user_dict.get("upload_paths") or {}),
+            STOPDUP="Enabled" if stop_dup else "Disabled",
         )
 
         buttons.ibutton("◀️", f"userset {user_id} back", "footer")
@@ -977,6 +995,13 @@ async def edit_user_settings(client, query):
         update_user_ldata(user_id, "as_doc", not user_dict.get("as_doc", False))
         await query.answer()
         await update_user_settings(query, "leech")
+        if DATABASE_URL:
+            await DbManger().update_user_data(user_id)
+    elif data[2] == "stop_duplicate":
+        handler_dict[user_id] = False
+        await query.answer()
+        update_user_ldata(user_id, "stop_duplicate", not stop_dup_enabled(user_id))
+        await update_user_settings(query, "mirror")
         if DATABASE_URL:
             await DbManger().update_user_data(user_id)
     elif data[2] == "auto_thumb":

@@ -52,6 +52,11 @@ from bot.helper.mirror_utils.rclone_utils.transfer import RcloneTransferHelper
 from bot.helper.ext_utils.help_messages import CLONE_HELP_MESSAGE
 from bot.helper.mirror_utils.status_utils.rclone_status import RcloneStatus
 from bot.helper.listeners.tasks_listener import MirrorLeechListener
+from bot.helper.ext_utils.user_tools import (
+    resolve_upload_path,
+    stop_dup_enabled,
+    user_rc_path,
+)
 from bot.helper.themes import BotTheme
 
 
@@ -72,13 +77,13 @@ async def rcloneNode(client, message, link, dst_path, rcf, tag):
         await sendMessage(message, f"<b>RClone Config:</b> {config_path} not Exists!")
         return
 
-    if dst_path == "rcl" or config_dict["RCLONE_PATH"] == "rcl":
+    if dst_path == "rcl" or user_rc_path(message.from_user.id) == "rcl":
         dst_path = await RcloneList(client, message).get_rclone_path("rcu", config_path)
         if not is_rclone_path(dst_path):
             await sendMessage(message, dst_path)
             return
 
-    dst_path = (dst_path or config_dict["RCLONE_PATH"]).strip("/")
+    dst_path = (dst_path or user_rc_path(message.from_user.id)).strip("/")
     if not is_rclone_path(dst_path):
         await sendMessage(message, "Given Wrong RClone Destination!")
         return
@@ -229,7 +234,7 @@ async def gdcloneNode(message, link, listen_up):
         if mime_type is None:
             await sendMessage(message, name)
             return
-        if config_dict["STOP_DUPLICATE"]:
+        if stop_dup_enabled(message.from_user.id):
             LOGGER.info("Checking File/Folder if already in Drive...")
             telegraph_content, contents_no = await sync_to_async(
                 gd.drive_list, name, True, True
@@ -309,7 +314,9 @@ async def clone(client, message):
     except Exception:
         multi = 0
 
-    dst_path = args["-up"] or args["-upload"]
+    dst_path = resolve_upload_path(
+        message.from_user.id, args["-up"] or args["-upload"]
+    )
     rcf = args["-rcf"]
     link = args["link"]
     drive_id = args["-id"]
@@ -379,7 +386,7 @@ async def clone(client, message):
             await sendMessage(message, "RClone Config Not exists!")
             await delete_links(message)
             return
-        if not config_dict["RCLONE_PATH"] and not dst_path:
+        if not user_rc_path(message.from_user.id) and not dst_path:
             await sendMessage(message, "Destination not specified!")
             await delete_links(message)
             return

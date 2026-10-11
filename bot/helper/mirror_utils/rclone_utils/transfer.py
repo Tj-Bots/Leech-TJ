@@ -9,6 +9,7 @@ from random import randrange
 from logging import getLogger
 
 from bot import config_dict, GLOBAL_EXTENSION_FILTER
+from bot.helper.ext_utils.user_tools import user_rc_flags
 from bot.helper.ext_utils.bot_utils import cmd_exec, sync_to_async
 from bot.helper.ext_utils.fs_utils import get_mime_type, count_files_and_folders
 
@@ -170,15 +171,14 @@ class RcloneTransferHelper:
                 remote = f"sa{self.__sa_index:03}"
                 LOGGER.info(f"Download with service account {remote}")
 
-        rcflags = self.__listener.rcFlags or config_dict["RCLONE_FLAGS"]
+        rcflags = self.__listener.rcFlags or user_rc_flags(self.__listener.user_id)
         cmd = self.__getUpdatedCommand(
             config_path, f"{remote}:{rc_path}", path, rcflags, "copy"
         )
 
         if (
             remote_type == "drive"
-            and not config_dict["RCLONE_FLAGS"]
-            and not self.__listener.rcFlags
+            and not rcflags
         ):
             cmd.append("--drive-acknowledge-abuse")
         elif remote_type != "drive":
@@ -315,7 +315,7 @@ class RcloneTransferHelper:
                 fremote = f"sa{self.__sa_index:03}"
                 LOGGER.info(f"Upload with service account {fremote}")
 
-        rcflags = self.__listener.rcFlags or config_dict["RCLONE_FLAGS"]
+        rcflags = self.__listener.rcFlags or user_rc_flags(self.__listener.user_id)
         method = (
             "move" if not self.__listener.seed or self.__listener.newDir else "copy"
         )
@@ -324,8 +324,7 @@ class RcloneTransferHelper:
         )
         if (
             remote_type == "drive"
-            and not config_dict["RCLONE_FLAGS"]
-            and not self.__listener.rcFlags
+            and not rcflags
         ):
             cmd.extend(("--drive-chunk-size", "64M", "--drive-upload-cutoff", "32M"))
         elif remote_type != "drive":
