@@ -115,7 +115,7 @@ async def pics_callback(_, query):
         config_dict["IMAGES"].pop(int(data[3]))
         if DATABASE_URL:
             await DbManger().update_config({"IMAGES": config_dict["IMAGES"]})
-        query.answer("Image Successfully Deleted", show_alert=True)
+        await query.answer("Image Successfully Deleted", show_alert=True)
         if len(config_dict["IMAGES"]) == 0:
             await deleteMessage(query.message)
             await sendMessage(

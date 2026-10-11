@@ -584,7 +584,6 @@ class TgUploader:
                     thumb=thumb,
                     caption=cap_mono,
                     force_document=True,
-                    disable_content_type_detection=False,
                     disable_notification=True,
                     progress=self.__upload_progress,
                     reply_markup=buttons,
