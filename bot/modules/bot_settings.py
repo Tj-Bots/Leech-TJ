@@ -415,21 +415,21 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
                 buttons.data_button("Empty String", f"botset emptyaria {key}")
             buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
             msg = (
-                "<i>Send a key with value.</i> Example: <code>https-proxy-user:value</code>\n┖ <b>Time Left :</b> <code>60 sec</code>"
+                "<i>Send a key with value.</i> Example: <code>https-proxy-user:value</code>\n╰ <b>Time Left :</b> <code>60 sec</code>"
                 if key == "newkey"
-                else f"<i>Send a valid value for <code>{key}</code>.</i> Current value is <code>{aria2_options[key]}</code>\n┖ <b>Time Left :</b> <code>60 sec</code>"
+                else f"<i>Send a valid value for <code>{key}</code>.</i> Current value is <code>{aria2_options[key]}</code>\n╰ <b>Time Left :</b> <code>60 sec</code>"
             )
         elif edit_type == "qbitvar":
             buttons.data_button("◀️", "botset qbit", style=ButtonStyle.PRIMARY)
             buttons.data_button("Empty String", f"botset emptyqbit {key}")
             buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
-            msg = f"<i>Send a valid value for <code>{key}</code>.</i> Current value is <code>{qbit_options[key]}</code>\n┖ <b>Time Left :</b> <code>60 sec</code>"
+            msg = f"<i>Send a valid value for <code>{key}</code>.</i> Current value is <code>{qbit_options[key]}</code>\n╰ <b>Time Left :</b> <code>60 sec</code>"
         elif edit_type == "nzbvar":
             buttons.data_button("◀️", "botset nzb", style=ButtonStyle.PRIMARY)
             buttons.data_button("Default", f"botset resetnzb {key}")
             buttons.data_button("Empty String", f"botset emptynzb {key}")
             buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
-            msg = f"<i>Send a valid value for <code>{key}</code>.</i> Current value is <code>{nzb_options[key]}</code>\nIf the value is list then separate them by space or ,\nExample: <code>.exe,info</code> or <code>.exe .info</code>\n┖ <b>Time Left :</b> <code>60 sec</code>"
+            msg = f"<i>Send a valid value for <code>{key}</code>.</i> Current value is <code>{nzb_options[key]}</code>\nIf the value is list then separate them by space or ,\nExample: <code>.exe,info</code> or <code>.exe .info</code>\n╰ <b>Time Left :</b> <code>60 sec</code>"
         elif edit_type.startswith("nzbsevar"):
             index = 0 if key == "newser" else int(edit_type.replace("nzbsevar", ""))
             buttons.data_button(
@@ -439,9 +439,9 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
                 buttons.data_button("Empty", f"botset emptyserkey {index} {key}")
             buttons.data_button("❌", "botset close", style=ButtonStyle.DANGER)
             if key == "newser":
-                msg = "<i>Send one server as dictionary <code>{}</code>, like in config.py without <code>[]</code>.</i>\n┖ <b>Time Left :</b> <code>60 sec</code>"
+                msg = "<i>Send one server as dictionary <code>{}</code>, like in config.py without <code>[]</code>.</i>\n╰ <b>Time Left :</b> <code>60 sec</code>"
             else:
-                msg = f"<i>Send a valid value for <code>{key}</code> in server <code>{Config.USENET_SERVERS[index]['name']}</code>.</i> Current value is <code>{Config.USENET_SERVERS[index][key]}</code>\n┖ <b>Time Left :</b> <code>60 sec</code>"
+                msg = f"<i>Send a valid value for <code>{key}</code> in server <code>{Config.USENET_SERVERS[index]['name']}</code>.</i> Current value is <code>{Config.USENET_SERVERS[index][key]}</code>\n╰ <b>Time Left :</b> <code>60 sec</code>"
         elif edit_type == "editvar":
             msg = f"<b>Variable:</b> <code>{key}</code>\n\n"
             msg += f"<b>Description:</b> {DEFAULT_DESP.get(key, 'No Description Provided')}\n\n"
@@ -480,7 +480,7 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
                     "\n<b>Note:</b> Restart required for this edit to take effect!\n\n"
                 )
             if edit_mode and key not in BOOL_VARS:
-                msg += "<i>Send a valid value for the above Var.</i>\n┖ <b>Time Left :</b> <code>60 sec</code>"
+                msg += "<i>Send a valid value for the above Var.</i>\n╰ <b>Time Left :</b> <code>60 sec</code>"
     elif key == "var":
         conf_dict = {
             k: v
@@ -639,7 +639,7 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
         buttons.data_button(
             "❌", "botset close", position="footer", style=ButtonStyle.DANGER
         )
-        txt = "\n┠ ".join(
+        txt = "\n┊ ".join(
             [
                 f"<code>{fn}</code> → <b>{'Exists' if await aiopath.isfile(fn) else 'Not Exists'}</b>"
                 for fn in [
@@ -656,16 +656,15 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
                 ]
             ]
         )
-        msg = f"""⌬ <b>Private File Settings</b>
-┠ <b>Dashboard :</b> 
-┃
-┠ {txt}
-┃
-┠ <b>Delete File</b> → Send the file name as text message, Like <code>rclone.conf</code>.
-┃
-┖ <b>Note:</b> Changing .netrc will not take effect for aria2c until restart."""
+        msg = f"""㊂ <b><u>Private File Settings :</u></b>
+
+<blockquote>╭ <b>Dashboard :</b>
+┊ {txt}</blockquote>
+
+<blockquote>╭ <b>Delete File :</b> Send the file name as text message, Like <code>rclone.conf</code>.
+╰ <b>Note:</b> Changing .netrc will not take effect for aria2c until restart.</blockquote>"""
         if edit_mode:
-            msg += "\n\n<i>Send the file name to delete the file, file to save the file & for new file create, follow below format.</i> \n\n<b>Format:</b> \n<code>file_name\n\ncontents of file</code></i>\n┖ <b>Time Left :</b> <code>60 sec</code>"
+            msg += "\n\n<i>Send the file name to delete the file, file to save the file & for new file create, follow below format.</i> \n\n<b>Format:</b> \n<code>file_name\n\ncontents of file</code></i>\n╰ <b>Time Left :</b> <code>60 sec</code>"
     elif key == "aria":
         for k in list(aria2_options.keys())[start : 10 + start]:
             if k not in ["checksum", "index-out", "out", "pause", "select-file"]:
@@ -1352,7 +1351,7 @@ async def event_handler(client, query, pfunc, rfunc, document=False):
             msg = await client.get_messages(chat_id, query.message.id)
             text = msg.text.split("\n")
             text[-1] = (
-                f"┖ <b>Time Left :</b> <code>{round(60 - (time() - start_time), 2)} sec</code>"
+                f"╰ <b>Time Left :</b> <code>{round(60 - (time() - start_time), 2)} sec</code>"
             )
             await edit_message(msg, "\n".join(text), msg.reply_markup)
     client.remove_handler(*handler)

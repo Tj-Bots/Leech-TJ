@@ -71,10 +71,13 @@ def _may(user_id, action):
 
 
 def _wz(title, rows, note=""):
-    lines = [f"⌬ <b><u>{title}</u></b>", "│"]
+    lines = [f"⌬ <b><u>{title}</u></b>", ""]
     for index, (key, value) in enumerate(rows):
-        edge = "┟" if index == 0 else ("┖" if index == len(rows) - 1 else "┠")
-        lines.append(f"{edge} <b>{key}</b> → {value}")
+        last = index == len(rows) - 1
+        edge = "╰" if last else ("╭" if index == 0 else "┊")
+        lead = "<blockquote>" if index == 0 else ""
+        tail = "</blockquote>" if last else ""
+        lines.append(f"{lead}{edge} <b>{key} :</b> {value}{tail}")
     if not rows:
         lines = [f"⌬ <b><u>{title}</u></b>"]
     if note:
@@ -893,7 +896,7 @@ async def edit_plugins_menu(client, query):
         prompt = (
             _wz(f"{_var(arg)} Settings", rows)
             + f"\n\n<i>Send a valid value for <code>{_var(key)}</code>.</i>"
-            + f"\n┖ <b>Time Left :</b> <code>{INPUT_TIMEOUT} sec</code>"
+            + f"\n╰ <b>Time Left :</b> <code>{INPUT_TIMEOUT} sec</code>"
         )
         return await _ask(
             client, query, prompt, partial(_on_config, plugin=arg, key=key, spec=spec)

@@ -400,10 +400,10 @@ class GoogleDriveClean(GoogleDriveHelper):
             display_name = cat_name or "Selected"
             await send_message(
                 self.listener.message,
-                f"⌬ <b><i>Drive Cleaned</i></b>\n┟ <b>Category</b> → <code>{display_name}</code>\n┖ <b>Status</b> → <i>Completed</i>",
+                f"⌬ <b><i>Drive Cleaned</i></b>\n<blockquote>╭ <b>Category :</b> <code>{display_name}</code>\n╰ <b>Status :</b> <i>Completed</i></blockquote>",
             )
         elif self._error_msg:
             await send_message(
                 self.listener.message,
-                f"⌬ <b><i>Drive Clean Error</i></b>\n┖ <b>Error</b> → <code>{self._error_msg}</code>",
+                f"⌬ <b><i>Drive Clean Error</i></b>\n<blockquote>╰ <b>Error :</b> <code>{self._error_msg}</code></blockquote>",
             )

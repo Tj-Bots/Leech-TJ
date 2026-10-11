@@ -23,10 +23,13 @@ from ..helper.telegram_helper.message_utils import (
 
 
 def _wz(title, rows, note=""):
-    lines = [f"⌬ <b><u>{title}</u></b>", "│"]
+    lines = [f"⌬ <b><u>{title}</u></b>", ""]
     for index, (key, value) in enumerate(rows):
-        edge = "┟" if index == 0 else ("┖" if index == len(rows) - 1 else "┠")
-        lines.append(f"{edge} <b>{key}</b> → {value}")
+        last = index == len(rows) - 1
+        edge = "╰" if last else ("╭" if index == 0 else "┊")
+        lead = "<blockquote>" if index == 0 else ""
+        tail = "</blockquote>" if last else ""
+        lines.append(f"{lead}{edge} <b>{key} :</b> {value}{tail}")
     if note:
         lines.append("")
         lines.append(f"<i>{note}</i>")

@@ -170,10 +170,10 @@ class UserSession:
     async def _ask(cls, user_id, record):
         answer = await ask_in_pm(
             user_id,
-            "⌬ <b><u>Unlock Your Session</u></b>\n│\n"
-            "┟ <i>Send the passphrase you sealed it with.</i>\n"
-            "┠ <i>The message is deleted the moment it arrives.</i>\n"
-            "┖ <b>Timeout:</b> <code>120 sec</code>",
+            "㊂ <b><u>Unlock Your Session</u></b>\n\n"
+            "<blockquote>╭ <i>Send the passphrase you sealed it with.</i>\n"
+            "┊ <i>The message is deleted the moment it arrives.</i>\n"
+            "╰ <b>Timeout:</b> <code>120 sec</code></blockquote>",
         )
         if answer is None:
             raise TgLinkException("Timed out waiting for your passphrase")

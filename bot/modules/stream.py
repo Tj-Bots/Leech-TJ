@@ -287,11 +287,10 @@ Unrelated to -m in /mirror and /leech.</i>
 
 
 def _head(title, rows, tag):
-    msg = f"<b><i>{escape(title)}</i></b>\n│"
-    for i, (label, value) in enumerate(rows):
-        edge = "┟" if i == 0 else "┠"
-        msg += f"\n{edge} <b>{label}</b> → {value}"
-    msg += f"\n┖ <b>Task By</b> → {tag}\n\n"
+    msg = f"<blockquote>╭ <b>Name:</b> <code>{escape(title)}</code>"
+    for label, value in rows:
+        msg += f"\n┊ <b>{label}:</b> {value}"
+    msg += f"\n╰ <b>By:</b> {tag}</blockquote>\n\n"
     return msg
 
 
