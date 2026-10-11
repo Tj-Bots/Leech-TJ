@@ -201,6 +201,36 @@ fname_dict = {
     "gofile": "GoFile",
     "streamtape": "StreamTape",
 }
+DDL_SERVERS = ["gofile", "streamtape", "pixeldrain", "buzzheavier", "devuploads", "vikingfile"]
+fname_dict.update(
+    {
+        "pixeldrain": "PixelDrain",
+        "buzzheavier": "BuzzHeavier",
+        "devuploads": "DevUploads",
+        "vikingfile": "VikingFile",
+    }
+)
+desp_dict.update(
+    {
+        "pixeldrain": [
+            "PixelDrain is a fast free file hosting. Folders become a PixelDrain list.",
+            "Send PixelDrain's API Key. Get it on https://pixeldrain.com/user/api_keys\n<b>Timeout:</b> 60 sec",
+        ],
+        "buzzheavier": [
+            "BuzzHeavier is a free file hosting with no size limit, folders keep their structure.",
+            "Send BuzzHeavier's Account ID (API token).\n<b>Optional Folder:</b> <code>token folder_id</code>\n<b>Timeout:</b> 60 sec",
+        ],
+        "devuploads": [
+            "DevUploads is a file hosting that pays per download.",
+            "Send DevUploads's API Key. Get it on https://devuploads.com/?op=my_account\n<b>Optional Folder:</b> <code>key folder_id</code>\n<b>Timeout:</b> 60 sec",
+        ],
+        "vikingfile": [
+            "VikingFile is a free file hosting with no size limit.",
+            "Send VikingFile's User Hash. Get it on https://vikingfile.com/account\n<b>Optional Folder:</b> <code>hash folder/path</code>\n<b>Timeout:</b> 60 sec",
+        ],
+    }
+)
+
 fname_dict["ycookies"] = "YT-DLP Cookies"
 desp_dict["ycookies"] = [
     "Your own cookies.txt for yt-dlp, used for YouTube/sites that need login. If not set, the bot cookies are used.",
@@ -583,7 +613,7 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             f"➲ <b>Enabled DDL Server(s) :</b> <i>{ddl_serv}</i>\n\n"
             f"➲ <b>Description :</b> <i>{desp_dict[key][0]}</i>"
         )
-        for btn in ["gofile", "streamtape"]:
+        for btn in DDL_SERVERS:
             buttons.ibutton(
                 f"{'✅️' if btn in serv_list else ''} {fname_dict[btn]}",
                 f"userset {user_id} {btn}",
@@ -672,7 +702,7 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
                 else val
             )
             text += f"➲ <b>Mirror Filename {fname_dict[key]} :</b> {set_exist}\n\n"
-        elif key in ["gofile", "streamtape"]:
+        elif key in DDL_SERVERS:
             set_exist = (
                 "Exists"
                 if key in (ddl_dict := user_dict.get("ddl_servers", {}))
@@ -829,7 +859,7 @@ async def set_custom(client, message, pre_event, key, direct=False):
     return_key = "leech"
     n_key = key
     user_dict = user_data.get(user_id, {})
-    if key in ["gofile", "streamtape"]:
+    if key in DDL_SERVERS:
         ddl_dict = user_dict.get("ddl_servers", {})
         mode, api = ddl_dict.get(key, [False, ""])
         if key == "gofile" and not await Gofile.is_goapi(value):
@@ -1213,7 +1243,7 @@ async def edit_user_settings(client, query):
         await update_user_settings(query, "leech")
         if DATABASE_URL:
             await DbManger().update_user_data(user_id)
-    elif data[2] in ["sgofile", "sstreamtape", "dgofile", "dstreamtape"]:
+    elif data[2][0] in "sd" and data[2][1:] in DDL_SERVERS:
         handler_dict[user_id] = False
         ddl_dict = user_dict.get("ddl_servers", {})
         key = data[2][1:]
@@ -1271,7 +1301,7 @@ async def edit_user_settings(client, query):
         else:
             await query.answer("Old Settings", show_alert=True)
             await update_user_settings(query)
-    elif data[2] in ["ddl_servers", "user_tds", "gofile", "streamtape"]:
+    elif data[2] in ["ddl_servers", "user_tds", *DDL_SERVERS]:
         handler_dict[user_id] = False
         await query.answer()
         edit_mode = len(data) == 4

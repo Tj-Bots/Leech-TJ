@@ -18,6 +18,7 @@ from aiohttp.client_exceptions import ContentTypeError
 from bot import LOGGER, user_data
 from bot.helper.mirror_utils.upload_utils.ddlserver.gofile import Gofile
 from bot.helper.mirror_utils.upload_utils.ddlserver.streamtape import Streamtape
+from bot.helper.mirror_utils.upload_utils.ddlserver.extra_hosts import EXTRA_HOSTS
 from bot.helper.ext_utils.fs_utils import get_mime_type
 
 
@@ -60,6 +61,9 @@ class DDLUploader:
         self.last_uploaded = current
         self.__processed_bytes += chunk_size
 
+    def progress_callback(self, current):
+        self.__progress_callback(current)
+
     @retry(
         wait=wait_exponential(multiplier=2, min=4, max=8),
         stop=stop_after_attempt(3),
@@ -100,6 +104,12 @@ class DDLUploader:
                         )
                     nlink = await Streamtape(self, login, key).upload(file_path)
                     all_links["StreamTape"] = nlink
+                if host := EXTRA_HOSTS.get(serv):
+                    self.__engine = f"{host.NAME} API"
+                    nlink = await host(self, api_key).upload(file_path)
+                    if self.is_cancelled:
+                        return None
+                    all_links[host.NAME] = nlink
                 self.__processed_bytes = 0
         if not all_links:
             raise Exception("No DDL Enabled to Upload.")
