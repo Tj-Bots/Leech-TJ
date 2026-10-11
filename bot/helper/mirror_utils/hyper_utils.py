@@ -1145,6 +1145,15 @@ class HypertgDownload(HypertgTransfer):
 
 _upload_lock = Lock()
 
+TRANSFER_MODES = {"bot": "Bot", "user": "User", "hyper": "Hyper ⚡"}
+
+
+def transfer_mode(user_dict):
+    mode = (user_dict or {}).get("tmode")
+    if mode in TRANSFER_MODES:
+        return mode
+    return "hyper" if config_dict["USE_HYPER"] else "bot"
+
 
 async def pick_upload_client():
     clients = hyper_clients() if config_dict["USE_HYPER"] else {}

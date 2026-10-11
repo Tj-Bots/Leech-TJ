@@ -304,4 +304,9 @@ class WZMLStyle:
 ┊<b> Leech Suffix :</b> <code>{LSUFFIX}</code>
 ┊<b> Leech Dumps :</b> <code>{LDUMP}</code>
 ┊<b> Leech Remname :</b> <code>{LREMNAME}</code>
-╰<B> Leech Metadata :</b> <code>{LMETA}</code></blockquote>"""
+╰<B> Leech Metadata :</b> <code>{LMETA}</code></blockquote>
+
+<blockquote>╭<b> Transfer Mode :</b> <i>{TMODE}</i>
+┊<b> Excluded Ext :</b> <code>{EXCLUDED}</code>
+┊<b> Thumb Layout :</b> <i>{TLAYOUT}</i>
+╰<b> Auto Thumbnail :</b> <i>{ATHUMB}</i></blockquote>"""

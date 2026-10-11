@@ -61,6 +61,7 @@ from bot.helper.ext_utils.leech_utils import (
 )
 from bot.helper.ext_utils.exceptions import NotSupportedExtractionArchive
 from bot.helper.ext_utils.task_manager import start_from_queued
+from bot.helper.ext_utils.user_tools import parse_extensions, remove_excluded
 from bot.helper.mirror_utils.status_utils.extract_status import ExtractStatus
 from bot.helper.mirror_utils.status_utils.zip_status import ZipStatus
 from bot.helper.mirror_utils.status_utils.split_status import SplitStatus
@@ -480,6 +481,16 @@ class MirrorLeechListener:
 
         if not self.compress and not self.extract:
             up_path = dl_path
+
+        if (excluded := parse_extensions(user_dict.get("excluded_ext"))) and (
+            not self.seed or self.newDir
+        ):
+            await remove_excluded(up_path, excluded)
+            if not await aiopath.exists(up_path):
+                await self.onUploadError(
+                    "All files are in your Excluded Extensions! Check User Settings."
+                )
+                return
 
         up_dir, up_name = up_path.rsplit("/", 1)
         size = await get_path_size(up_dir)

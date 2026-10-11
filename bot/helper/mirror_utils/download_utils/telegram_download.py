@@ -17,7 +17,11 @@ from bot import (
     IS_PREMIUM_USER,
     config_dict,
 )
-from bot.helper.mirror_utils.hyper_utils import HypertgDownload, get_dump_chat
+from bot.helper.mirror_utils.hyper_utils import (
+    HypertgDownload,
+    get_dump_chat,
+    transfer_mode,
+)
 from bot.helper.mirror_utils.status_utils.telegram_status import TelegramStatus
 from bot.helper.mirror_utils.status_utils.queue_status import QueueStatus
 from bot.helper.telegram_helper.message_utils import (
@@ -101,7 +105,11 @@ class TelegramDownloadHelper:
             GLOBAL_GID.remove(self.__id)
 
     async def __hyper_download(self, message, path):
-        if not config_dict["USE_HYPER"] or self.__client is not bot:
+        if (
+            not config_dict["USE_HYPER"]
+            or self.__client is not bot
+            or transfer_mode(self.__listener.user_dict) != "hyper"
+        ):
             return None
         dump_chat = await get_dump_chat()
         if dump_chat is None and message.chat.type not in (

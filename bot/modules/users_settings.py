@@ -25,7 +25,10 @@ from bot import (
     DATABASE_URL,
     IS_PREMIUM_USER,
     MAX_SPLIT_SIZE,
+    user,
 )
+from bot.helper.mirror_utils.hyper_utils import TRANSFER_MODES, transfer_mode
+from bot.helper.ext_utils.user_tools import parse_user_setting, show_user_setting
 from bot.helper.telegram_helper.message_utils import (
     sendMessage,
     sendCustomMsg,
@@ -126,6 +129,52 @@ desp_dict = {
         "Send Metadata Text for Leeching Files.\n<b>Timeout:</b> 60 Sec.",
     ],
 }
+# extra text settings: key -> (category, title, description, input help)
+EXTRA_TEXT = {
+    "excluded_ext": (
+        "leech",
+        "Excluded Extensions",
+        "Files with these extensions will be deleted before upload, works for Leech and Mirror.",
+        "Send extensions separated by space, without dot.\n<b>Example:</b> <code>txt nfo jpg</code>\n<b>Timeout:</b> 60 sec",
+    ),
+    "thumb_layout": (
+        "leech",
+        "Thumbnail Layout",
+        "Thumbnail of leeched videos built as a grid of frames, used only when there is no custom thumbnail.",
+        "Send layout as columns x rows.\n<b>Example:</b> <code>2x2</code>, <code>3x3</code>, <code>4x4</code> (max 10x10)\n<b>Timeout:</b> 60 sec",
+    ),
+    "rclone_path": (
+        "mirror",
+        "Rclone Path",
+        "Your default Rclone upload path, used when uploading to rclone without -up.",
+        "Send Rclone Path.\n<b>Example:</b> <code>remote:folder</code> or <code>mrcc:remote:folder</code> for your own config\n<b>Timeout:</b> 60 sec",
+    ),
+    "rclone_flags": (
+        "mirror",
+        "Rclone Flags",
+        "Extra Rclone flags for your uploads.",
+        "Send flags as <code>key:value|key|key:value</code>\n<b>Example:</b> <code>--buffer-size:8M|--drive-starred-only</code>\n<b>Timeout:</b> 60 sec",
+    ),
+    "upload_paths": (
+        "mirror",
+        "Upload Paths",
+        "Short names for your upload destinations, use them with <code>-up name</code>.",
+        "Send one path per line as <code>name destination</code>\n<b>Example:</b>\n<code>movies remote:Movies</code>\n<code>tv mrcc:remote:TV</code>\n<b>Timeout:</b> 60 sec",
+    ),
+    "ffmpeg_cmds": (
+        "universal",
+        "FFmpeg Cmds",
+        "Named FFmpeg commands that run on your files before upload. Use with <code>-ff name</code>.",
+        "Send one command per line as <code>name: ffmpeg args</code>, without the word ffmpeg. Use <code>mltb</code> as input/output name.\n<b>Example:</b>\n<code>tomp3: -i mltb.m4a -c:a libmp3lame -q:a 2 mltb.mp3</code>\n<code>subs: -i mltb.mkv -map 0 -c copy -c:s srt mltb.mkv -del</code>\n<b>Timeout:</b> 60 sec",
+    ),
+    "mega_login": (
+        "universal",
+        "Mega Login",
+        "Your own Mega.nz account, used to download Mega links with your account limits.",
+        "Send <code>email password</code> in one line.\n<b>Timeout:</b> 60 sec",
+    ),
+}
+
 fname_dict = {
     "rcc": "RClone",
     "lprefix": "Prefix",
@@ -146,6 +195,14 @@ fname_dict = {
     "gofile": "GoFile",
     "streamtape": "StreamTape",
 }
+for _key, (_cat, _title, _desc, _help) in EXTRA_TEXT.items():
+    fname_dict[_key] = _title
+    desp_dict[_key] = [_desc, _help]
+
+
+def extra_button(buttons, user_dict, user_id, key, position=None):
+    exists = "✅️ " if user_dict.get(key) else ""
+    buttons.ibutton(f"{exists}{fname_dict[key]}", f"userset {user_id} {key}", position)
 
 
 async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None):
@@ -431,6 +488,14 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             f"userset {user_id} lremname",
         )
 
+        tmode = transfer_mode(user_dict)
+        buttons.ibutton(
+            f"Mode: {TRANSFER_MODES[tmode]}", f"userset {user_id} tmode", "header"
+        )
+
+        extra_button(buttons, user_dict, user_id, "excluded_ext")
+        extra_button(buttons, user_dict, user_id, "thumb_layout")
+
         buttons.ibutton("Leech Dump", f"userset {user_id} ldump")
         ldump = "Not Exists" if (val := user_dict.get("ldump", "")) == "" else len(val)
 
@@ -459,6 +524,10 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             LDUMP=ldump,
             LREMNAME=escape(lremname),
             LMETA=escape(lmeta),
+            TMODE=TRANSFER_MODES[tmode],
+            EXCLUDED=escape(user_dict.get("excluded_ext") or "Not Exists"),
+            TLAYOUT=user_dict.get("thumb_layout") or "Not Exists",
+            ATHUMB="Enabled" if user_dict.get("auto_thumb") else "Disabled",
         )
 
         buttons.ibutton("◀️", f"userset {user_id} back", "footer")
@@ -599,6 +668,9 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             if not config_dict["USER_TD_MODE"]:
                 tds_mode = "Force Disabled"
             text += f"➲ <b>User TD Mode :</b> {tds_mode}\n"
+            text += f"➲ <b>{fname_dict[key]} :</b> {set_exist}\n\n"
+        elif key in EXTRA_TEXT:
+            set_exist = show_user_setting(key, user_dict.get(key))
             text += f"➲ <b>{fname_dict[key]} :</b> {set_exist}\n\n"
         else:
             return
@@ -772,6 +844,15 @@ async def set_custom(client, message, pre_event, key, direct=False):
             if len(dump_info) > 1 and (dump_chat := await chat_info(dump_info[1])):
                 ldumps[dump_info[0]] = dump_chat.id
         value = ldumps
+    elif key in EXTRA_TEXT:
+        return_key = EXTRA_TEXT[key][0]
+        value = parse_user_setting(key, value)
+        if value is None:
+            await deleteMessage(message)
+            await update_user_settings(
+                pre_event, key, return_key, msg=message, sdirect=direct
+            )
+            return
     elif key in ["yt_opt", "usess"]:
         if key == "usess":
             password = Fernet.generate_key()
@@ -891,6 +972,29 @@ async def edit_user_settings(client, query):
     elif data[2] == "doc":
         update_user_ldata(user_id, "as_doc", not user_dict.get("as_doc", False))
         await query.answer()
+        await update_user_settings(query, "leech")
+        if DATABASE_URL:
+            await DbManger().update_user_data(user_id)
+    elif data[2] == "tmode":
+        handler_dict[user_id] = False
+        order = ["bot", "user", "hyper"]
+        current = transfer_mode(user_dict)
+        new_mode = current
+        for step in range(1, 4):
+            cand = order[(order.index(current) + step) % 3]
+            if cand == "user" and not user:
+                continue
+            if cand == "hyper" and not config_dict["USE_HYPER"]:
+                continue
+            new_mode = cand
+            break
+        if new_mode == current:
+            return await query.answer(
+                "No other Transfer Mode available! Add User Session or enable Hyper.",
+                show_alert=True,
+            )
+        await query.answer(f"Transfer Mode: {TRANSFER_MODES[new_mode]}")
+        update_user_ldata(user_id, "tmode", new_mode)
         await update_user_settings(query, "leech")
         if DATABASE_URL:
             await DbManger().update_user_data(user_id)
@@ -1123,6 +1227,24 @@ async def edit_user_settings(client, query):
         if data[2] == "duser_tds":
             update_user_ldata(user_id, "td_mode", False)
         await update_user_settings(query, data[2][1:], "mirror")
+        if DATABASE_URL:
+            await DbManger().update_user_data(user_id)
+    elif data[2] in EXTRA_TEXT:
+        handler_dict[user_id] = False
+        await query.answer()
+        edit_mode = len(data) == 4
+        return_key = EXTRA_TEXT[data[2]][0]
+        await update_user_settings(query, data[2], return_key, edit_mode)
+        if not edit_mode:
+            return
+        pfunc = partial(set_custom, pre_event=query, key=data[2])
+        rfunc = partial(update_user_settings, query, data[2], return_key)
+        await event_handler(client, query, pfunc, rfunc)
+    elif data[2].startswith("d") and data[2][1:] in EXTRA_TEXT:
+        handler_dict[user_id] = False
+        await query.answer()
+        update_user_ldata(user_id, data[2][1:], "")
+        await update_user_settings(query, data[2][1:], EXTRA_TEXT[data[2][1:]][0])
         if DATABASE_URL:
             await DbManger().update_user_data(user_id)
     elif data[2] == "back":

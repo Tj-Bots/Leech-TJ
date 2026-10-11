@@ -38,6 +38,7 @@ from bot.helper.mirror_utils.hyper_utils import (
     ensure_peer,
     pick_upload_client,
     release_upload_client,
+    transfer_mode,
 )
 from bot.helper.themes import BotTheme
 from bot.helper.telegram_helper.button_build import ButtonMaker
@@ -384,12 +385,22 @@ class TgUploader:
 
     async def __switching_client(self):
         await self.__release_hyper()
+        mode = transfer_mode(user_data.get(self.__user_id, {}))
         if self.__prm_media and IS_PREMIUM_USER:
             self.__client = user
+        elif (
+            mode == "user"
+            and user
+            and not self.__media_group
+            and (self.__leechmsg or self.__listener.isSuperGroup)
+        ):
+            self.__client = user
+            self.__hyper_up = True
         else:
             self.__client = bot
             if (
-                self.__leechmsg
+                mode == "hyper"
+                and self.__leechmsg
                 and not self.__media_group
                 and config_dict["USE_HYPER"]
                 and await aiopath.getsize(self.__up_path) > 10 * 1024 * 1024
@@ -405,7 +416,7 @@ class TgUploader:
                         LOGGER.error(f"Hyper Upload client error: {e}")
                         await release_upload_client(idx)
         LOGGER.info(
-            f'Uploading Media {">" if self.__prm_media else "<"} 2GB by {"Hyper" if self.__hyper_up else "User" if self.__client is user else "Bot"} Client'
+            f'Uploading Media {">" if self.__prm_media else "<"} 2GB by {"Hyper" if self.__hyper_idx is not None else "User" if self.__client is user else "Bot"} Client'
         )
 
     async def __release_hyper(self):
