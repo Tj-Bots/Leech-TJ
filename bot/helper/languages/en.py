@@ -1,6 +1,5 @@
-START_MSG = """
-This bot can mirror from links|tgfiles|torrents|nzb|rclone-cloud to any rclone cloud, Google Drive or to telegram.
-Type /{cmd} to get a list of available commands
-"""
-START_BUTTON1 = "Git Repo"
-START_BUTTON2 = "Updates"
+START_MSG = """<i>This bot can mirror all your links|files|torrents|nzb to Google Drive or any rclone cloud or to telegram.</i>
+
+<blockquote><b>Type /{cmd} to get a list of available commands</b></blockquote>"""
+START_BUTTON1 = "WᴇʙSɪᴛᴇ 🌵"
+START_BUTTON2 = "Gʀᴏᴜᴘ 🧲"

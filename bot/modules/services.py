@@ -34,9 +34,13 @@ async def start(_, message):
     lang = Language()
     buttons = ButtonMaker()
     buttons.url_button(
-        lang.START_BUTTON1, "https://www.github.com/SilentDemonSD/WZML-X"
+        lang.START_BUTTON1,
+        "https://tj-bots.github.io/Tj-Bots/",
+        style=ButtonStyle.PRIMARY,
     )
-    buttons.url_button(lang.START_BUTTON2, "https://t.me/WZML_X")
+    buttons.url_button(
+        lang.START_BUTTON2, "https://t.me/Tj_Leech_Group", style=ButtonStyle.SUCCESS
+    )
     reply_markup = buttons.build_menu(2)
 
     if len(message.command) > 1 and message.command[1] == "wzmlx":
@@ -78,12 +82,10 @@ async def start(_, message):
                 "Activate Access Token", f"start pass {input_token}", "header"
             )
             reply_markup = buttons.build_menu(2)
-            msg = f"""⌬ Access Login Token : 
-    │
-    ┟ <b>Status</b> → <code>Generated Successfully</code>
-    ┟ <b>Access Token</b> → <code>{input_token}</code>
-    ┃
-    ┖ <b>Validity:</b> {get_readable_time(int(Config.VERIFY_TIMEOUT))}"""
+            msg = f"""⌬ <b><u>Access Login Token :</u></b>
+<blockquote>╭ <b>Status:</b> <code>Generated Successfully</code>
+┊ <b>Access Token:</b> <code>{input_token}</code>
+╰ <b>Validity:</b> {get_readable_time(int(Config.VERIFY_TIMEOUT))}</blockquote>"""
             return await send_message(message, msg, reply_markup)
 
     if await CustomFilters.authorized(_, message):
@@ -94,14 +96,14 @@ async def start(_, message):
     elif Config.BOT_PM:
         await send_message(
             message,
-            "<i>Now, Bot will send you all your files and links here. Start Using Now...</i>",
+            """<b><i>Nᴏᴡ, Tʜɪs Bᴏᴛ Wɪʟʟ Sᴇɴᴅ Aʟʟ Yᴏᴜʀ Fɪʟᴇs Aɴᴅ Lɪɴᴋs Hᴇʀᴇ...</i>\n\n<blockquote>Pᴏᴡᴇʀᴇᴅ Bʏ: <a href="https://t.me/Tj_Bots"><b>Tᴊ Bᴏᴛs</b></a>🧑‍💻</b></blockquote>""",
             reply_markup,
             photo="IMAGES",
         )
     else:
         await send_message(
             message,
-            "<i>Bot can mirror/leech from links|tgfiles|torrents|nzb|rclone-cloud to any rclone cloud, Google Drive or to telegram.\n\n⚠️ You are not an authorized user! Deploy your own WZML-X bot</i>",
+            "<i>Bot can mirror/leech from links|tgfiles|torrents|nzb|rclone-cloud to any rclone cloud, Google Drive or to telegram.\n\n⚠️ You are not an authorized user!</i>",
             reply_markup,
             photo="IMAGES",
         )
