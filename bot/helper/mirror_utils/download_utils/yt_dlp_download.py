@@ -6,6 +6,7 @@ from yt_dlp import YoutubeDL, DownloadError
 from re import search as re_search
 
 from bot import download_dict_lock, download_dict, non_queued_dl, queue_dict_lock
+from bot.helper.ext_utils.user_tools import user_cookie
 from bot.helper.telegram_helper.message_utils import sendStatusMessage
 from ..status_utils.yt_dlp_download_status import YtDlpDownloadStatus
 from bot.helper.mirror_utils.status_utils.queue_status import QueueStatus
@@ -65,7 +66,7 @@ class YoutubeDLHelper:
             "progress_hooks": [self.__onDownloadProgress],
             "logger": MyLogger(self, self.__listener),
             "usenetrc": True,
-            "cookiefile": "cookies.txt",
+            "cookiefile": user_cookie(listener.user_id),
             "allow_multiple_video_streams": True,
             "allow_multiple_audio_streams": True,
             "noprogress": True,

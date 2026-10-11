@@ -9,7 +9,11 @@ from functools import partial
 from time import time
 
 from bot import DOWNLOAD_DIR, bot, categories_dict, config_dict, user_data, LOGGER
-from bot.helper.ext_utils.user_tools import resolve_upload_path, user_rc_path
+from bot.helper.ext_utils.user_tools import (
+    resolve_upload_path,
+    user_cookie,
+    user_rc_path,
+)
 from bot.helper.ext_utils.task_manager import task_utils
 from bot.helper.telegram_helper.message_utils import (
     sendMessage,
@@ -555,7 +559,7 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
     if "mdisk.me" in link:
         name, link = await _mdisk(link, name)
 
-    options = {"usenetrc": True, "cookiefile": "cookies.txt"}
+    options = {"usenetrc": True, "cookiefile": user_cookie(user_id)}
     if opt:
         yt_opt = opt.split("|")
         for ytopt in yt_opt:

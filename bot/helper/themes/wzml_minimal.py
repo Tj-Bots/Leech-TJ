@@ -278,7 +278,11 @@ class WZMLStyle:
 ┊<b> User Session :</b> <code>{USESS}</code>
 ┊<b> MediaInfo Mode :</b> <code>{MEDIAINFO}</code>
 ┊<b> Save Mode :</b> <code>{SAVE_MODE}</code>
-╰<b> User Bot PM :</b> <code>{BOT_PM}</code></blockquote>"""
+╰<b> User Bot PM :</b> <code>{BOT_PM}</code></blockquote>
+
+<blockquote>╭<b> YT-DLP Cookies :</b> <code>{COOKIES}</code>
+┊<b> FFmpeg Cmds :</b> <code>{FFCMDS}</code>
+╰<b> Mega Login :</b> <code>{MEGA}</code></blockquote>"""
 
     MIRROR = """㊂ <b><u>Mirror/Clone Settings : {NAME}</u></b>
 

@@ -198,3 +198,10 @@ def resolve_upload_path(user_id, up):
         if name.casefold() == up.casefold():
             return dest
     return up
+
+
+def user_cookie(user_id):
+    path = f"cookies/{user_id}.txt"
+    if user_data.get(user_id, {}).get("cookies") and ospath.exists(path):
+        return path
+    return "cookies.txt"

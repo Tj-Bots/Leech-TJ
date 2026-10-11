@@ -73,6 +73,13 @@ class DbManger:
                     async with aiopen(rclone_path, "wb+") as f:
                         await f.write(row["rclone"])
                     row["rclone"] = rclone_path
+                if row.get("cookies"):
+                    cookies_path = f"cookies/{uid}.txt"
+                    if not await aiopath.exists("cookies"):
+                        await makedirs("cookies")
+                    async with aiopen(cookies_path, "wb+") as f:
+                        await f.write(row["cookies"])
+                    row["cookies"] = cookies_path
                 user_data[uid] = row
             LOGGER.info("Users data has been imported from Database")
         # Rss Data
@@ -139,11 +146,17 @@ class DbManger:
     async def update_user_data(self, user_id):
         if self.__err:
             return
-        data = user_data[user_id]
-        if data.get("thumb"):
-            del data["thumb"]
-        if data.get("rclone"):
-            del data["rclone"]
+        data = dict(user_data.get(user_id, {}))
+        doc_keys = ("thumb", "rclone", "cookies")
+        for key in doc_keys:
+            data.pop(key, None)
+        # keep the stored files, replace_one would wipe them otherwise
+        stored = await self.__db.users[bot_id].find_one(
+            {"_id": user_id}, {key: 1 for key in doc_keys}
+        )
+        for key in doc_keys:
+            if stored and stored.get(key):
+                data[key] = stored[key]
         await self.__db.users[bot_id].replace_one({"_id": user_id}, data, upsert=True)
         self.__conn.close
 

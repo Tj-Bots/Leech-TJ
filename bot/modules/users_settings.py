@@ -32,6 +32,7 @@ from bot.helper.ext_utils.user_tools import (
     parse_user_setting,
     show_user_setting,
     stop_dup_enabled,
+    user_cookie,
     user_rc_path,
 )
 from bot.helper.telegram_helper.message_utils import (
@@ -200,6 +201,12 @@ fname_dict = {
     "gofile": "GoFile",
     "streamtape": "StreamTape",
 }
+fname_dict["ycookies"] = "YT-DLP Cookies"
+desp_dict["ycookies"] = [
+    "Your own cookies.txt for yt-dlp, used for YouTube/sites that need login. If not set, the bot cookies are used.",
+    "Send your cookies.txt file (Netscape format).\n<b>Timeout:</b> 60 sec",
+]
+
 for _key, (_cat, _title, _desc, _help) in EXTRA_TEXT.items():
     fname_dict[_key] = _title
     desp_dict[_key] = [_desc, _help]
@@ -250,6 +257,12 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             f"{'✅️' if ytopt != 'Not Exists' else ''} YT-DLP Options",
             f"userset {user_id} yt_opt",
         )
+        ucookies = user_cookie(user_id) != "cookies.txt"
+        buttons.ibutton(
+            f"{'✅️' if ucookies else ''} YT-DLP Cookies", f"userset {user_id} ycookies"
+        )
+        extra_button(buttons, user_dict, user_id, "ffmpeg_cmds")
+        extra_button(buttons, user_dict, user_id, "mega_login")
         u_sess = "Exists" if user_dict.get("usess", False) else "Not Exists"
         buttons.ibutton(
             f"{'✅️' if u_sess != 'Not Exists' else ''} User Session",
@@ -305,6 +318,9 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             MEDIAINFO=mediainfo,
             SAVE_MODE=save_mode,
             USESS=u_sess,
+            COOKIES="Exists" if ucookies else "Not Exists",
+            FFCMDS=len(user_dict.get("ffmpeg_cmds") or {}),
+            MEGA=(user_dict.get("mega_login") or {}).get("email", "Not Exists"),
         )
         buttons.ibutton("◀️", f"userset {user_id} back", "footer")
         buttons.ibutton("❌", f"userset {user_id} close", "footer")
@@ -691,6 +707,11 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
                 tds_mode = "Force Disabled"
             text += f"➲ <b>User TD Mode :</b> {tds_mode}\n"
             text += f"➲ <b>{fname_dict[key]} :</b> {set_exist}\n\n"
+        elif key == "ycookies":
+            set_exist = (
+                "Exists" if user_cookie(user_id) != "cookies.txt" else "Not Exists"
+            )
+            text += f"➲ <b>Cookies File :</b> <i>{set_exist}</i>\n\n"
         elif key in EXTRA_TEXT:
             set_exist = show_user_setting(key, user_dict.get(key))
             text += f"➲ <b>{fname_dict[key]} :</b> {set_exist}\n\n"
@@ -929,6 +950,29 @@ async def add_rclone(client, message, pre_event):
     await update_user_settings(pre_event, "rcc", "mirror")
     if DATABASE_URL:
         await DbManger().update_user_doc(user_id, "rclone", des_dir)
+
+
+async def add_cookies(client, message, pre_event):
+    user_id = message.from_user.id
+    handler_dict[user_id] = False
+    path = f"{getcwd()}/cookies/"
+    if not await aiopath.isdir(path):
+        await mkdir(path)
+    des_dir = ospath.join(path, f"{user_id}.txt")
+    await message.download(file_name=des_dir)
+    async with aiopen(des_dir, "r", errors="ignore") as f:
+        content = await f.read()
+    await deleteMessage(message)
+    if "\t" not in content:
+        await aioremove(des_dir)
+        await sendMessage(
+            message, "<i>Invalid cookies file! Export it in Netscape format.</i>"
+        )
+    else:
+        update_user_ldata(user_id, "cookies", f"cookies/{user_id}.txt")
+        if DATABASE_URL:
+            await DbManger().update_user_doc(user_id, "cookies", des_dir)
+    await update_user_settings(pre_event, "ycookies", "universal")
 
 
 async def leech_split_size(client, message, pre_event):
@@ -1196,6 +1240,25 @@ async def edit_user_settings(client, query):
         pfunc = partial(add_rclone, pre_event=query)
         rfunc = partial(update_user_settings, query, data[2], "mirror")
         await event_handler(client, query, pfunc, rfunc, document=True)
+    elif data[2] == "ycookies":
+        await query.answer()
+        edit_mode = len(data) == 4
+        await update_user_settings(query, data[2], "universal", edit_mode)
+        if not edit_mode:
+            return
+        pfunc = partial(add_cookies, pre_event=query)
+        rfunc = partial(update_user_settings, query, data[2], "universal")
+        await event_handler(client, query, pfunc, rfunc, document=True)
+    elif data[2] == "dycookies":
+        handler_dict[user_id] = False
+        await query.answer()
+        if await aiopath.exists(cookies_path := f"cookies/{user_id}.txt"):
+            await aioremove(cookies_path)
+        update_user_ldata(user_id, "cookies", "")
+        await update_user_settings(query, "ycookies", "universal")
+        if DATABASE_URL:
+            await DbManger().update_user_data(user_id)
+            await DbManger().update_user_doc(user_id, "cookies")
     elif data[2] == "drcc":
         handler_dict[user_id] = False
         if await aiopath.exists(rclone_path):
@@ -1313,6 +1376,8 @@ async def edit_user_settings(client, query):
             await aioremove(thumb_path)
         if await aiopath.exists(rclone_path):
             await aioremove(rclone_path)
+        if await aiopath.exists(f"cookies/{user_id}.txt"):
+            await aioremove(f"cookies/{user_id}.txt")
         await query.answer()
         update_user_ldata(user_id, None, None)
         await update_user_settings(query)
@@ -1320,6 +1385,7 @@ async def edit_user_settings(client, query):
             await DbManger().update_user_data(user_id)
             await DbManger().update_user_doc(user_id, "thumb")
             await DbManger().update_user_doc(user_id, "rclone")
+            await DbManger().update_user_doc(user_id, "cookies")
     elif data[2] == "user_del":
         user_id = int(data[3])
         await query.answer()
