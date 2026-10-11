@@ -277,6 +277,18 @@ if len(USER_SESSION_STRING) != 0:
         log_error(f"Failed making client from USER_SESSION_STRING : {e}")
         user = ""
 
+HELPER_TOKENS = environ.get("HELPER_TOKENS", "").strip()
+HELPER_STRINGS = environ.get("HELPER_STRINGS", "").strip()
+USE_HYPER = environ.get("USE_HYPER", "True").lower() == "true"
+HYPER_THREADS = environ.get("HYPER_THREADS", "")
+HYPER_THREADS = int(HYPER_THREADS) if HYPER_THREADS.isdigit() else 0
+HYPER_CHUNK = environ.get("HYPER_CHUNK", "")
+HYPER_CHUNK = int(HYPER_CHUNK) if HYPER_CHUNK.isdigit() else 0
+HYPER_PIPELINE = environ.get("HYPER_PIPELINE", "")
+HYPER_PIPELINE = int(HYPER_PIPELINE) if HYPER_PIPELINE.isdigit() else 0
+helper_bots = {}
+helper_users = {}
+
 MEGA_EMAIL = environ.get("MEGA_EMAIL", "")
 MEGA_PASSWORD = environ.get("MEGA_PASSWORD", "")
 if len(MEGA_EMAIL) == 0 or len(MEGA_PASSWORD) == 0:
@@ -762,6 +774,12 @@ config_dict = {
     "UPSTREAM_BRANCH": UPSTREAM_BRANCH,
     "UPGRADE_PACKAGES": UPGRADE_PACKAGES,
     "USER_SESSION_STRING": USER_SESSION_STRING,
+    "HELPER_TOKENS": HELPER_TOKENS,
+    "HELPER_STRINGS": HELPER_STRINGS,
+    "USE_HYPER": USE_HYPER,
+    "HYPER_THREADS": HYPER_THREADS,
+    "HYPER_CHUNK": HYPER_CHUNK,
+    "HYPER_PIPELINE": HYPER_PIPELINE,
     "USER_TD_MODE": USER_TD_MODE,
     "USER_TD_SA": USER_TD_SA,
     "USE_SERVICE_ACCOUNTS": USE_SERVICE_ACCOUNTS,
@@ -916,4 +934,38 @@ bot = start_client(
     )
 )
 bot_name = bot.me.username
+
+for no, token in enumerate(HELPER_TOKENS.split(), start=1):
+    try:
+        hbot = start_client(
+            wztgClient(
+                f"WZ-HBot{no}",
+                TELEGRAM_API,
+                TELEGRAM_HASH,
+                bot_token=token,
+                in_memory=True,
+                no_updates=True,
+            )
+        )
+        helper_bots[no] = hbot
+        log_info(f"Helper Bot [@{hbot.me.username}] Started!")
+    except Exception as e:
+        log_error(f"Failed to start helper bot {no} from HELPER_TOKENS: {e}")
+
+for no, session in enumerate(HELPER_STRINGS.split(), start=1):
+    try:
+        huser = start_client(
+            wztgClient(
+                f"WZ-HUser{no}",
+                TELEGRAM_API,
+                TELEGRAM_HASH,
+                session_string=session,
+                in_memory=True,
+                no_updates=True,
+            )
+        )
+        helper_users[no] = huser
+        log_info(f"Helper User [{huser.me.first_name}] Started!")
+    except Exception as e:
+        log_error(f"Failed to start helper user {no} from HELPER_STRINGS: {e}")
 scheduler = AsyncIOScheduler(timezone=str(get_localzone()), event_loop=bot_loop)
