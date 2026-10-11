@@ -1,5 +1,58 @@
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+try:
+    from pyrogram.enums import ButtonStyle
+except ImportError:
+    ButtonStyle = None
+
+DANGER_KEYS = (
+    "❌",
+    "✘",
+    "close",
+    "cʟᴏsᴇ",
+    "cancel",
+    "no!",
+    "delete",
+    "remove",
+    "reset",
+    "shutdown",
+    "unsubscribe",
+    "unsub ",
+    "permanent clean",
+    "move to bin",
+    "stop gdrive",
+)
+SUCCESS_KEYS = (
+    "♻️",
+    "✓",
+    "✅",
+    "yes!",
+    "done",
+    "activate",
+    "resume",
+    "start rss",
+)
+PRIMARY_KEYS = ("◀️", "⌫", "back")
+
+
+def auto_style(key, is_url=False):
+    if ButtonStyle is None:
+        return None
+    text = str(key).lower()
+    if any(k in text for k in DANGER_KEYS):
+        return ButtonStyle.DANGER
+    if any(k in text for k in SUCCESS_KEYS):
+        return ButtonStyle.SUCCESS
+    if is_url or any(k in text for k in PRIMARY_KEYS):
+        return ButtonStyle.PRIMARY
+    return ButtonStyle.DEFAULT
+
+
+def make_button(key, style=None, is_url=False, **kwargs):
+    if ButtonStyle is not None:
+        kwargs["style"] = style or auto_style(key, is_url)
+    return InlineKeyboardButton(text=key, **kwargs)
+
 
 class ButtonMaker:
     def __init__(self):
@@ -9,37 +62,23 @@ class ButtonMaker:
         self.__last_body_button = []
         self.__footer_button = []
 
-    def ubutton(self, key, link, position=None):
+    def __add(self, button, position):
         if not position:
-            self.__button.append(InlineKeyboardButton(text=key, url=link))
+            self.__button.append(button)
         elif position == "header":
-            self.__header_button.append(InlineKeyboardButton(text=key, url=link))
+            self.__header_button.append(button)
         elif position == "f_body":
-            self.__first_body_button.append(InlineKeyboardButton(text=key, url=link))
+            self.__first_body_button.append(button)
         elif position == "l_body":
-            self.__last_body_button.append(InlineKeyboardButton(text=key, url=link))
+            self.__last_body_button.append(button)
         elif position == "footer":
-            self.__footer_button.append(InlineKeyboardButton(text=key, url=link))
+            self.__footer_button.append(button)
 
-    def ibutton(self, key, data, position=None):
-        if not position:
-            self.__button.append(InlineKeyboardButton(text=key, callback_data=data))
-        elif position == "header":
-            self.__header_button.append(
-                InlineKeyboardButton(text=key, callback_data=data)
-            )
-        elif position == "f_body":
-            self.__first_body_button.append(
-                InlineKeyboardButton(text=key, callback_data=data)
-            )
-        elif position == "l_body":
-            self.__last_body_button.append(
-                InlineKeyboardButton(text=key, callback_data=data)
-            )
-        elif position == "footer":
-            self.__footer_button.append(
-                InlineKeyboardButton(text=key, callback_data=data)
-            )
+    def ubutton(self, key, link, position=None, style=None):
+        self.__add(make_button(key, style, True, url=link), position)
+
+    def ibutton(self, key, data, position=None, style=None):
+        self.__add(make_button(key, style, callback_data=data), position)
 
     def build_menu(self, b_cols=1, h_cols=8, fb_cols=2, lb_cols=2, f_cols=8):
         menu = [

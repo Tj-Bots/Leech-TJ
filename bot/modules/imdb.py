@@ -6,7 +6,7 @@ from pycountry import countries as conn
 
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 from pyrogram.filters import command, regex
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardMarkup
 from pyrogram.errors import MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
 
 from bot import bot, LOGGER, user_data, config_dict
@@ -14,7 +14,7 @@ from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.message_utils import sendMessage, editMessage
 from bot.helper.ext_utils.bot_utils import get_readable_time
-from bot.helper.telegram_helper.button_build import ButtonMaker
+from bot.helper.telegram_helper.button_build import ButtonMaker, make_button
 
 imdb = Cinemagoer(uri="sqlite:///cinemagoer.db")
 
@@ -234,18 +234,18 @@ async def imdb_callback(_, query):
             if isinstance(imdb["trailer"], list):
                 buttons.append(
                     [
-                        InlineKeyboardButton(
-                            "▶️ IMDb Trailer ", url=str(imdb["trailer"][-1])
+                        make_button(
+                            "▶️ IMDb Trailer ", is_url=True, url=str(imdb["trailer"][-1])
                         )
                     ]
                 )
                 imdb["trailer"] = list_to_str(imdb["trailer"])
             else:
                 buttons.append(
-                    [InlineKeyboardButton("▶️ IMDb Trailer ", url=str(imdb["trailer"]))]
+                    [make_button("▶️ IMDb Trailer ", is_url=True, url=str(imdb["trailer"]))]
                 )
         buttons.append(
-            [InlineKeyboardButton("🚫 Close 🚫", callback_data=f"imdb {user_id} close")]
+            [make_button("🚫 Close 🚫", callback_data=f"imdb {user_id} close")]
         )
         template = ""
         # if int(data[1]) in user_data and user_data[int(data[1])].get('imdb_temp'):

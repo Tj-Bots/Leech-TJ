@@ -17,7 +17,7 @@ from pyrogram import idle
 from pyrogram.enums import ChatMemberStatus, ChatType
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 from pyrogram.filters import command, private, regex
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InlineKeyboardMarkup
 
 from bot import (
     bot,
@@ -55,7 +55,7 @@ from .helper.telegram_helper.message_utils import (
     delete_all_messages,
 )
 from .helper.telegram_helper.filters import CustomFilters
-from .helper.telegram_helper.button_build import ButtonMaker
+from .helper.telegram_helper.button_build import ButtonMaker, make_button
 from .helper.listeners.aria2_listener import start_aria2_listener
 from .helper.themes import BotTheme
 from .modules import (
@@ -145,7 +145,7 @@ async def token_callback(_, query):
     await query.answer("Activated Temporary Token!", show_alert=True)
     kb = query.message.reply_markup.inline_keyboard[1:]
     kb.insert(
-        0, [InlineKeyboardButton(BotTheme("ACTIVATED"), callback_data="pass activated")]
+        0, [make_button(BotTheme("ACTIVATED"), callback_data="pass activated")]
     )
     await editReplyMarkup(query.message, InlineKeyboardMarkup(kb))
 
