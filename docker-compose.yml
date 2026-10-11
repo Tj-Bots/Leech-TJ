@@ -35,6 +35,13 @@ services:
 
     expose:
       - "8080"
+    ports:
+      - "8282:8080"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   tunnel:
     build:

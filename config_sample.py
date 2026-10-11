@@ -66,7 +66,7 @@ MEM_DEEP_STATS = False
 
 # Telegraph
 AUTHOR_NAME = "WZML-X"
-AUTHOR_URL = "https://t.me/WZML_X"
+AUTHOR_URL = "https://t.me/TJ_Bots"
 
 # Task Limits
 DIRECT_LIMIT = 0
@@ -130,7 +130,7 @@ LOGIN_PASS = ""
 ENABLE_TELEMETRY = True  # Send crash reports to remote worker
 
 # Bot Settings
-BOT_PM = False
+BOT_PM = True
 SET_COMMANDS = True
 TIMEZONE = "Asia/Kolkata"
 
@@ -151,7 +151,7 @@ YT_PRIVACY_STATUS = "unlisted"
 RCLONE_PATH = ""
 RCLONE_FLAGS = ""
 RCLONE_SERVE_URL = ""
-SHOW_CLOUD_LINK = True
+SHOW_CLOUD_LINK = False
 RCLONE_SERVE_PORT = 0
 RCLONE_SERVE_USER = ""
 RCLONE_SERVE_PASS = ""
@@ -183,8 +183,8 @@ USENET_SERVERS = [
 ]
 
 # Update
-UPSTREAM_REPO = ""
-UPSTREAM_BRANCH = "wzv3"
+UPSTREAM_REPO = "https://github.com/Tj-Bots/Leech-TJ"
+UPSTREAM_BRANCH = "wzgram"
 # Leech
 LEECH_SPLIT_SIZE = 0
 AS_DOCUMENT = False
@@ -193,7 +193,7 @@ MEDIA_GROUP = False
 TRANSMISSION_MODE = "both"
 LEECH_PREFIX = ""
 LEECH_SUFFIX = ""
-LEECH_FONT = ""
+LEECH_FONT = "b"
 LEECH_CAPTION = ""
 THUMBNAIL_LAYOUT = ""
 TMDB_ACCESS_TOKEN = ""
@@ -212,7 +212,7 @@ LINKS_LOG_ID = ""
 MIRROR_LOG_ID = ""
 
 # qBittorrent/Aria2c
-TORRENT_TIMEOUT = 0
+TORRENT_TIMEOUT = 300
 BASE_URL = ""
 WEB_PINCODE = True
 
