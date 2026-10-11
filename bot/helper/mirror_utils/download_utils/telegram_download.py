@@ -2,7 +2,9 @@
 from logging import getLogger, ERROR
 from time import time
 from asyncio import Lock
+from os import path as ospath
 from pyrogram import Client
+from pyrogram.enums import ChatType
 
 from bot import (
     LOGGER,
@@ -13,7 +15,9 @@ from bot import (
     bot,
     user,
     IS_PREMIUM_USER,
+    config_dict,
 )
+from bot.helper.mirror_utils.hyper_utils import HypertgDownload, get_dump_chat
 from bot.helper.mirror_utils.status_utils.telegram_status import TelegramStatus
 from bot.helper.mirror_utils.status_utils.queue_status import QueueStatus
 from bot.helper.telegram_helper.message_utils import (
@@ -43,13 +47,16 @@ class TelegramDownloadHelper:
         self.__decrypter = None
         self.__id = ""
         self.__is_cancelled = False
+        self.__hyper = None
 
     @property
     def speed(self):
-        return self.__processed_bytes / (time() - self.__start_time)
+        return self.processed_bytes / (time() - self.__start_time)
 
     @property
     def processed_bytes(self):
+        if self.__hyper is not None:
+            return self.__hyper.processed_bytes
         return self.__processed_bytes
 
     async def __onDownloadStart(self, name, size, file_id, from_queue):
@@ -93,8 +100,49 @@ class TelegramDownloadHelper:
         async with global_lock:
             GLOBAL_GID.remove(self.__id)
 
+    async def __hyper_download(self, message, path):
+        if not config_dict["USE_HYPER"] or self.__client is not bot:
+            return None
+        dump_chat = await get_dump_chat()
+        if dump_chat is None and message.chat.type not in (
+            ChatType.SUPERGROUP,
+            ChatType.CHANNEL,
+        ):
+            return None
+        hyper = HypertgDownload(self.__listener)
+        if not hyper.clients:
+            return None
+        self.__hyper = hyper
+        hpath = ospath.abspath(path) + ("/" if path.endswith("/") else "")
+        LOGGER.info(f"Hyper Download with {hyper.num_clients} client(s): {self.name}")
+        try:
+            download = await hyper.download_media(message, hpath, dump_chat)
+            if download is None and not self.__is_cancelled:
+                raise RuntimeError("Hyper returned nothing")
+            return download or False
+        except Exception as e:
+            self.__hyper = None
+            self.__processed_bytes = 0
+            if self.__is_cancelled:
+                return False
+            LOGGER.error(f"Hyper Download failed, using normal download: {e}")
+            return None
+        finally:
+            if hyper.message is not None and hyper.message.id != message.id:
+                try:
+                    await bot.delete_messages(hyper.dump_chat, hyper.message.id)
+                except Exception:
+                    pass
+
     async def __download(self, message, path):
         try:
+            download = await self.__hyper_download(message, path)
+            if download is not None:
+                if self.__is_cancelled or not download:
+                    await self.__onDownloadError("Cancelled by user!")
+                else:
+                    await self.__onDownloadComplete()
+                return
             if self.__client is None and self.__decrypter is not None:
                 try:
                     async with Client(
@@ -191,6 +239,8 @@ class TelegramDownloadHelper:
 
     async def cancel_download(self):
         self.__is_cancelled = True
+        if self.__hyper is not None:
+            await self.__hyper.cancel()
         LOGGER.info(
             f"Cancelling download via User: [ Name: {self.name} ID: {self.__id} ]"
         )
