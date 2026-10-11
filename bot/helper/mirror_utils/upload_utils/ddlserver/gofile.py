@@ -144,7 +144,50 @@ class Gofile:
         )
         return await self.__resp_handler(upload_file)
 
+    async def __guest_upload_file(self, path, guest_token="", folder_id=""):
+        new_path = ospath.join(
+            ospath.dirname(path), ospath.basename(path).replace(" ", ".")
+        )
+        if new_path != path:
+            await aiorename(path, new_path)
+        req_dict = {}
+        if guest_token:
+            req_dict["token"] = guest_token
+        if folder_id:
+            req_dict["folderId"] = folder_id
+        self.dluploader.last_uploaded = 0
+        resp = await self.dluploader.upload_aiohttp(
+            "https://upload.gofile.io/uploadfile", new_path, "file", req_dict
+        )
+        if not isinstance(resp, dict):
+            raise Exception("GoFile guest upload failed, no response")
+        return await self.__resp_handler(resp)
+
+    async def guest_upload(self, file_path):
+        """Upload without account, GoFile gives a guest token for the folder."""
+        if await aiopath.isfile(file_path):
+            data = await self.__guest_upload_file(file_path)
+            return data.get("downloadPage")
+        files = []
+        for root, _, fnames in await sync_to_async(walk, file_path):
+            files.extend(ospath.join(root, f) for f in sorted(fnames))
+        if not files:
+            raise Exception("GoFile: folder is empty")
+        guest_token = folder_id = link = ""
+        for f_path in files:
+            if self.dluploader.is_cancelled:
+                return None
+            data = await self.__guest_upload_file(f_path, guest_token, folder_id)
+            guest_token = guest_token or data.get("guestToken", "")
+            folder_id = folder_id or data.get("parentFolder", "")
+            link = link or data.get("downloadPage", "")
+            self.dluploader.total_files += 1
+        return link
+
     async def upload(self, file_path):
+        if not self.token:
+            LOGGER.info("GoFile: no API key, uploading as guest")
+            return await self.guest_upload(file_path)
         if not await self.is_goapi(self.token):
             raise Exception("Invalid Gofile API Key, Recheck your account !!")
 

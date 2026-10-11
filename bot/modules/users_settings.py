@@ -123,7 +123,7 @@ desp_dict = {
         "Send User TD details for Use while Mirror/Clone\n➲ <b>Format:</b>\nname id/link index(optional)\nname2 link2/id2 index(optional)\n\n<b>NOTE:</b>\n<i>1. Drive ID must be valid, then only it will accept\n2. Names can have spaces\n3. All UserTDs are updated on every change\n4. To delete specific UserTD, give Name(s) separated by each line</i>\n\n<b>Timeout:</b> 60 sec",
     ],
     "gofile": [
-        "Gofile is a free file sharing and storage platform. You can store and share your content without any limit.",
+        "Gofile is a free file sharing and storage platform. You can store and share your content without any limit. Works without API Key too (as Guest).",
         "Send GoFile's API Key. Get it on https://gofile.io/myProfile, It will not be Accepted if the API Key is Invalid !!\n<b>Timeout:</b> 60 sec",
     ],
     "streamtape": [
@@ -201,6 +201,8 @@ fname_dict = {
     "gofile": "GoFile",
     "streamtape": "StreamTape",
 }
+# these can upload without an account
+GUEST_DDL = ["gofile", "vikingfile"]
 DDL_SERVERS = ["gofile", "streamtape", "pixeldrain", "buzzheavier", "devuploads", "vikingfile"]
 fname_dict.update(
     {
@@ -225,7 +227,7 @@ desp_dict.update(
             "Send DevUploads's API Key. Get it on https://devuploads.com/?op=my_account\n<b>Optional Folder:</b> <code>key folder_id</code>\n<b>Timeout:</b> 60 sec",
         ],
         "vikingfile": [
-            "VikingFile is a free file hosting with no size limit.",
+            "VikingFile is a free file hosting with no size limit. Works without User Hash too (as Guest).",
             "Send VikingFile's User Hash. Get it on https://vikingfile.com/account\n<b>Optional Folder:</b> <code>hash folder/path</code>\n<b>Timeout:</b> 60 sec",
         ],
     }
@@ -1249,7 +1251,7 @@ async def edit_user_settings(client, query):
         key = data[2][1:]
         mode, api = ddl_dict.get(key, [False, ""])
         if data[2][0] == "s":
-            if not mode and api == "":
+            if not mode and api == "" and key not in GUEST_DDL:
                 return await query.answer(
                     "Set API to Enable DDL Server", show_alert=True
                 )

@@ -273,38 +273,39 @@ class WZMLStyle:
     UNIVERSAL = """㊂ <b><u>Universal Settings : {NAME}</u></b>
 
 <blockquote>╭<b> YT-DLP Options :</b> <b><code>{YT}</code></b>
+┊<b> YT-DLP Cookies :</b> <code>{COOKIES}</code>
+┊<b> FFmpeg Cmds :</b> <code>{FFCMDS}</code>
 ┊<b> Daily Tasks :</b> <code>{DT}</code> per day
 ┊<b> Last Bot Used :</b> <code>{LAST_USED}</code>
 ┊<b> User Session :</b> <code>{USESS}</code>
+┊<b> Mega Login :</b> <code>{MEGA}</code>
 ┊<b> MediaInfo Mode :</b> <code>{MEDIAINFO}</code>
 ┊<b> Save Mode :</b> <code>{SAVE_MODE}</code>
-╰<b> User Bot PM :</b> <code>{BOT_PM}</code></blockquote>
-
-<blockquote>╭<b> YT-DLP Cookies :</b> <code>{COOKIES}</code>
-┊<b> FFmpeg Cmds :</b> <code>{FFCMDS}</code>
-╰<b> Mega Login :</b> <code>{MEGA}</code></blockquote>"""
+╰<b> User Bot PM :</b> <code>{BOT_PM}</code></blockquote>"""
 
     MIRROR = """㊂ <b><u>Mirror/Clone Settings : {NAME}</u></b>
 
 <blockquote>╭<b> RClone Config :</b> <i>{RCLONE}</i>
+┊<b> RClone Path :</b> <code>{RCPATH}</code>
+┊<b> RClone Flags :</b> <code>{RCFLAGS}</code>
+┊<b> Upload Paths :</b> <i>{UPATHS}</i>
 ┊<b> Mirror Prefix :</b> <code>{MPREFIX}</code>
 ┊<b> Mirror Suffix :</b> <code>{MSUFFIX}</code>
 ┊<b> Mirror Remname :</b> <code>{MREMNAME}</code>
 ┊<b> DDL Server(s) :</b> <i>{DDL_SERVER}</i>
 ┊<b> User TD Mode :</b> <i>{TMODE}</i>
 ┊<b> Total User TD(s) :</b> <i>{USERTD}</i>
-╰<b> Daily Mirror :</b> <code>{DM}</code> per day</blockquote>
-
-<blockquote>╭<b> Rclone Path :</b> <code>{RCPATH}</code>
-┊<b> Rclone Flags :</b> <code>{RCFLAGS}</code>
-┊<b> Upload Paths :</b> <i>{UPATHS}</i>
-╰<b> Stop Duplicate :</b> <i>{STOPDUP}</i></blockquote>"""
+┊<b> Stop Duplicate :</b> <i>{STOPDUP}</i>
+╰<b> Daily Mirror :</b> <code>{DM}</code> per day</blockquote>"""
 
     LEECH = """㊂ <b><u>Leech Settings for {NAME}</u></b>
 
 <blockquote>╭<b> Daily Leech : </b><code>{DL}</code> per day
 ┊<b> Leech Type :</b> <i>{LTYPE}</i>
+┊<b> Transfer Mode :</b> <i>{TMODE}</i>
 ┊<b> Custom Thumbnail :</b> <i>{THUMB}</i>
+┊<b> Auto Thumbnail :</b> <i>{ATHUMB}</i>
+┊<b> Thumb Layout :</b> <i>{TLAYOUT}</i>
 ┊<b> Leech Split Size :</b> <code>{SPLIT_SIZE}</code>
 ┊<b> Equal Splits :</b> <i>{EQUAL_SPLIT}</i>
 ┊<b> Media Group :</b> <i>{MEDIA_GROUP}</i>
@@ -313,9 +314,5 @@ class WZMLStyle:
 ┊<b> Leech Suffix :</b> <code>{LSUFFIX}</code>
 ┊<b> Leech Dumps :</b> <code>{LDUMP}</code>
 ┊<b> Leech Remname :</b> <code>{LREMNAME}</code>
-╰<B> Leech Metadata :</b> <code>{LMETA}</code></blockquote>
-
-<blockquote>╭<b> Transfer Mode :</b> <i>{TMODE}</i>
 ┊<b> Excluded Ext :</b> <code>{EXCLUDED}</code>
-┊<b> Thumb Layout :</b> <i>{TLAYOUT}</i>
-╰<b> Auto Thumbnail :</b> <i>{ATHUMB}</i></blockquote>"""
+╰<b> Leech Metadata :</b> <code>{LMETA}</code></blockquote>"""
