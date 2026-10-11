@@ -1,7 +1,14 @@
+#!/usr/bin/env python3
 def get_version() -> str:
-    MAJOR = "3"
-    MINOR = "1"
-    PATCH = "11"
+    """
+    Returns the version details. Do not Interfere with this !
+
+    :return: The version details in the format 'vMAJOR.MINOR.PATCH-STATE'
+    :rtype: str
+    """
+    MAJOR = "1"
+    MINOR = "4"
+    PATCH = "0"
     STATE = "x"
     return f"v{MAJOR}.{MINOR}.{PATCH}-{STATE}"
 

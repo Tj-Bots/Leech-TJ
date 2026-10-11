@@ -1,74 +1,91 @@
-from pyrogram.enums import ButtonStyle
+#!/usr/bin/env python3
+from asyncio import sleep as asleep
+from aiofiles.os import path as aiopath, remove as aioremove, mkdir
+from telegraph import upload_file
 
-from ..core.config_manager import Config
-from ..helper.ext_utils.bot_utils import handleIndex, new_task
-from ..helper.ext_utils.db_handler import database
-from ..helper.telegram_helper.bot_commands import BotCommands
-from ..helper.telegram_helper.button_build import ButtonMaker
-from ..helper.telegram_helper.message_utils import (
-    send_message,
-    edit_message,
-    delete_message,
+from pyrogram.handlers import MessageHandler, CallbackQueryHandler
+from pyrogram.filters import command, regex
+
+from bot import bot, LOGGER, config_dict, DATABASE_URL
+from bot.helper.telegram_helper.message_utils import (
+    sendMessage,
+    editMessage,
+    deleteMessage,
 )
+from bot.helper.ext_utils.bot_utils import handleIndex, new_task
+from bot.helper.telegram_helper.filters import CustomFilters
+from bot.helper.telegram_helper.bot_commands import BotCommands
+from bot.helper.ext_utils.db_handler import DbManger
+from bot.helper.telegram_helper.button_build import ButtonMaker
 
 
 @new_task
 async def picture_add(_, message):
     resm = message.reply_to_message
-    editable = await send_message(message, "<i>Fetching Input ...</i>")
+    editable = await sendMessage(message, "<i>Fetching Input ...</i>")
     if len(message.command) > 1 or resm and resm.text:
         msg_text = resm.text if resm else message.command[1]
         if not msg_text.startswith("http"):
-            return await edit_message(
+            return await editMessage(
                 editable, "<b>Not a Valid Link, Must Start with 'http'</b>"
             )
         pic_add = msg_text.strip()
+        await editMessage(editable, f"<b>Adding your Link :</b> <code>{pic_add}</code>")
     elif resm and resm.photo:
         if resm.photo.file_size > 5242880 * 2:
-            return await edit_message(
+            return await editMessage(
                 editable, "<i>Media is Not Supported! Only Photos!!</i>"
             )
-        pic_add = resm.photo.file_id
+        try:
+            photo_dir = await resm.download()
+            await editMessage(
+                editable,
+                "<b>Now, Uploading to <code>graph.org</code>, Please Wait...</b>",
+            )
+            await asleep(1)
+            pic_add = f"https://graph.org{upload_file(photo_dir)[0]}"
+            LOGGER.info(f"Telegraph Link : {pic_add}")
+        except Exception as e:
+            LOGGER.error(f"Images Error: {str(e)}")
+            await editMessage(editable, str(e))
+        finally:
+            await aioremove(photo_dir)
     else:
-        help_msg = f"""⌬ <b><u>Add Image Usage</u></b>
-<blockquote>╭ <b>Reply to Link:</b> <code>/{BotCommands.AddImageCommand} {{link}}</code>
-┊ <b>Reply to Photo:</b> <code>/{BotCommands.AddImageCommand}</code>
-╰ <b>Supported:</b> <i>Telegra.ph, DDL links, Telegram photos</i></blockquote>"""
-        return await edit_message(editable, help_msg)
-    Config.IMAGES.append(pic_add)
-    if Config.DATABASE_URL:
-        await database.update_config({"IMAGES": Config.IMAGES})
-    await edit_message(
+        help_msg = "<b>By Replying to Link (Telegra.ph or DDL):</b>"
+        help_msg += f"\n<code>/{BotCommands.AddImageCommand}" + " {link}" + "</code>\n"
+        help_msg += "\n<b>By Replying to Photo on Telegram:</b>"
+        help_msg += f"\n<code>/{BotCommands.AddImageCommand}" + " {photo}" + "</code>"
+        return await editMessage(editable, help_msg)
+    config_dict["IMAGES"].append(pic_add)
+    if DATABASE_URL:
+        await DbManger().update_config({"IMAGES": config_dict["IMAGES"]})
+    await asleep(1.5)
+    await editMessage(
         editable,
-        f"⌬ <b><u>Image Added</u></b>\n\n<blockquote>╰ <b>Total Images :</b> <code>{len(Config.IMAGES)}</code></blockquote>",
+        f"<b><i>Successfully Added to Images List!</i></b>\n\n<b>• Total Images : {len(config_dict['IMAGES'])}</b>",
     )
 
 
-@new_task
 async def pictures(_, message):
-    if not Config.IMAGES:
-        await send_message(
-            message,
-            f"<b>No Photo to Show !</b> Add by <code>/{BotCommands.AddImageCommand}</code>",
+    if not config_dict["IMAGES"]:
+        await sendMessage(
+            message, f"<b>No Photo to Show !</b> Add by /{BotCommands.AddImageCommand}"
         )
     else:
-        to_edit = await send_message(
-            message, "<i>Generating Grid of your Images...</i>"
-        )
+        to_edit = await sendMessage(message, "<i>Generating Grid of your Images...</i>")
         buttons = ButtonMaker()
         user_id = message.from_user.id
-        buttons.data_button("\u00ab", f"images {user_id} turn -1")
-        buttons.data_button("\u00bb", f"images {user_id} turn 1")
-        buttons.data_button("Remove Image", f"images {user_id} remov 0")
-        buttons.data_button("❌", f"images {user_id} close", style=ButtonStyle.DANGER)
-        buttons.data_button("Remove All", f"images {user_id} removall", "footer")
-        await delete_message(to_edit)
-        total = len(Config.IMAGES)
-        await send_message(
+        buttons.ibutton("<<", f"images {user_id} turn -1")
+        buttons.ibutton(">>", f"images {user_id} turn 1")
+        buttons.ibutton("Remove Image", f"images {user_id} remov 0")
+        buttons.ibutton("Close", f"images {user_id} close")
+        buttons.ibutton("Remove All", f"images {user_id} removall", "footer")
+        await deleteMessage(to_edit)
+        await sendMessage(
             message,
-            f"⌬ <b><u>Image Gallery</u></b>\n\n<blockquote>╰ \U0001f304 <b>No. : 1 / {total}</b></blockquote>",
+            f'🌄 <b>Image No. : 1 / {len(config_dict["IMAGES"])}</b>',
             buttons.build_menu(2),
-            photo=Config.IMAGES[0],
+            config_dict["IMAGES"][0],
         )
 
 
@@ -82,82 +99,72 @@ async def pics_callback(_, query):
         return
     if data[2] == "turn":
         await query.answer()
-        if not Config.IMAGES:
-            await delete_message(message)
-            await send_message(
-                message,
-                f"<b>No Photo to Show !</b> Add by <code>/{BotCommands.AddImageCommand}</code>",
-            )
-            return
-        ind = handleIndex(int(data[3]), Config.IMAGES)
-        total = len(Config.IMAGES)
-        no = ind + 1
-        pic_info = f"⌬ <b><u>Image Gallery</u></b>\n\n<blockquote>╰ \U0001f304 <b>No. : {no} / {total}</b></blockquote>"
+        ind = handleIndex(int(data[3]), config_dict["IMAGES"])
+        no = len(config_dict["IMAGES"]) - abs(ind + 1) if ind < 0 else ind + 1
+        pic_info = f'🌄 <b>Image No. : {no} / {len(config_dict["IMAGES"])}</b>'
         buttons = ButtonMaker()
-        buttons.data_button("\u00ab", f"images {data[1]} turn {ind - 1}")
-        buttons.data_button("\u00bb", f"images {data[1]} turn {ind + 1}")
-        buttons.data_button("Remove Image", f"images {data[1]} remov {ind}")
-        buttons.data_button("❌", f"images {data[1]} close", style=ButtonStyle.DANGER)
-        buttons.data_button("Remove All", f"images {data[1]} removall", "footer")
-        if message.media:
-            await edit_message(
-                message, pic_info, buttons.build_menu(2), photo=Config.IMAGES[ind]
-            )
-        else:
-            await delete_message(message)
-            await send_message(
-                message,
-                pic_info,
-                buttons.build_menu(2),
-                photo=Config.IMAGES[ind],
-            )
-    elif data[2] == "remov":
-        Config.IMAGES.pop(int(data[3]))
-        if Config.DATABASE_URL:
-            await database.update_config({"IMAGES": Config.IMAGES})
-        await query.answer("Image Successfully Deleted", show_alert=True)
-        if len(Config.IMAGES) == 0:
-            await delete_message(message)
-            await send_message(
-                message,
-                f"<b>No Photo to Show !</b> Add by <code>/{BotCommands.AddImageCommand}</code>",
-            )
-            return
-        ind = int(data[3])
-        ind = min(ind, len(Config.IMAGES) - 1)
-        total = len(Config.IMAGES)
-        no = ind + 1
-        pic_info = f"⌬ <b><u>Image Gallery</u></b>\n\n<blockquote>╰ \U0001f304 <b>No. : {no} / {total}</b></blockquote>"
-        buttons = ButtonMaker()
-        buttons.data_button("\u00ab", f"images {data[1]} turn {ind - 1}")
-        buttons.data_button("\u00bb", f"images {data[1]} turn {ind + 1}")
-        buttons.data_button("Remove Image", f"images {data[1]} remov {ind}")
-        buttons.data_button("❌", f"images {data[1]} close", style=ButtonStyle.DANGER)
-        buttons.data_button("Remove All", f"images {data[1]} removall", "footer")
-        if message.media:
-            await edit_message(
-                message, pic_info, buttons.build_menu(2), photo=Config.IMAGES[ind]
-            )
-        else:
-            await delete_message(message)
-            await send_message(
-                message,
-                pic_info,
-                buttons.build_menu(2),
-                photo=Config.IMAGES[ind],
-            )
-    elif data[2] == "removall":
-        Config.IMAGES.clear()
-        if Config.DATABASE_URL:
-            await database.update_config({"IMAGES": Config.IMAGES})
-        await query.answer("All Images Successfully Deleted", show_alert=True)
-        await delete_message(message)
-        await send_message(
-            message,
-            f"<b>No Images to Show !</b> Add by <code>/{BotCommands.AddImageCommand}</code>",
+        buttons.ibutton("<<", f"images {data[1]} turn {ind-1}")
+        buttons.ibutton(">>", f"images {data[1]} turn {ind+1}")
+        buttons.ibutton("Remove Image", f"images {data[1]} remov {ind}")
+        buttons.ibutton("Close", f"images {data[1]} close")
+        buttons.ibutton("Remove All", f"images {data[1]} removall", "footer")
+        await editMessage(
+            message, pic_info, buttons.build_menu(2), config_dict["IMAGES"][ind]
         )
+    elif data[2] == "remov":
+        config_dict["IMAGES"].pop(int(data[3]))
+        if DATABASE_URL:
+            await DbManger().update_config({"IMAGES": config_dict["IMAGES"]})
+        await query.answer("Image Successfully Deleted", show_alert=True)
+        if len(config_dict["IMAGES"]) == 0:
+            await deleteMessage(query.message)
+            await sendMessage(
+                message,
+                f"<b>No Photo to Show !</b> Add by /{BotCommands.AddImageCommand}",
+            )
+            return
+        ind = int(data[3]) + 1
+        ind = len(config_dict["IMAGES"]) - abs(ind) if ind < 0 else ind
+        pic_info = f'🌄 <b>Image No. : {ind+1} / {len(config_dict["IMAGES"])}</b>'
+        buttons = ButtonMaker()
+        buttons.ibutton("<<", f"images {data[1]} turn {ind-1}")
+        buttons.ibutton(">>", f"images {data[1]} turn {ind+1}")
+        buttons.ibutton("Remove Image", f"images {data[1]} remov {ind}")
+        buttons.ibutton("Close", f"images {data[1]} close")
+        buttons.ibutton("Remove All", f"images {data[1]} removall", "footer")
+        await editMessage(
+            message, pic_info, buttons.build_menu(2), config_dict["IMAGES"][ind]
+        )
+    elif data[2] == "removall":
+        config_dict["IMAGES"].clear()
+        if DATABASE_URL:
+            await DbManger().update_config({"IMAGES": config_dict["IMAGES"]})
+        await query.answer("All Images Successfully Deleted", show_alert=True)
+        await sendMessage(
+            message, f"<b>No Images to Show !</b> Add by /{BotCommands.AddImageCommand}"
+        )
+        await deleteMessage(message)
     else:
         await query.answer()
-        await delete_message(message)
+        await deleteMessage(message)
         if message.reply_to_message:
-            await delete_message(message.reply_to_message)
+            await deleteMessage(message.reply_to_message)
+
+
+bot.add_handler(
+    MessageHandler(
+        picture_add,
+        filters=command(BotCommands.AddImageCommand)
+        & CustomFilters.authorized
+        & ~CustomFilters.blacklisted,
+    )
+)
+bot.add_handler(
+    MessageHandler(
+        pictures,
+        filters=command(BotCommands.ImagesCommand)
+        & CustomFilters.authorized
+        & ~CustomFilters.blacklisted,
+    )
+)
+bot.add_handler(CallbackQueryHandler(pics_callback, filters=regex(r"^images")))

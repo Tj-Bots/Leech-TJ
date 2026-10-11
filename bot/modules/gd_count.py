@@ -1,15 +1,25 @@
-from ..helper.ext_utils.bot_utils import sync_to_async, new_task
-from ..helper.ext_utils.links_utils import is_gdrive_link
-from ..helper.ext_utils.status_utils import get_readable_file_size
-from ..helper.mirror_leech_utils.gdrive_utils.count import GoogleDriveCount
-from ..helper.telegram_helper.message_utils import delete_message, send_message
+#!/usr/bin/env python3
+from pyrogram.handlers import MessageHandler
+from pyrogram.filters import command
+
+from bot import bot
+from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
+from bot.helper.telegram_helper.message_utils import deleteMessage, sendMessage
+from bot.helper.telegram_helper.filters import CustomFilters
+from bot.helper.telegram_helper.bot_commands import BotCommands
+from bot.helper.ext_utils.bot_utils import (
+    is_gdrive_link,
+    sync_to_async,
+    new_task,
+    get_readable_file_size,
+)
+from bot.helper.themes import BotTheme
 
 
 @new_task
-async def count_node(_, message):
+async def countNode(_, message):
     args = message.text.split()
-    user = message.from_user or message.sender_chat
-    if username := user.username:
+    if username := message.from_user.username:
         tag = f"@{username}"
     else:
         tag = message.from_user.mention
@@ -19,24 +29,32 @@ async def count_node(_, message):
         link = reply_to.text.split(maxsplit=1)[0].strip()
 
     if is_gdrive_link(link):
-        msg = await send_message(message, f"Counting: <code>{link}</code>")
-        name, mime_type, size, files, folders = await sync_to_async(
-            GoogleDriveCount().count, link, user.id
-        )
+        msg = await sendMessage(message, BotTheme("COUNT_MSG", LINK=link))
+        gd = GoogleDriveHelper()
+        name, mime_type, size, files, folders = await sync_to_async(gd.count, link)
         if mime_type is None:
-            await send_message(message, name)
+            await sendMessage(message, name)
             return
-        await delete_message(msg)
-        msg = f"<b>Name: </b><code>{name}</code>"
-        msg += f"\n\n<b>Size: </b>{get_readable_file_size(size)}"
-        msg += f"\n\n<b>Type: </b>{mime_type}"
+        await deleteMessage(msg)
+        msg = BotTheme("COUNT_NAME", COUNT_NAME=name)
+        msg += BotTheme("COUNT_SIZE", COUNT_SIZE=get_readable_file_size(size))
+        msg += BotTheme("COUNT_TYPE", COUNT_TYPE=mime_type)
         if mime_type == "Folder":
-            msg += f"\n<b>SubFolders: </b>{folders}"
-            msg += f"\n<b>Files: </b>{files}"
-        msg += f"\n\n<b>cc: </b>{tag}"
+            msg += BotTheme("COUNT_SUB", COUNT_SUB=folders)
+            msg += BotTheme("COUNT_FILE", COUNT_FILE=files)
+        msg += BotTheme("COUNT_CC", COUNT_CC=tag)
     else:
         msg = (
             "Send Gdrive link along with command or by replying to the link by command"
         )
+    await sendMessage(message, msg, photo="IMAGES")
 
-    await send_message(message, msg, photo="IMAGES")
+
+bot.add_handler(
+    MessageHandler(
+        countNode,
+        filters=command(BotCommands.CountCommand)
+        & CustomFilters.authorized
+        & ~CustomFilters.blacklisted,
+    )
+)

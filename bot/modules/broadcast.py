@@ -1,107 +1,27 @@
-from asyncio import sleep
+#!/usr/bin/env python3
 from time import time
-from secrets import token_hex
+from uuid import uuid4
+from asyncio import sleep
+from pyrogram.handlers import MessageHandler
+from pyrogram.filters import command
+from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
-from pyrogram.errors import FloodWait, InputUserDeactivated, UserIsBlocked
-
-from ..core.config_manager import Config
-from ..core.tg_client import TgClient
-from ..helper.ext_utils.bot_utils import new_task
-from ..helper.ext_utils.db_handler import database
-from ..helper.ext_utils.status_utils import get_readable_time
-from ..helper.telegram_helper.message_utils import (
-    edit_message,
-    send_message,
-)
+from bot import bot, LOGGER, DATABASE_URL
+from bot.helper.ext_utils.db_handler import DbManger
+from bot.helper.telegram_helper.message_utils import sendMessage, editMessage
+from bot.helper.telegram_helper.filters import CustomFilters
+from bot.helper.telegram_helper.bot_commands import BotCommands
+from bot.helper.telegram_helper.button_build import ButtonMaker
+from bot.helper.ext_utils.bot_utils import new_task, get_readable_time
 
 bc_cache = {}
-
-
-async def delete_broadcast(bc_id, message):
-    if bc_id not in bc_cache:
-        return await send_message(message, "Invalid Broadcast ID!")
-
-    temp_wait = await send_message(
-        message, "<i>Deleting the Broadcasted Message! Please Wait ...</i>"
-    )
-    total, success, failed = 0, 0, 0
-    msgs = bc_cache.get(bc_id, [])
-    for uid, msg_id in msgs:
-        try:
-            await (await TgClient.bot.get_messages(uid, msg_id)).delete()
-            success += 1
-        except FloodWait as e:
-            await sleep(e.value)
-            await (await TgClient.bot.get_messages(uid, msg_id)).delete()
-            success += 1
-        except Exception as e:
-            print(f"Error deleting message for user {uid}: {e}")
-            failed += 1
-        total += 1
-    return await edit_message(
-        temp_wait,
-        f"""⌬  <b><i>Broadcast Deleted Stats :</i></b>
-<blockquote>╭ <b>Total Users:</b> <code>{total}</code>
-┊ <b>Success:</b> <code>{success}</code>
-╰ <b>Failed Attempts:</b> <code>{failed}</code></blockquote>
-
-<b>Broadcast ID:</b> <code>{bc_id}</code>""",
-    )
-
-
-async def edit_broadcast(bc_id, message, rply):
-    if bc_id not in bc_cache:
-        return await send_message(message, "Invalid Broadcast ID!")
-
-    temp_wait = await send_message(
-        message, "<i>Editing the Broadcasted Message! Please Wait ...</i>"
-    )
-    total, success, failed = 0, 0, 0
-    for uid, msg_id in bc_cache[bc_id]:
-        msg = await TgClient.bot.get_messages(uid, msg_id)
-        if hasattr(msg, "forward_from"):
-            return await edit_message(
-                temp_wait,
-                "<i>Forwarded Messages can't be Edited, Only can be Deleted!</i>",
-            )
-        try:
-            await msg.edit(
-                text=rply.text,
-                entities=rply.entities,
-                reply_markup=rply.reply_markup,
-            )
-            await sleep(0.3)
-            success += 1
-        except FloodWait as e:
-            await sleep(e.value)
-            await msg.edit(
-                text=rply.text,
-                entities=rply.entities,
-                reply_markup=rply.reply_markup,
-            )
-            success += 1
-        except Exception as e:
-            print(f"Error editing message for user {uid}: {e}")
-            failed += 1
-        total += 1
-    return await edit_message(
-        temp_wait,
-        f"""⌬  <b><i>Broadcast Edited Stats :</i></b>
-<blockquote>╭ <b>Total Users:</b> <code>{total}</code>
-┊ <b>Success:</b> <code>{success}</code>
-╰ <b>Failed Attempts:</b> <code>{failed}</code></blockquote>
-
-<b>Broadcast ID:</b> <code>{bc_id}</code>""",
-    )
 
 
 @new_task
 async def broadcast(_, message):
     bc_id, forwarded, quietly, deleted, edited = "", False, False, False, False
-    if not Config.DATABASE_URL:
-        return await send_message(
-            message, "DATABASE_URL not provided to fetch PM Users!"
-        )
+    if not DATABASE_URL:
+        return await sendMessage(message, "DATABASE_URL not provided!")
     rply = message.reply_to_message
     if len(message.command) > 1:
         if not message.command[1].startswith("-"):
@@ -109,7 +29,7 @@ async def broadcast(_, message):
                 message.command[1] if bc_cache.get(message.command[1], False) else ""
             )
             if not bc_id:
-                return await send_message(
+                return await sendMessage(
                     message,
                     "<i>Broadcast ID not found! After Restart, you can't edit or delete broadcasted messages...</i>",
                 )
@@ -123,7 +43,7 @@ async def broadcast(_, message):
             elif arg in ["-e", "-edit"] and bc_id and rply:
                 edited = True
     if not bc_id and not rply:
-        return await send_message(
+        return await sendMessage(
             message,
             """<b>By replying to msg to Broadcast:</b>
 /broadcast bc_id -d -e -f -q
@@ -144,57 +64,113 @@ async def broadcast(_, message):
 1. Broadcast msgs can be only edited or deleted until restart.
 2. Forwarded msgs can't be Edited""",
         )
+    t, s, b, d, u = 0, 0, 0, 0, 0
     if deleted:
-        return await delete_broadcast(bc_id, message)
-    elif edited:
-        return await edit_broadcast(bc_id, message, rply)
+        temp_wait = await sendMessage(
+            message, "<i>Deleting the Broadcasted Message! Please Wait ...</i>"
+        )
+        for msg in (msgs := bc_cache[bc_id]):
+            try:
+                await msg.delete()
+                await sleep(0.5)
+                msgs.pop(msgs.index(msg))
+                s += 1
+            except Exception:
+                u += 1
+            t += 1
+        return await editMessage(
+            temp_wait,
+            f"""⌬  <b><i>Broadcast Deleted Stats :</i></b>
+┠ <b>Total Users:</b> <code>{t}</code>
+┠ <b>Success:</b> <code>{s}</code>
+┖ <b>Unsuccess Attempt:</b> <code>{u}</code>
 
-    # Broadcasting logic
+<b>Broadcast ID:</b> <code>{bc_id}</code>""",
+        )
+    elif edited:
+        temp_wait = await sendMessage(
+            message, "<i>Editing the Broadcasted Message! Please Wait ...</i>"
+        )
+        for msg in bc_cache[bc_id]:
+            if hasattr(msg, "forward_from"):
+                return await editMessage(
+                    temp_wait,
+                    "<i>Forwarded Messages can't be Edited, Only can be Deleted !</i>",
+                )
+            try:
+                await msg.edit(
+                    text=rply.text,
+                    entities=rply.entities,
+                    reply_markup=rply.reply_markup,
+                )
+                await sleep(0.5)
+                s += 1
+            except FloodWait as e:
+                await sleep(e.value)
+                await msg.edit(
+                    text=rply.text,
+                    entities=rply.entities,
+                    reply_markup=rply.reply_markup,
+                )
+            except Exception:
+                u += 1
+            t += 1
+        return await editMessage(
+            temp_wait,
+            f"""⌬  <b><i>Broadcast Edited Stats :</i></b>
+┠ <b>Total Users:</b> <code>{t}</code>
+┠ <b>Success:</b> <code>{s}</code>
+┖ <b>Unsuccess Attempt:</b> <code>{u}</code>
+
+<b>Broadcast ID:</b> <code>{bc_id}</code>""",
+        )
     start_time = time()
     status = """⌬  <b><i>Broadcast Stats :</i></b>
-<blockquote>╭ <b>Total Users:</b> <code>{t}</code>
-┊ <b>Success:</b> <code>{s}</code>
-┊ <b>Blocked Users:</b> <code>{b}</code>
-┊ <b>Deleted Accounts:</b> <code>{d}</code>
-╰ <b>Unsuccess Attempt:</b> <code>{u}</code></blockquote>"""
+┠ <b>Total Users:</b> <code>{t}</code>
+┠ <b>Success:</b> <code>{s}</code>
+┠ <b>Blocked Users:</b> <code>{b}</code>
+┠ <b>Deleted Accounts:</b> <code>{d}</code>
+┖ <b>Unsuccess Attempt:</b> <code>{u}</code>"""
     updater = time()
-    bc_hash, bc_msgs = token_hex(5), []
-    pls_wait = await send_message(message, status.format(t=0, s=0, b=0, d=0, u=0))
-    t, s, b, d, u = 0, 0, 0, 0, 0
-    for uid in await database.get_pm_uids():
-        bc_msg = None
+    bc_hash, bc_msgs = str(uuid4()), []
+    pls_wait = await sendMessage(message, status.format(**locals()))
+    for uid in await DbManger().get_pm_uids():
         try:
-            bc_msg = (
-                await rply.forward(uid, disable_notification=quietly)
-                if forwarded
-                else await rply.copy(uid, disable_notification=quietly)
-            )
+            if forwarded:
+                bc_msg = await rply.forward(uid, disable_notification=quietly)
+            else:
+                bc_msg = await rply.copy(uid, disable_notification=quietly)
             s += 1
         except FloodWait as e:
-            await sleep(e.value * 1.1)
-            bc_msg = (
-                await rply.forward(uid, disable_notification=quietly)
-                if forwarded
-                else await rply.copy(uid, disable_notification=quietly)
-            )
+            await sleep(e.value)
+            if forwarded:
+                bc_msg = await rply.forward(uid, disable_notification=quietly)
+            else:
+                bc_msg = await rply.copy(uid, disable_notification=quietly)
             s += 1
         except UserIsBlocked:
-            await database.rm_pm_user(uid)
+            await DbManger().rm_pm_user(uid)
             b += 1
         except InputUserDeactivated:
-            await database.rm_pm_user(uid)
+            await DbManger().rm_pm_user(uid)
             d += 1
-        except Exception as e:
-            print(f"Error broadcasting message to user {uid}: {e}")
+        except Exception:
             u += 1
         if bc_msg:
-            bc_msgs.append((uid, bc_msg.id))
+            bc_msgs.append(bc_msg)
         t += 1
         if (time() - updater) > 10:
-            await edit_message(pls_wait, status.format(t=t, s=s, b=b, d=d, u=u))
+            await editMessage(pls_wait, status.format(**locals()))
             updater = time()
     bc_cache[bc_hash] = bc_msgs
-    await edit_message(
+    await editMessage(
         pls_wait,
-        f"{status.format(t=t, s=s, b=b, d=d, u=u)}\n\n<b>Elapsed Time:</b> <code>{get_readable_time(time() - start_time)}</code>\n<b>Broadcast ID:</b> <code>{bc_hash}</code>",
+        f"{status.format(**locals())}\n\n<b>Elapsed Time:</b> <code>{get_readable_time(time() - start_time)}</code>\n<b>Broadcast ID:</b> <code>{bc_hash}</code>",
     )
+
+
+bot.add_handler(
+    MessageHandler(
+        broadcast, filters=command(BotCommands.BroadcastCommand) & CustomFilters.sudo
+    )
+)
