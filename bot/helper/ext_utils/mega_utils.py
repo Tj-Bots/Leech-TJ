@@ -165,7 +165,7 @@ def _get_mega_account_info_sync(email: str, password: str) -> str:
     from time import sleep, gmtime, strftime
 
     if not email or not password:
-        return "⌬ <b>Mega Account Info</b>\n│\n┖ <i>No credentials configured.</i>"
+        return "⌬ <b>Mega Account Info</b>\n<blockquote>╰ <i>No credentials configured.</i></blockquote>"
 
     base_dir = mkdtemp(prefix=".mega_account_")
 
@@ -198,15 +198,15 @@ def _get_mega_account_info_sync(email: str, password: str) -> str:
                 sleep(0.1)
             else:
                 return (
-                    f"⌬ <b>Mega Account Info</b>\n│\n┖ {step_name} timed out after 5s"
+                    f"⌬ <b>Mega Account Info</b>\n<blockquote>╰ {step_name} timed out after 5s</blockquote>"
                 )
 
             if listener.error:
-                return f"⌬ <b>Mega Account Info</b>\n│\n┖ {step_name} failed: {listener.error}"
+                return f"⌬ <b>Mega Account Info</b>\n<blockquote>╰ {step_name} failed: {listener.error}</blockquote>"
 
         info = listener.result
         if not info:
-            return "⌬ <b>Mega Account Info</b>\n│\n┖ No account details available."
+            return "⌬ <b>Mega Account Info</b>\n<blockquote>╰ No account details available.</blockquote>"
 
         storage_max = info["storage_max"]
         storage_used = info["storage_used"]
@@ -227,43 +227,41 @@ def _get_mega_account_info_sync(email: str, password: str) -> str:
 
         text = (
             f"⌬ <b>Mega Account Info</b>\n"
-            f"│\n"
-            f"┠ <b>Email</b> → <code>{email}</code>\n"
-            f"┠ <b>Account Type</b> → {pro_name}\n"
+            f"<blockquote>╭ <b>Email :</b> <code>{email}</code>\n"
+            f"┊ <b>Account Type :</b> {pro_name}\n"
         )
         if pro_expiration > 0:
-            text += f"┠ <b>Pro Expires</b> → {strftime('%Y-%m-%d', gmtime(pro_expiration))}\n"
+            text += f"┊ <b>Pro Expires :</b> {strftime('%Y-%m-%d', gmtime(pro_expiration))}\n"
 
         text += (
-            f"┃\n"
-            f"┠ <b>Storage</b> → {get_readable_file_size(storage_used)} / "
+            f"┊ <b>Storage :</b> {get_readable_file_size(storage_used)} / "
             f"{get_readable_file_size(storage_max)} ({storage_pct}%)\n"
         )
 
         if transfer_pct is not None:
             text += (
-                f"┠ <b>Transfer</b> → {get_readable_file_size(transfer_used)} / "
+                f"┊ <b>Transfer :</b> {get_readable_file_size(transfer_used)} / "
                 f"{get_readable_file_size(transfer_max)} ({transfer_pct}%)\n"
             )
         else:
-            text += f"┠ <b>Transfer</b> → {get_readable_file_size(transfer_used)} / Unlimited\n"
+            text += f"┊ <b>Transfer :</b> {get_readable_file_size(transfer_used)} / Unlimited\n"
 
         if listener.root_handle is not None:
             try:
                 num_files = info["num_files"]
                 num_folders = info["num_folders"]
                 text += (
-                    f"┃\n┠ <b>Files</b> → {num_files}\n┖ <b>Folders</b> → {num_folders}"
+                    f"┊ <b>Files :</b> {num_files}\n╰ <b>Folders :</b> {num_folders}</blockquote>"
                 )
             except Exception:
-                text += "┃\n┖ <b>Files/Folders</b> → N/A"
+                text += "╰ <b>Files/Folders :</b> N/A</blockquote>"
         else:
-            text += "┖ <b>Files/Folders</b> → N/A"
+            text += "╰ <b>Files/Folders :</b> N/A</blockquote>"
 
         return text
 
     except Exception as e:
-        return f"⌬ <b>Mega Account Info</b>\n│\n┖ Error: {e}"
+        return f"⌬ <b>Mega Account Info</b>\n<blockquote>╰ Error: {e}</blockquote>"
     finally:
         try:
             api.removeListener(listener)

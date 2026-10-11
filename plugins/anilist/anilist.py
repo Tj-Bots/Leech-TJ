@@ -286,8 +286,8 @@ async def manga_command(_, message):
 async def animehelp_command(_, message):
     await send_message(
         message,
-        "⌬ <b><u>Anime Help</u></b>\n│\n"
-        "┟ <b>/anime</b> → search AniList\n"
-        "┠ <b>/character</b> → search an AniList character\n"
-        "┖ <b>/manga</b> → search manga",
+        "⌬ <b><u>Anime Help</u></b>\n\n"
+        "<blockquote>╭ <b>/anime :</b> search AniList\n"
+        "┊ <b>/character :</b> search an AniList character\n"
+        "╰ <b>/manga :</b> search manga</blockquote>",
     )
