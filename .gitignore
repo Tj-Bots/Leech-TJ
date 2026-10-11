@@ -3,3 +3,5 @@ cookies.txt
 accounts/
 credentials.json
 token.pickle
+__pycache__/
+*.pyc
