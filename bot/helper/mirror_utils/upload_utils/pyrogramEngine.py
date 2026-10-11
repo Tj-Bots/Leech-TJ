@@ -34,6 +34,11 @@ from bot import (
     user,
     IS_PREMIUM_USER,
 )
+from bot.helper.mirror_utils.hyper_utils import (
+    ensure_peer,
+    pick_upload_client,
+    release_upload_client,
+)
 from bot.helper.themes import BotTheme
 from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.telegram_helper.message_utils import (
@@ -88,6 +93,8 @@ class TgUploader:
         self.__last_msg_in_group = False
         self.__prm_media = False
         self.__client = bot
+        self.__hyper_up = False
+        self.__hyper_idx = None
         self.__up_path = ""
         self.__mediainfo = False
         self.__as_doc = False
@@ -376,10 +383,36 @@ class TgUploader:
         return rlist
 
     async def __switching_client(self):
+        await self.__release_hyper()
+        if self.__prm_media and IS_PREMIUM_USER:
+            self.__client = user
+        else:
+            self.__client = bot
+            if (
+                self.__leechmsg
+                and not self.__media_group
+                and config_dict["USE_HYPER"]
+                and await aiopath.getsize(self.__up_path) > 10 * 1024 * 1024
+            ):
+                idx, client = await pick_upload_client()
+                if client is not None:
+                    try:
+                        await ensure_peer(client, self.__sent_msg.chat.id)
+                        self.__client = client
+                        self.__hyper_idx = idx
+                        self.__hyper_up = True
+                    except Exception as e:
+                        LOGGER.error(f"Hyper Upload client error: {e}")
+                        await release_upload_client(idx)
         LOGGER.info(
-            f'Uploading Media {">" if self.__prm_media else "<"} 2GB by {"User" if self.__prm_media else "Bot"} Client'
+            f'Uploading Media {">" if self.__prm_media else "<"} 2GB by {"Hyper" if self.__hyper_up else "User" if self.__client is user else "Bot"} Client'
         )
-        self.__client = user if (self.__prm_media and IS_PREMIUM_USER) else bot
+
+    async def __release_hyper(self):
+        if self.__hyper_idx is not None:
+            await release_upload_client(self.__hyper_idx)
+        self.__hyper_idx = None
+        self.__hyper_up = False
 
     async def __send_media_group(self, subkey, key, msgs):
         msgs_list = await msgs[0].reply_to_message.reply_media_group(
@@ -498,6 +531,7 @@ class TgUploader:
                         return
                     continue
                 finally:
+                    await self.__release_hyper()
                     if (
                         not self.__is_cancelled
                         and await aiopath.exists(self.__up_path)
@@ -589,7 +623,9 @@ class TgUploader:
                     reply_markup=buttons,
                 )
 
-                if self.__prm_media and (self.__has_buttons or not self.__leechmsg):
+                if (self.__prm_media or self.__hyper_up) and (
+                    self.__has_buttons or not self.__leechmsg
+                ):
                     try:
                         self.__sent_msg = await bot.copy_message(
                             nrml_media.chat.id,
@@ -649,7 +685,9 @@ class TgUploader:
                     progress=self.__upload_progress,
                     reply_markup=buttons,
                 )
-                if self.__prm_media and (self.__has_buttons or not self.__leechmsg):
+                if (self.__prm_media or self.__hyper_up) and (
+                    self.__has_buttons or not self.__leechmsg
+                ):
                     try:
                         self.__sent_msg = await bot.copy_message(
                             nrml_media.chat.id,
@@ -669,7 +707,8 @@ class TgUploader:
                 duration, artist, title = await get_media_info(self.__up_path)
                 if self.__is_cancelled:
                     return
-                self.__sent_msg = await self.__client.send_audio(
+                client = bot if self.__hyper_up else self.__client
+                self.__sent_msg = await client.send_audio(
                     chat_id=self.__sent_msg.chat.id,
                     reply_to_message_id=self.__sent_msg.id,
                     audio=self.__up_path,
@@ -686,7 +725,8 @@ class TgUploader:
                 key = "photos"
                 if self.__is_cancelled:
                     return
-                self.__sent_msg = await self.__client.send_photo(
+                client = bot if self.__hyper_up else self.__client
+                self.__sent_msg = await client.send_photo(
                     chat_id=self.__sent_msg.chat.id,
                     reply_to_message_id=self.__sent_msg.id,
                     photo=self.__up_path,
