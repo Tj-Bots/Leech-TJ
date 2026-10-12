@@ -597,7 +597,11 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             TMODE=TRANSFER_MODES[tmode],
             EXCLUDED=escape(user_dict.get("excluded_ext") or "Not Exists"),
             TLAYOUT=user_dict.get("thumb_layout") or "Not Exists",
-            ATHUMB="Enabled" if user_dict.get("auto_thumb") else "Disabled",
+            ATHUMB=(
+                ("Enabled (Custom Thumbnail wins)" if thumbmsg == "Exists" else "Enabled")
+                if user_dict.get("auto_thumb")
+                else "Disabled"
+            ),
         )
 
         buttons.ibutton("◀️", f"userset {user_id} back", "footer")
