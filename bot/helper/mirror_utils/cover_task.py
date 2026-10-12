@@ -53,6 +53,8 @@ async def cover_task(client, message):
         leech_utils={"screenshots": 0, "thumb": ""},
     )
     listener.isCover = True
+    # covers always go to PM, like a leech with Bot PM
+    listener.isPM = True
     listener.upload_details["mode"] = listener.upload_details["mode"].replace(
         "#Leech", "#Cover", 1
     )
@@ -77,13 +79,8 @@ async def cover_task(client, message):
         if listener.suproc == "cancelled":
             return
 
-        # no dump chat for covers: straight to PM, or the same chat
-        if listener.isPM or not listener.isSuperGroup:
-            dest, reply_id = user_id, None
-        else:
-            dest, reply_id = message.chat.id, message.id
         kwargs = dict(
-            chat_id=dest,
+            chat_id=user_id,
             video=video.file_id,
             caption=reply.caption or "",
             caption_entities=reply.caption_entities,
@@ -92,20 +89,16 @@ async def cover_task(client, message):
             height=video.height or 0,
             supports_streaming=True,
             disable_notification=True,
-            reply_to_message_id=reply_id,
         )
         kwargs[COVER_KWARG] = cover
         try:
-            sent = await bot.send_video(**kwargs)
+            await bot.send_video(**kwargs)
         except Exception as e:
-            if dest != user_id or not listener.isSuperGroup:
-                raise
-            # bot not started in PM, send it in the group instead
             LOGGER.error(f"Cover: can't send to PM of {user_id}: {e}")
-            kwargs.update(chat_id=message.chat.id, reply_to_message_id=message.id)
-            sent = await bot.send_video(**kwargs)
+            raise Exception("Start the Bot in PM (Private) and try again!")
 
-        files = {sent.link: name} if sent.chat.id != user_id else {}
+        # same completion message as a leech: file list + Sent to Bot PM
+        files = {reply.link: name} if listener.isSuperGroup and reply.link else {}
         await listener.onUploadComplete(None, size, files, 1, 0, name)
     except Exception as e:
         LOGGER.error(f"Cover failed: {e}")
