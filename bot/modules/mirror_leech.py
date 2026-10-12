@@ -599,8 +599,8 @@ async def wzmlxcb(_, query):
         await query.answer(url=f"https://t.me/{bot_name}?start=wzmlx")
     elif data[2] == "help":
         await query.answer()
-        if len(data) < 5:
-            return
+        if len(data) < 5 or data[4] in ("p", "i"):
+            return await deleteMessage(message)
         key, cmd = data[3], data[4]
         if len(data) > 7 and data[5] == "i":
             text, markup = help_menu(key, user_id, cmd, int(data[7]), int(data[6]))

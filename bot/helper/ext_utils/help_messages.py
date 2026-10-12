@@ -925,9 +925,9 @@ def help_menu(key, user_id, cmd, page=0, item=None):
         text = _ARGS[names[item]][1]
         if example := _EXAMPLES.get(names[item]):
             text += f"\n\n<b>Example:</b> <code>{example}</code>"
-        buttons.ibutton("◀️ Back", f"{base} p {page}")
+        buttons.ibutton("Bᴀᴄᴋ", f"{base} p {page}")
         buttons.ibutton("Cʟᴏsᴇ", f"wzmlx {user_id} close")
-        return text.replace("/cmd", f"/{cmd}"), buttons.build_menu(1)
+        return text.replace("/cmd", f"/{cmd}"), buttons.build_menu(2)
     per_page = 8
     pages = max(1, -(-len(names) // per_page))
     page = min(max(page, 0), pages - 1)
