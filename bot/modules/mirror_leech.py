@@ -70,9 +70,7 @@ from bot.helper.telegram_helper.message_utils import (
 from bot.helper.mirror_utils.cover_task import cover_task
 from bot.helper.listeners.tasks_listener import MirrorLeechListener
 from bot.helper.ext_utils.help_messages import (
-    MIRROR_HELP_MESSAGE,
-    CLONE_HELP_MESSAGE,
-    YT_HELP_MESSAGE,
+    help_menu,
     help_string,
 )
 from bot.helper.ext_utils.bulk_links import extract_bulk_links
@@ -310,11 +308,7 @@ async def _mirror_leech(
         and not is_rclone_path(link)
         and file_ is None
     ):
-        btn = ButtonMaker()
-        btn.ibutton(
-            "Cʟɪᴄᴋ Hᴇʀᴇ Tᴏ Rᴇᴀᴅ Mᴏʀᴇ ...", f"wzmlx {message.from_user.id} help MIRROR"
-        )
-        await sendMessage(message, MIRROR_HELP_MESSAGE[0], btn.build_menu(1))
+        await sendMessage(message, *help_menu("MIRROR", message.from_user.id))
         await delete_links(message)
         return
 
@@ -604,20 +598,12 @@ async def wzmlxcb(_, query):
         await query.answer(url=f"https://t.me/{bot_name}?start=wzmlx")
     elif data[2] == "help":
         await query.answer()
-        btn = ButtonMaker()
-        btn.ibutton("Cʟᴏsᴇ", f"wzmlx {user_id} close")
-        if data[3] == "CLONE":
-            await editMessage(message, CLONE_HELP_MESSAGE[1], btn.build_menu(1))
-        elif data[3] == "MIRROR":
-            if len(data) == 4:
-                msg = MIRROR_HELP_MESSAGE[1][:4000]
-                btn.ibutton("Nᴇxᴛ Pᴀɢᴇ", f"wzmlx {user_id} help MIRROR readmore")
-            else:
-                msg = MIRROR_HELP_MESSAGE[1][4000:]
-                btn.ibutton("Pʀᴇ Pᴀɢᴇ", f"wzmlx {user_id} help MIRROR")
-            await editMessage(message, msg, btn.build_menu(2))
-        if data[3] == "YT":
-            await editMessage(message, YT_HELP_MESSAGE[1], btn.build_menu(1))
+        if len(data) > 6 and data[4] == "i":
+            text, markup = help_menu(data[3], user_id, int(data[6]), int(data[5]))
+        else:
+            page = int(data[5]) if len(data) > 5 and data[4] == "p" else 0
+            text, markup = help_menu(data[3], user_id, page)
+        await editMessage(message, text, markup)
     elif data[2] == "guide":
         btn = ButtonMaker()
         btn.ibutton("◀️", f"wzmlx {user_id} guide home")

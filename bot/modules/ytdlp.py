@@ -46,7 +46,7 @@ from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.listeners.tasks_listener import MirrorLeechListener
-from bot.helper.ext_utils.help_messages import YT_HELP_MESSAGE
+from bot.helper.ext_utils.help_messages import help_menu
 from bot.helper.ext_utils.bulk_links import extract_bulk_links
 
 
@@ -435,11 +435,7 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
         link = reply_to.text.split("\n", 1)[0].strip()
 
     if not is_url(link):
-        btn = ButtonMaker()
-        btn.ibutton(
-            "Cʟɪᴄᴋ Hᴇʀᴇ Tᴏ Rᴇᴀᴅ Mᴏʀᴇ ...", f"wzmlx {message.from_user.id} help YT"
-        )
-        await sendMessage(message, YT_HELP_MESSAGE[0], btn.build_menu(1))
+        await sendMessage(message, *help_menu("YT", message.from_user.id))
         await delete_links(message)
         return
 

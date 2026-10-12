@@ -28,7 +28,6 @@ from bot.helper.telegram_helper.message_utils import (
 )
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
-from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.mirror_utils.status_utils.gdrive_status import GdriveStatus
 from bot.helper.ext_utils.bot_utils import (
     is_gdrive_link,
@@ -49,7 +48,7 @@ from bot.helper.mirror_utils.download_utils.direct_link_generator import (
 )
 from bot.helper.mirror_utils.rclone_utils.list import RcloneList
 from bot.helper.mirror_utils.rclone_utils.transfer import RcloneTransferHelper
-from bot.helper.ext_utils.help_messages import CLONE_HELP_MESSAGE
+from bot.helper.ext_utils.help_messages import help_menu
 from bot.helper.mirror_utils.status_utils.rclone_status import RcloneStatus
 from bot.helper.listeners.tasks_listener import MirrorLeechListener
 from bot.helper.ext_utils.user_tools import (
@@ -281,12 +280,8 @@ async def gdcloneNode(message, link, listen_up):
         LOGGER.info(f"Cloning Done: {name}")
         await listener.onUploadComplete(link, size, files, folders, mime_type, name)
     else:
-        btn = ButtonMaker()
-        btn.ibutton(
-            "Click Here to Read More ..", f"wzmlx {message.from_user.id} help CLONE"
-        )
         reply_message = await sendMessage(
-            message, CLONE_HELP_MESSAGE[0], btn.build_menu(1)
+            message, *help_menu("CLONE", message.from_user.id)
         )
         await auto_delete_message(message, reply_message)
 
@@ -355,11 +350,7 @@ async def clone(client, message):
         drive_id = GoogleDriveHelper.getIdFromUrl(drive_id)
 
     if len(link) == 0:
-        btn = ButtonMaker()
-        btn.ibutton(
-            "Cʟɪᴄᴋ Hᴇʀᴇ Tᴏ Rᴇᴀᴅ Mᴏʀᴇ ...", f"wzmlx {message.from_user.id} help CLONE"
-        )
-        await sendMessage(message, CLONE_HELP_MESSAGE[0], btn.build_menu(1))
+        await sendMessage(message, *help_menu("CLONE", message.from_user.id))
         await delete_links(message)
         return
 
