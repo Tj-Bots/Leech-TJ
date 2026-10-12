@@ -7,7 +7,6 @@ from re import match as re_match
 from asyncio import sleep, wrap_future
 from aiofiles import open as aiopen
 from aiofiles.os import path as aiopath
-from cloudscraper import create_scraper
 
 from bot import (
     bot,
@@ -580,20 +579,13 @@ async def wzmlxcb(_, query):
         await query.answer()
         async with aiopen("log.txt", "r") as f:
             logFile = await f.read()
-        cget = create_scraper().request
-        resp = cget(
-            "POST",
-            "https://spaceb.in/api/v1/documents",
-            data={"content": logFile, "extension": "None"},
-        ).json()
-        if resp["status"] == 201:
+        paste_url = await web_paste(logFile)
+        if paste_url:
             btn = ButtonMaker()
-            btn.ubutton(
-                "📨 Web Paste (SB)", f"https://spaceb.in/{resp['payload']['id']}"
-            )
+            btn.ubutton("📨 Web Paste", paste_url)
             await editReplyMarkup(message, btn.build_menu(1))
         else:
-            LOGGER.error(f"Web Paste Failed : {resp}")
+            await query.answer("Web Paste Failed! Check logs.", show_alert=True)
     elif data[2] == "botpm":
         await query.answer(url=f"https://t.me/{bot_name}?start=wzmlx")
     elif data[2] == "help":
@@ -649,6 +641,31 @@ async def wzmlxcb(_, query):
             await deleteMessage(message.reply_to_message)
             if message.reply_to_message.reply_to_message:
                 await deleteMessage(message.reply_to_message.reply_to_message)
+
+
+PASTE_API = "https://tjfiles.tjbots.chatgpt.site/api/"
+
+
+async def web_paste(text):
+    """Upload text to TJ Files paste, returns the link or None."""
+    from aiohttp import ClientSession, FormData
+
+    # very big logs: keep the newest part, that's what matters for debugging
+    for content in (text, text[-1_000_000:], text[-200_000:]):
+        try:
+            data = FormData()
+            data.add_field("content", content)
+            async with ClientSession() as session:
+                async with session.post(PASTE_API, data=data, timeout=60) as resp:
+                    res = await resp.json(content_type=None)
+            if resp.status in (200, 201) and (pid := (res.get("payload") or {}).get("id")):
+                return f"{PASTE_API.removesuffix('api/')}{pid}"
+            LOGGER.error(f"Web Paste Failed: {resp.status} {res.get('error')}")
+        except Exception as e:
+            LOGGER.error(f"Web Paste Failed: {e}")
+        if len(content) <= 200_000:
+            break
+    return None
 
 
 async def mirror(client, message):

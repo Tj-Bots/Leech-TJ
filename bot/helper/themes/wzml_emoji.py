@@ -29,7 +29,7 @@ class WZMLStyle:
     # ---------------------
     # async def log(_, message): ---> __main__.py
     LOG_DISPLAY_BT = '📑 Log Display'
-    WEB_PASTE_BT = '📨 Web Paste (SB)'
+    WEB_PASTE_BT = '📨 Web Paste'
     # ---------------------
     # async def bot_help(client, message): ---> __main__.py
     BASIC_BT = 'Basic'
