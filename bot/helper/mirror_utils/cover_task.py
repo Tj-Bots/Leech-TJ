@@ -9,7 +9,6 @@ from bot import LOGGER, bot, download_dict, download_dict_lock
 from bot.helper.ext_utils.bot_utils import new_task
 from bot.helper.ext_utils.tmdb_utils import get_auto_cover, get_auto_thumbnail
 from bot.helper.listeners.tasks_listener import MirrorLeechListener
-from bot.helper.mirror_utils.hyper_utils import get_dump_chat
 from bot.helper.mirror_utils.status_utils.cover_status import CoverStatus
 from bot.helper.mirror_utils.upload_utils.pyrogramEngine import COVER_KWARG
 from bot.helper.telegram_helper.message_utils import sendMessage, sendStatusMessage
@@ -78,9 +77,9 @@ async def cover_task(client, message):
         if listener.suproc == "cancelled":
             return
 
-        dump_chat = await get_dump_chat()
-        if dump_chat:
-            dest, reply_id = dump_chat, None
+        # no dump chat for covers: straight to PM, or the same chat
+        if listener.isPM or not listener.isSuperGroup:
+            dest, reply_id = user_id, None
         else:
             dest, reply_id = message.chat.id, message.id
         kwargs = dict(
@@ -96,15 +95,17 @@ async def cover_task(client, message):
             reply_to_message_id=reply_id,
         )
         kwargs[COVER_KWARG] = cover
-        sent = await bot.send_video(**kwargs)
+        try:
+            sent = await bot.send_video(**kwargs)
+        except Exception as e:
+            if dest != user_id or not listener.isSuperGroup:
+                raise
+            # bot not started in PM, send it in the group instead
+            LOGGER.error(f"Cover: can't send to PM of {user_id}: {e}")
+            kwargs.update(chat_id=message.chat.id, reply_to_message_id=message.id)
+            sent = await bot.send_video(**kwargs)
 
-        if listener.isPM and dest != user_id:
-            try:
-                await bot.copy_message(user_id, sent.chat.id, sent.id)
-            except Exception as e:
-                LOGGER.error(f"Cover: can't send to PM of {user_id}: {e}")
-
-        files = {sent.link: name} if (dump_chat or listener.isSuperGroup) else {}
+        files = {sent.link: name} if sent.chat.id != user_id else {}
         await listener.onUploadComplete(None, size, files, 1, 0, name)
     except Exception as e:
         LOGGER.error(f"Cover failed: {e}")
