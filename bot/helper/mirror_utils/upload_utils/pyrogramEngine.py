@@ -12,7 +12,12 @@ from aiofiles.os import (
 from os import walk, path as ospath
 from time import time
 from PIL import Image
-from pyrogram.types import InputMediaVideo, InputMediaDocument, InlineKeyboardMarkup
+from pyrogram.types import (
+    InputMediaVideo,
+    InputMediaDocument,
+    InputMediaPhoto,
+    InlineKeyboardMarkup,
+)
 from pyrogram.errors import FloodWait, RPCError, PeerIdInvalid, ChannelInvalid
 from asyncio import sleep
 from tenacity import (
@@ -22,7 +27,7 @@ from tenacity import (
     retry_if_exception_type,
     RetryError,
 )
-from re import match as re_match, sub as re_sub
+from re import match as re_match, search as re_search, sub as re_sub
 from natsort import natsorted
 from aioshutil import copy
 
@@ -465,6 +470,39 @@ class TgUploader:
             for m in msgs_list:
                 self.__msgs_dict[m.link] = m.caption
         self.__sent_msg = msgs_list[-1]
+        await self.__copy_media_group()
+
+    async def __send_screenshots(self, shots):
+        """Upload the screenshots of a video as albums of up to 10 photos."""
+        shots = natsorted(shots)
+        base = re_sub(r"\.SS\d{2}\.jpg$", "", ospath.basename(shots[0]))
+        try:
+            for i in range(0, len(shots), 10):
+                media = [
+                    InputMediaPhoto(
+                        path,
+                        caption=f"<b>Screenshots</b> | <code>{base}</code>" if not n else "",
+                    )
+                    for n, path in enumerate(shots[i : i + 10])
+                ]
+                msgs_list = await bot.send_media_group(
+                    chat_id=self.__sent_msg.chat.id,
+                    media=media,
+                    reply_to_message_id=self.__sent_msg.id,
+                    disable_notification=True,
+                )
+                self.__sent_msg = msgs_list[-1]
+                if self.__listener.isSuperGroup or config_dict["LEECH_LOG_ID"]:
+                    self.__msgs_dict[msgs_list[0].link] = f"Screenshots | {base}"
+                await self.__copy_media_group()
+        except Exception as err:
+            LOGGER.error(f"Screenshots album failed: {err}")
+        finally:
+            for path in shots:
+                if await aiopath.exists(path):
+                    await aioremove(path)
+
+    async def __copy_media_group(self):
         try:
             if self.__bot_pm and (
                 self.__leechmsg
@@ -505,10 +543,15 @@ class TgUploader:
         for dirpath, _, files in sorted(await sync_to_async(walk, self.__path)):
             if dirpath.endswith("/yt-dlp-thumb"):
                 continue
+            shots = []
             for file_ in natsorted(files):
                 self.__up_path = ospath.join(dirpath, file_)
                 if file_.lower().endswith(tuple(GLOBAL_EXTENSION_FILTER)):
                     await aioremove(self.__up_path)
+                    continue
+                if re_search(r"\.SS\d{2}\.jpg$", file_):
+                    # screenshots from User Settings go as one album later
+                    shots.append(self.__up_path)
                     continue
                 try:
                     f_size = await aiopath.getsize(self.__up_path)
@@ -579,6 +622,8 @@ class TgUploader:
                         )
                     ):
                         await aioremove(self.__up_path)
+            if shots and not self.__is_cancelled:
+                await self.__send_screenshots(shots)
         for key, value in list(self.__media_dict.items()):
             for subkey, msgs in list(value.items()):
                 if len(msgs) > 1:
