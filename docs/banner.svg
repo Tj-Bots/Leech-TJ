@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" role="img" aria-label="Leech-TJ banner">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f1e"/>
+      <stop offset="0.55" stop-color="#14112b"/>
+      <stop offset="1" stop-color="#1d0f2f"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7c5cff"/>
+      <stop offset="0.5" stop-color="#4fa8ff"/>
+      <stop offset="1" stop-color="#2ee6c5"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="0.18" cy="0.2" r="0.5">
+      <stop offset="0" stop-color="#7c5cff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#7c5cff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.88" cy="0.85" r="0.45">
+      <stop offset="0" stop-color="#2ee6c5" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#2ee6c5" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+    </pattern>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="420" rx="28" fill="url(#bg)"/>
+  <rect width="1280" height="420" rx="28" fill="url(#grid)"/>
+  <rect width="1280" height="420" rx="28" fill="url(#glow1)"/>
+  <rect width="1280" height="420" rx="28" fill="url(#glow2)"/>
+
+  <!-- speed lanes: parallel streams merging into one file (Hyper) -->
+  <g stroke-linecap="round" fill="none">
+    <path d="M820 120 C930 120 960 210 1070 210" stroke="#7c5cff" stroke-width="5" stroke-opacity="0.9"/>
+    <path d="M800 165 C920 165 950 210 1070 210" stroke="#5f86ff" stroke-width="5" stroke-opacity="0.9"/>
+    <path d="M790 210 L1070 210" stroke="#4fa8ff" stroke-width="5"/>
+    <path d="M800 255 C920 255 950 210 1070 210" stroke="#38c9df" stroke-width="5" stroke-opacity="0.9"/>
+    <path d="M820 300 C930 300 960 210 1070 210" stroke="#2ee6c5" stroke-width="5" stroke-opacity="0.9"/>
+  </g>
+  <g fill="#ffffff">
+    <circle cx="880" cy="125" r="4"/><circle cx="905" cy="166" r="4"/><circle cx="930" cy="210" r="4"/>
+    <circle cx="905" cy="254" r="4"/><circle cx="880" cy="295" r="4"/>
+  </g>
+  <!-- file card -->
+  <circle cx="1120" cy="210" r="70" fill="url(#brand)" filter="url(#soft)" opacity="0.55"/>
+  <g transform="translate(1078 158)">
+    <path d="M0 14 Q0 0 14 0 H58 L84 26 V90 Q84 104 70 104 H14 Q0 104 0 90 Z" fill="#111527" stroke="url(#brand)" stroke-width="4"/>
+    <path d="M58 0 V18 Q58 26 66 26 H84" fill="none" stroke="url(#brand)" stroke-width="4"/>
+    <path d="M42 40 V76 M28 62 L42 76 L56 62" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- title -->
+  <text x="88" y="168" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="88" font-weight="800" fill="#ffffff" letter-spacing="-2">Leech<tspan fill="url(#brand)">-TJ</tspan></text>
+  <text x="92" y="222" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="500" fill="#c9cdf2">Mirror · Leech · Hyper Telegram transfers</text>
+
+  <!-- feature chips -->
+  <g font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="600">
+    <g transform="translate(92 262)">
+      <rect width="168" height="42" rx="21" fill="#7c5cff" fill-opacity="0.16" stroke="#7c5cff" stroke-opacity="0.6"/>
+      <circle cx="22" cy="21" r="5" fill="#7c5cff"/>
+      <text x="93" y="28" text-anchor="middle" fill="#ddd5ff">Hyper DL/UL</text>
+    </g>
+    <g transform="translate(274 262)">
+      <rect width="164" height="42" rx="21" fill="#4fa8ff" fill-opacity="0.16" stroke="#4fa8ff" stroke-opacity="0.6"/>
+      <circle cx="22" cy="21" r="5" fill="#4fa8ff"/>
+      <text x="91" y="28" text-anchor="middle" fill="#d3e9ff">Auto Covers</text>
+    </g>
+    <g transform="translate(452 262)">
+      <rect width="160" height="42" rx="21" fill="#2ee6c5" fill-opacity="0.16" stroke="#2ee6c5" stroke-opacity="0.6"/>
+      <circle cx="22" cy="21" r="5" fill="#2ee6c5"/>
+      <text x="89" y="28" text-anchor="middle" fill="#cffff5">6 DDL Hosts</text>
+    </g>
+    <g transform="translate(626 262)">
+      <rect width="124" height="42" rx="21" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.6"/>
+      <circle cx="22" cy="21" r="5" fill="#ffffff"/>
+      <text x="71" y="28" text-anchor="middle" fill="#ecebff">wzgram</text>
+    </g>
+  </g>
+
+  <text x="92" y="362" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="18" fill="#8a8fb8">by TJ Bots · t.me/TJ_Bots</text>
+</svg>
