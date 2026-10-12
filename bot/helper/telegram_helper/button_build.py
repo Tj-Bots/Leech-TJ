@@ -23,7 +23,6 @@ DANGER_KEYS = (
     "stop gdrive",
 )
 SUCCESS_KEYS = (
-    "♻️",
     "✓",
     "✅",
     "yes!",
@@ -32,7 +31,7 @@ SUCCESS_KEYS = (
     "resume",
     "start rss",
 )
-PRIMARY_KEYS = ("◀️", "⌫", "back")
+PRIMARY_KEYS = ("◀️", "⌫", "back", "♻️")
 
 
 def auto_style(key, is_url=False):
