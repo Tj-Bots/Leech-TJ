@@ -55,6 +55,7 @@ from .helper.telegram_helper.message_utils import (
     delete_all_messages,
 )
 from .helper.telegram_helper.filters import CustomFilters
+from .helper.ext_utils.user_tools import decode_store
 from .helper.telegram_helper.button_build import ButtonMaker, make_button
 from .helper.listeners.aria2_listener import start_aria2_listener
 from .helper.themes import BotTheme
@@ -100,6 +101,19 @@ async def start(client, message):
     buttons.ubutton(BotTheme("ST_BN1_NAME"), BotTheme("ST_BN1_URL"))
     buttons.ubutton(BotTheme("ST_BN2_NAME"), BotTheme("ST_BN2_URL"))
     reply_markup = buttons.build_menu(2)
+    if len(message.command) > 1 and (store := decode_store(message.command[1])):
+        chat_id, msg_id = store
+        try:
+            await bot.copy_message(
+                chat_id=message.chat.id,
+                from_chat_id=chat_id,
+                message_id=msg_id,
+                disable_notification=True,
+            )
+        except Exception as e:
+            LOGGER.error(f"Media Store: {chat_id}/{msg_id}: {e}")
+            await sendMessage(message, "<i>File not found or no longer available!</i>")
+        return
     if len(message.command) > 1 and message.command[1] == "wzmlx":
         await deleteMessage(message)
     elif len(message.command) > 1 and config_dict["TOKEN_TIMEOUT"]:

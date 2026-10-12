@@ -315,6 +315,7 @@ class WZMLStyle:
 ┊<b> Leech Prefix :</b> <code>{LPREFIX}</code>
 ┊<b> Leech Suffix :</b> <code>{LSUFFIX}</code>
 ┊<b> Leech Dumps :</b> <code>{LDUMP}</code>
+┊<b> Media Store :</b> <i>{MSTORE}</i>
 ┊<b> Leech Remname :</b> <code>{LREMNAME}</code>
 ┊<b> Excluded Ext :</b> <code>{EXCLUDED}</code>
 ╰<b> Leech Metadata :</b> <code>{LMETA}</code></blockquote>"""

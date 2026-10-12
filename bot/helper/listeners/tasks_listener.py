@@ -63,6 +63,8 @@ from bot.helper.ext_utils.exceptions import NotSupportedExtractionArchive
 from bot.helper.ext_utils.task_manager import start_from_queued
 from bot.helper.ext_utils.user_tools import (
     make_sample_and_screenshots,
+    media_store_enabled,
+    store_link,
     parse_extensions,
     remove_excluded,
     run_ffmpeg_cmds,
@@ -712,8 +714,16 @@ class MirrorLeechListener:
                         photo=self.random_pic,
                     )
                 fmsg = "\n"
+                use_store = media_store_enabled(user_id)
                 for index, (link, name) in enumerate(files.items(), start=1):
-                    fmsg += f"<blockquote>{index}. <a href='{link}'>{name}</a></blockquote>\n"
+                    if use_store and (slink := store_link(bot_name, link)):
+                        fmsg += (
+                            f"<blockquote>{index}. <a href='{link}'>{name}</a>\n"
+                            f"╰ <b>Get Media :</b> <a href='{slink}'>Store Link</a> | "
+                            f"<a href='https://t.me/share/url?url={slink}'>Share Link</a></blockquote>\n"
+                        )
+                    else:
+                        fmsg += f"<blockquote>{index}. <a href='{link}'>{name}</a></blockquote>\n"
                     if len(msg.encode() + fmsg.encode()) > (
                         4000 if len(config_dict["IMAGES"]) == 0 else 1000
                     ):

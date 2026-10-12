@@ -429,3 +429,50 @@ async def make_sample_and_screenshots(listener, path, sample_secs, ss_count):
                 ],
             )
     return path
+
+
+def media_store_enabled(user_id):
+    user_dict = user_data.get(user_id, {})
+    if "media_store" in user_dict:
+        return bool(user_dict["media_store"])
+    return bool(config_dict.get("MEDIA_STORE"))
+
+
+def encode_store(chat_id, msg_id):
+    from base64 import urlsafe_b64encode
+
+    raw = f"file{chat_id}&&{msg_id}".encode()
+    return urlsafe_b64encode(raw).decode().rstrip("=")
+
+
+def decode_store(param):
+    """start param -> (chat_id, msg_id) or None"""
+    from base64 import urlsafe_b64decode
+
+    try:
+        raw = urlsafe_b64decode(param + "=" * (-len(param) % 4)).decode()
+    except Exception:
+        return None
+    if not raw.startswith("file") or "&&" not in raw:
+        return None
+    chat, msg = raw[4:].split("&&", 1)
+    if not msg.isdigit():
+        return None
+    return (int(chat) if chat.lstrip("-").isdigit() else chat), int(msg)
+
+
+def store_link(bot_name, file_link):
+    """Telegram message link -> t.me/bot?start=... or None"""
+    parts = str(file_link).rstrip("/").split("/")
+    if len(parts) < 2 or not parts[-1].isdigit():
+        return None
+    msg_id = int(parts[-1])
+    if "c" in parts[:-1]:
+        # /c/<chat>/<msg> or topic links /c/<chat>/<topic>/<msg>
+        cid = parts[parts.index("c") + 1]
+        chat = f"-100{cid}" if cid.isdigit() else None
+    else:
+        chat = parts[-2] if len(parts) >= 2 and parts[-2] != "t.me" else None
+    if not chat:
+        return None
+    return f"https://t.me/{bot_name}?start={encode_store(chat, msg_id)}"

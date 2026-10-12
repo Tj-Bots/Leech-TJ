@@ -31,6 +31,7 @@ from bot.helper.mirror_utils.hyper_utils import TRANSFER_MODES, transfer_mode
 from bot.helper.ext_utils.user_tools import (
     parse_user_setting,
     show_user_setting,
+    media_store_enabled,
     stop_dup_enabled,
     user_cookie,
     user_rc_path,
@@ -578,6 +579,10 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
 
         extra_button(buttons, user_dict, user_id, "excluded_ext")
         extra_button(buttons, user_dict, user_id, "thumb_layout")
+        mstore = media_store_enabled(user_id)
+        buttons.ibutton(
+            f"{'✅️' if mstore else ''} Media Store", f"userset {user_id} media_store"
+        )
         extra_button(buttons, user_dict, user_id, "sample_video")
         extra_button(buttons, user_dict, user_id, "screenshots")
         buttons.ibutton(
@@ -618,6 +623,7 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             TLAYOUT=user_dict.get("thumb_layout") or "Not Exists",
             SAMPLE=f"{v} sec" if (v := user_dict.get("sample_video")) else "Disabled",
             SSHOTS=user_dict.get("screenshots") or "Disabled",
+            MSTORE="Enabled" if mstore else "Disabled",
             ATHUMB=(
                 ("Enabled (Custom Thumbnail wins)" if thumbmsg == "Exists" else "Enabled")
                 if user_dict.get("auto_thumb")
@@ -1095,6 +1101,13 @@ async def edit_user_settings(client, query):
     elif data[2] == "doc":
         update_user_ldata(user_id, "as_doc", not user_dict.get("as_doc", False))
         await query.answer()
+        await update_user_settings(query, "leech")
+        if DATABASE_URL:
+            await DbManger().update_user_data(user_id)
+    elif data[2] == "media_store":
+        handler_dict[user_id] = False
+        await query.answer()
+        update_user_ldata(user_id, "media_store", not media_store_enabled(user_id))
         await update_user_settings(query, "leech")
         if DATABASE_URL:
             await DbManger().update_user_data(user_id)
