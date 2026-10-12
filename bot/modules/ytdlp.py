@@ -557,6 +557,10 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
         source_url=link,
         leech_utils={"screenshots": sshots, "thumb": thumb},
     )
+    if args["-ff"] and config_dict["DISABLE_FF_MODE"]:
+        await sendMessage(message, "<i>FFmpeg Cmds are disabled by the Owner!</i>")
+        await delete_links(message)
+        return
     if args["-ff"]:
         listener.ffmpeg_cmds = resolve_ffmpeg_cmds(user_id, args["-ff"])
         if not listener.ffmpeg_cmds:

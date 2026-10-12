@@ -62,6 +62,7 @@ from bot.helper.ext_utils.leech_utils import (
 from bot.helper.ext_utils.exceptions import NotSupportedExtractionArchive
 from bot.helper.ext_utils.task_manager import start_from_queued
 from bot.helper.ext_utils.user_tools import (
+    make_sample_and_screenshots,
     parse_extensions,
     remove_excluded,
     run_ffmpeg_cmds,
@@ -427,6 +428,24 @@ class MirrorLeechListener:
             else:
                 dl_path = ff_path
             name = ospath.basename(ff_path)
+
+        sample_secs = self.user_dict.get("sample_video") or 0
+        ss_count = self.user_dict.get("screenshots") or 0
+        if self.isLeech and (sample_secs or ss_count) and (not self.seed or self.newDir):
+            ex_path = up_path or dl_path
+            async with download_dict_lock:
+                download_dict[self.uid] = FFmpegStatus(name, size, gid, self)
+            ex_path = await make_sample_and_screenshots(
+                self, ex_path, sample_secs, ss_count
+            )
+            if ex_path is None or self.suproc == "cancelled":
+                return
+            self.suproc = None
+            if up_path:
+                up_path = ex_path
+            else:
+                dl_path = ex_path
+            name = ospath.basename(ex_path)
 
         if metadata := self.user_dict.get("lmeta") or config_dict["METADATA"]:
             meta_path = up_path or dl_path

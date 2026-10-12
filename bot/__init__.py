@@ -289,6 +289,7 @@ HYPER_PIPELINE = int(HYPER_PIPELINE) if HYPER_PIPELINE.isdigit() else 0
 helper_bots = {}
 helper_users = {}
 TMDB_ACCESS_TOKEN = environ.get("TMDB_ACCESS_TOKEN", "").strip()
+DISABLE_FF_MODE = environ.get("DISABLE_FF_MODE", "False").lower() == "true"
 
 MEGA_EMAIL = environ.get("MEGA_EMAIL", "")
 MEGA_PASSWORD = environ.get("MEGA_PASSWORD", "")
@@ -782,6 +783,7 @@ config_dict = {
     "HYPER_CHUNK": HYPER_CHUNK,
     "HYPER_PIPELINE": HYPER_PIPELINE,
     "TMDB_ACCESS_TOKEN": TMDB_ACCESS_TOKEN,
+    "DISABLE_FF_MODE": DISABLE_FF_MODE,
     "USER_TD_MODE": USER_TD_MODE,
     "USER_TD_SA": USER_TD_SA,
     "USE_SERVICE_ACCOUNTS": USE_SERVICE_ACCOUNTS,

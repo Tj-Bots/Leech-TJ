@@ -149,6 +149,18 @@ EXTRA_TEXT = {
         "Thumbnail of leeched videos built as a grid of frames, used only when there is no custom thumbnail.",
         "Send layout as columns x rows.\n<b>Example:</b> <code>2x2</code>, <code>3x3</code>, <code>4x4</code> (max 10x10)\n<b>Timeout:</b> 60 sec",
     ),
+    "sample_video": (
+        "leech",
+        "Sample Video",
+        "A short clip from the middle of every leeched video, uploaded with it as SAMPLE.name. Cut without re-encoding, so it's fast.",
+        "Send sample length in seconds, from 1 to 30.\n<b>Example:</b> <code>20</code>\n<b>Timeout:</b> 60 sec",
+    ),
+    "screenshots": (
+        "leech",
+        "Screenshots",
+        "Screenshots taken across every leeched video and uploaded with it as photos.",
+        "Send how many screenshots, from 1 to 10.\n<b>Example:</b> <code>5</code>\n<b>Timeout:</b> 60 sec",
+    ),
     "rclone_path": (
         "mirror",
         "Rclone Path",
@@ -293,7 +305,8 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
         buttons.ibutton(
             f"{'✅️' if ucookies else ''} YT-DLP Cookies", f"userset {user_id} ycookies"
         )
-        extra_button(buttons, user_dict, user_id, "ffmpeg_cmds")
+        if not config_dict.get("DISABLE_FF_MODE"):
+            extra_button(buttons, user_dict, user_id, "ffmpeg_cmds")
         extra_button(buttons, user_dict, user_id, "mega_login")
         u_sess = "Exists" if user_dict.get("usess", False) else "Not Exists"
         buttons.ibutton(
@@ -351,7 +364,11 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             SAVE_MODE=save_mode,
             USESS=u_sess,
             COOKIES="Exists" if ucookies else "Not Exists",
-            FFCMDS=len(user_dict.get("ffmpeg_cmds") or {}),
+            FFCMDS=(
+                "Disabled by Owner"
+                if config_dict.get("DISABLE_FF_MODE")
+                else len(user_dict.get("ffmpeg_cmds") or {})
+            ),
             MEGA=(user_dict.get("mega_login") or {}).get("email", "Not Exists"),
         )
         buttons.ibutton("◀️", f"userset {user_id} back", "footer")
@@ -561,6 +578,8 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
 
         extra_button(buttons, user_dict, user_id, "excluded_ext")
         extra_button(buttons, user_dict, user_id, "thumb_layout")
+        extra_button(buttons, user_dict, user_id, "sample_video")
+        extra_button(buttons, user_dict, user_id, "screenshots")
         buttons.ibutton(
             f"{'✅️' if user_dict.get('auto_thumb') else ''} Auto Thumbnail",
             f"userset {user_id} auto_thumb",
@@ -597,6 +616,8 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             TMODE=TRANSFER_MODES[tmode],
             EXCLUDED=escape(user_dict.get("excluded_ext") or "Not Exists"),
             TLAYOUT=user_dict.get("thumb_layout") or "Not Exists",
+            SAMPLE=f"{v} sec" if (v := user_dict.get("sample_video")) else "Disabled",
+            SSHOTS=user_dict.get("screenshots") or "Disabled",
             ATHUMB=(
                 ("Enabled (Custom Thumbnail wins)" if thumbmsg == "Exists" else "Enabled")
                 if user_dict.get("auto_thumb")

@@ -92,6 +92,7 @@ HYPER_VARS = [
 bool_vars = [
     "AS_DOCUMENT",
     "USE_HYPER",
+    "DISABLE_FF_MODE",
     "BOT_PM",
     "STOP_DUPLICATE",
     "SET_COMMANDS",
@@ -321,6 +322,7 @@ async def load_config():
     HYPER_PIPELINE = environ.get("HYPER_PIPELINE", "")
     HYPER_PIPELINE = int(HYPER_PIPELINE) if HYPER_PIPELINE.isdigit() else 0
     TMDB_ACCESS_TOKEN = environ.get("TMDB_ACCESS_TOKEN", "").strip()
+    DISABLE_FF_MODE = environ.get("DISABLE_FF_MODE", "False").lower() == "true"
 
     TORRENT_TIMEOUT = environ.get("TORRENT_TIMEOUT", "")
     downloads = aria2.get_downloads()
@@ -807,6 +809,7 @@ async def load_config():
             "HYPER_CHUNK": HYPER_CHUNK,
             "HYPER_PIPELINE": HYPER_PIPELINE,
             "TMDB_ACCESS_TOKEN": TMDB_ACCESS_TOKEN,
+            "DISABLE_FF_MODE": DISABLE_FF_MODE,
             "USER_TD_MODE": USER_TD_MODE,
             "USER_TD_SA": USER_TD_SA,
             "USE_SERVICE_ACCOUNTS": USE_SERVICE_ACCOUNTS,

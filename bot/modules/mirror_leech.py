@@ -492,6 +492,10 @@ async def _mirror_leech(
         source_url=org_link or link,
         leech_utils={"screenshots": sshots, "thumb": thumb},
     )
+    if args["-ff"] and config_dict["DISABLE_FF_MODE"]:
+        await sendMessage(message, "<i>FFmpeg Cmds are disabled by the Owner!</i>")
+        await delete_links(message)
+        return
     if args["-ff"]:
         listener.ffmpeg_cmds = resolve_ffmpeg_cmds(message.from_user.id, args["-ff"])
         if not listener.ffmpeg_cmds:

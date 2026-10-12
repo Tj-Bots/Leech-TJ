@@ -90,6 +90,9 @@ def parse_user_setting(key, value):
             if "-i" in cmd.split():
                 cmds[name] = cmd
         return cmds or None
+    if key in ("sample_video", "screenshots"):
+        top = 30 if key == "sample_video" else 10
+        return int(value) if value.isdigit() and 1 <= int(value) <= top else None
     if key == "mega_login":
         parts = value.split(maxsplit=1)
         if len(parts) != 2 or "@" not in parts[0]:
@@ -348,4 +351,81 @@ async def run_ffmpeg_cmds(listener, path, cmds):
                         await move(item, ospath.join(folder, ospath.basename(item)))
                     path = folder
                 break
+    return path
+
+
+async def _run_ff(listener, cmd):
+    from asyncio import create_subprocess_exec
+    from asyncio.subprocess import PIPE
+
+    listener.suproc = await create_subprocess_exec(
+        "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", *cmd,
+        stdout=PIPE, stderr=PIPE,
+    )
+    _, stderr = await listener.suproc.communicate()
+    code = listener.suproc.returncode
+    if code != 0 and listener.suproc != "cancelled":
+        LOGGER.error(f"Sample/Screenshots ffmpeg error: {stderr.decode(errors='ignore').strip()}")
+    return code == 0
+
+
+async def make_sample_and_screenshots(listener, path, sample_secs, ss_count):
+    """Create SAMPLE.<name> (stream copy, fast) and screenshots next to every
+    video. A single file becomes a folder. Returns the new path, None if cancelled."""
+    from aiofiles.os import makedirs
+    from aioshutil import move
+
+    from bot.helper.ext_utils.leech_utils import get_media_info
+
+    single = await aiopath.isfile(path)
+    if single:
+        videos = [path] if await _media_kind(path) == "video" else []
+    else:
+        videos = []
+        for dirpath, _, fnames in await sync_to_async(walk, path):
+            for f in sorted(fnames):
+                f_path = ospath.join(dirpath, f)
+                if not f.startswith("SAMPLE.") and await _media_kind(f_path) == "video":
+                    videos.append(f_path)
+    if not videos:
+        return path
+    if single:
+        base = ospath.splitext(path)[0]
+        folder = base if not await aiopath.exists(base) else f"{base}_extras"
+        await makedirs(folder, exist_ok=True)
+        new_file = ospath.join(folder, ospath.basename(path))
+        await move(path, new_file)
+        videos, path = [new_file], folder
+
+    for video in videos:
+        if listener.suproc == "cancelled":
+            return None
+        duration = (await get_media_info(video))[0] or 0
+        if duration <= 0:
+            continue
+        vdir, vname = ospath.split(video)
+        vbase = ospath.splitext(vname)[0]
+        if sample_secs:
+            secs = min(sample_secs, duration)
+            start = max(0, duration / 2 - secs / 2)
+            await _run_ff(
+                listener,
+                [
+                    "-ss", f"{start:.2f}", "-i", video, "-t", f"{secs:.2f}",
+                    "-map", "0:v:0", "-map", "0:a:0?", "-c", "copy",
+                    "-avoid_negative_ts", "make_zero",
+                    ospath.join(vdir, f"SAMPLE.{vname}"),
+                ],
+            )
+        for no in range(1, (ss_count or 0) + 1):
+            if listener.suproc == "cancelled":
+                return None
+            stamp = duration * no / (ss_count + 1)
+            await _run_ff(
+                listener,
+                [
+                    "-ss", f"{stamp:.2f}", "-i", video, "-frames:v", "1",
+                    "-q:v", "2", ospath.join(vdir, f"{vbase}.SS{no:02}.jpg"),
+                ],
+            )
     return path

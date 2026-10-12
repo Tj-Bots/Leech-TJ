@@ -211,7 +211,7 @@ async def get_auto_thumbnail(filename, as_doc=False):
     200KB) plus the original image as auto_cover.jpg. None if not found."""
     if not _tmdb_token():
         return None
-    title, year = clean_poster_title(filename)
+    title, year = clean_poster_title(filename.removeprefix("SAMPLE."))
     if len(title) < 2:
         return None
     key = (title, year, as_doc)

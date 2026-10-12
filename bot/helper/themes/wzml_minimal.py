@@ -306,6 +306,8 @@ class WZMLStyle:
 ┊<b> Custom Thumbnail :</b> <i>{THUMB}</i>
 ┊<b> Auto Thumbnail :</b> <i>{ATHUMB}</i>
 ┊<b> Thumb Layout :</b> <i>{TLAYOUT}</i>
+┊<b> Sample Video :</b> <i>{SAMPLE}</i>
+┊<b> Screenshots :</b> <i>{SSHOTS}</i>
 ┊<b> Leech Split Size :</b> <code>{SPLIT_SIZE}</code>
 ┊<b> Equal Splits :</b> <i>{EQUAL_SPLIT}</i>
 ┊<b> Media Group :</b> <i>{MEDIA_GROUP}</i>
