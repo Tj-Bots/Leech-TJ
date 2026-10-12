@@ -5,7 +5,11 @@ from secrets import token_hex
 
 from aiofiles.os import path as aiopath
 
-from bot import LOGGER, bot, download_dict, download_dict_lock
+from bot import LOGGER, bot, config_dict, download_dict, download_dict_lock, user_data
+from bot.helper.ext_utils.task_manager import task_utils
+from bot.helper.mirror_utils.hyper_utils import get_dump_chat
+from bot.helper.telegram_helper.filters import CustomFilters
+from bot.helper.telegram_helper.message_utils import check_botpm
 from bot.helper.ext_utils.bot_utils import new_task
 from bot.helper.ext_utils.tmdb_utils import get_auto_cover, get_auto_thumbnail
 from bot.helper.listeners.tasks_listener import MirrorLeechListener
@@ -46,6 +50,26 @@ async def cover_task(client, message):
         tag = f"@{username}"
     else:
         tag = message.from_user.mention
+
+    # same checks as /leech (token, force sub, bot PM, limits)
+    error_msg, error_button = await task_utils(message)
+    user_dict = user_data.get(user_id, {})
+    pm_checked = not await CustomFilters.sudo("", message) and (
+        config_dict["BOT_PM"] or user_dict.get("bot_pm") or config_dict["SAFE_MODE"]
+    )
+    if message.chat.type != message.chat.type.BOT and not pm_checked:
+        # covers always go to PM, so check it even when Bot PM is off
+        _msg, error_button = await check_botpm(message, error_button)
+        if _msg:
+            error_msg.append(_msg)
+    if error_msg:
+        final_msg = f"<b><i>User:</i> {tag}</b>,\n"
+        for index, _msg in enumerate(error_msg, 1):
+            final_msg += f"\n<b>{index}</b>: {_msg}\n"
+        if error_button is not None:
+            error_button = error_button.build_menu(2)
+        await sendMessage(message, final_msg, error_button)
+        return
     listener = MirrorLeechListener(
         message,
         isLeech=True,
@@ -79,8 +103,9 @@ async def cover_task(client, message):
         if listener.suproc == "cancelled":
             return
 
+        dump_chat = await get_dump_chat() if config_dict["COVER_DUMP"] else None
         kwargs = dict(
-            chat_id=user_id,
+            chat_id=dump_chat or user_id,
             video=video.file_id,
             caption=reply.caption or "",
             caption_entities=reply.caption_entities,
@@ -91,14 +116,16 @@ async def cover_task(client, message):
             disable_notification=True,
         )
         kwargs[COVER_KWARG] = cover
-        try:
-            await bot.send_video(**kwargs)
-        except Exception as e:
-            LOGGER.error(f"Cover: can't send to PM of {user_id}: {e}")
-            raise Exception("Start the Bot in PM (Private) and try again!")
+        sent = await bot.send_video(**kwargs)
+        if dump_chat:
+            try:
+                await bot.copy_message(user_id, sent.chat.id, sent.id)
+            except Exception as e:
+                LOGGER.error(f"Cover: can't send to PM of {user_id}: {e}")
 
-        # same completion message as a leech: file list + Sent to Bot PM
-        files = {reply.link: name} if listener.isSuperGroup and reply.link else {}
+        # same completion message as a leech, the name is a link only when
+        # the cover was saved in the dump chat
+        files = {(sent.link if dump_chat else ""): name}
         await listener.onUploadComplete(None, size, files, 1, 0, name)
     except Exception as e:
         LOGGER.error(f"Cover failed: {e}")

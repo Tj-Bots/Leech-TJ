@@ -716,7 +716,9 @@ class MirrorLeechListener:
                 fmsg = "\n"
                 use_store = media_store_enabled(user_id)
                 for index, (link, name) in enumerate(files.items(), start=1):
-                    if use_store and (slink := store_link(bot_name, link)):
+                    if not link:
+                        fmsg += f"<blockquote>{index}. {name}</blockquote>\n"
+                    elif use_store and (slink := store_link(bot_name, link)):
                         fmsg += (
                             f"<blockquote>{index}. <a href='{link}'>{name}</a>\n"
                             f"╰ <b>Get Media :</b> <a href='{slink}'>Store Link</a> | "

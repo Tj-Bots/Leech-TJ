@@ -532,6 +532,7 @@ default_desp = {'AS_DOCUMENT': 'Default type of Telegram file upload. Default is
                 'JIODRIVE_TOKEN': 'Set token for the jiodrive.xyz to download the files. str',
                 'USER_TD_MODE': 'Enable User GDrive TD to Use. Default is False',
                 'USER_TD_SA': 'Add Global SA mail for User to give Permissions to Bot for UserTD Upload. Like wzmlx@googlegroups.com. Str',
+                'COVER_DUMP': "Save /cover results also in LEECH_LOG_ID (dump chat). When False the video goes only to the user's PM. Default is False.",
                 'MEDIA_STORE': "Default for Media Store: every leeched file gets a Store Link, anyone who opens it gets the file from the bot in PM. Users can change it for themselves in User Settings. Default is False.",
                 'DISABLE_FF_MODE': "Disable FFmpeg Cmds (-ff) for all users. When True the option is hidden from User Settings. Default is False.",
                 'TMDB_ACCESS_TOKEN': "TMDB API Key or Read Access Token, used for Auto Thumbnail (movie/series poster) in User Settings. Get it from https://www.themoviedb.org/settings/api",

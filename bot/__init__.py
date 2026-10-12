@@ -291,6 +291,7 @@ helper_users = {}
 TMDB_ACCESS_TOKEN = environ.get("TMDB_ACCESS_TOKEN", "").strip()
 DISABLE_FF_MODE = environ.get("DISABLE_FF_MODE", "False").lower() == "true"
 MEDIA_STORE = environ.get("MEDIA_STORE", "False").lower() == "true"
+COVER_DUMP = environ.get("COVER_DUMP", "False").lower() == "true"
 
 MEGA_EMAIL = environ.get("MEGA_EMAIL", "")
 MEGA_PASSWORD = environ.get("MEGA_PASSWORD", "")
@@ -786,6 +787,7 @@ config_dict = {
     "TMDB_ACCESS_TOKEN": TMDB_ACCESS_TOKEN,
     "DISABLE_FF_MODE": DISABLE_FF_MODE,
     "MEDIA_STORE": MEDIA_STORE,
+    "COVER_DUMP": COVER_DUMP,
     "USER_TD_MODE": USER_TD_MODE,
     "USER_TD_SA": USER_TD_SA,
     "USE_SERVICE_ACCOUNTS": USE_SERVICE_ACCOUNTS,

@@ -94,6 +94,7 @@ bool_vars = [
     "USE_HYPER",
     "DISABLE_FF_MODE",
     "MEDIA_STORE",
+    "COVER_DUMP",
     "BOT_PM",
     "STOP_DUPLICATE",
     "SET_COMMANDS",
@@ -325,6 +326,7 @@ async def load_config():
     TMDB_ACCESS_TOKEN = environ.get("TMDB_ACCESS_TOKEN", "").strip()
     DISABLE_FF_MODE = environ.get("DISABLE_FF_MODE", "False").lower() == "true"
     MEDIA_STORE = environ.get("MEDIA_STORE", "False").lower() == "true"
+    COVER_DUMP = environ.get("COVER_DUMP", "False").lower() == "true"
 
     TORRENT_TIMEOUT = environ.get("TORRENT_TIMEOUT", "")
     downloads = aria2.get_downloads()
@@ -813,6 +815,7 @@ async def load_config():
             "TMDB_ACCESS_TOKEN": TMDB_ACCESS_TOKEN,
             "DISABLE_FF_MODE": DISABLE_FF_MODE,
             "MEDIA_STORE": MEDIA_STORE,
+            "COVER_DUMP": COVER_DUMP,
             "USER_TD_MODE": USER_TD_MODE,
             "USER_TD_SA": USER_TD_SA,
             "USE_SERVICE_ACCOUNTS": USE_SERVICE_ACCOUNTS,
