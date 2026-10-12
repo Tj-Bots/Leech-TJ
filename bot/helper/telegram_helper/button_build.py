@@ -31,7 +31,7 @@ SUCCESS_KEYS = (
     "resume",
     "start rss",
 )
-PRIMARY_KEYS = ("◀️", "⌫", "back", "♻️")
+PRIMARY_KEYS = ("◀️", "⌫", "back", "♻️", "view in")
 
 
 def auto_style(key, is_url=False):
