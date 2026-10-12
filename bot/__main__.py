@@ -86,7 +86,6 @@ from .modules import (
     gd_clean,
     broadcast,
     category_select,
-    cover,
 )
 
 

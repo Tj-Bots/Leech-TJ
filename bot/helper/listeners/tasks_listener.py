@@ -146,6 +146,7 @@ class MirrorLeechListener:
         self.isPM = config_dict["BOT_PM"] or self.user_dict.get("bot_pm")
         self.suproc = None
         self.ffmpeg_cmds = []
+        self.isCover = False
         self.sameDir = sameDir
         self.rcFlags = rcFlags
         self.upPath = upPath

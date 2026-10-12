@@ -427,6 +427,17 @@ class TgUploader:
             f'Uploading Media {">" if self.__prm_media else "<"} 2GB by {"Hyper" if self.__hyper_idx is not None else "User" if self.__client is user else "Bot"} Client'
         )
 
+    async def __clean_auto(self, auto_thumb):
+        if not auto_thumb:
+            return
+        for path in (get_auto_cover(auto_thumb), auto_thumb):
+            if path and await aiopath.exists(path):
+                await aioremove(path)
+        try:
+            await rmdir(ospath.dirname(auto_thumb))
+        except Exception:
+            pass
+
     async def __layout_thumb(self, duration):
         layout = user_data.get(self.__user_id, {}).get("thumb_layout")
         if not layout:
@@ -610,6 +621,7 @@ class TgUploader:
         if self.__thumb is not None and not await aiopath.exists(self.__thumb):
             self.__thumb = None
         thumb = self.__thumb
+        auto_tmp = None
         self.__is_corrupted = False
         try:
             is_video, is_audio, is_image = await get_document_type(self.__up_path)
@@ -627,18 +639,24 @@ class TgUploader:
                 elif is_audio and not is_video:
                     thumb = await get_audio_thumb(self.__up_path)
 
+            cover_only = self.__listener.isCover
             if (
                 not is_image
                 and thumb is None
                 and user_data.get(self.__user_id, {}).get("auto_thumb")
             ):
-                thumb = await get_auto_thumbnail(
-                    file, force_document or self.__as_doc or not is_video
-                )
-                cover = get_auto_cover(thumb)
+                if cover_only:
+                    # /cover: TMDB poster goes only to the cover, thumb stays normal
+                    auto_tmp = await get_auto_thumbnail(file, False)
+                    cover = get_auto_cover(auto_tmp)
+                else:
+                    thumb = await get_auto_thumbnail(
+                        file, force_document or self.__as_doc or not is_video
+                    )
+                    cover = get_auto_cover(thumb)
 
             if (
-                self.__as_doc
+                (self.__as_doc and not (cover_only and is_video))
                 or force_document
                 or (not is_video and not is_audio and not is_image)
             ):
@@ -814,6 +832,7 @@ class TgUploader:
                     and await aiopath.exists(dir_name)
                 ):
                     await rmdir(dir_name)
+            await self.__clean_auto(auto_tmp)
             self.__retry_error = False
         except FloodWait as f:
             LOGGER.warning(str(f))
@@ -834,6 +853,7 @@ class TgUploader:
                     and await aiopath.exists(dir_name)
                 ):
                     await rmdir(dir_name)
+            await self.__clean_auto(auto_tmp)
             LOGGER.error(f"{format_exc()}. Path: {self.__up_path}")
             if "Telegram says: [400" in str(err) and key != "documents":
                 LOGGER.error(f"Retrying As Document. Path: {self.__up_path}")

@@ -80,7 +80,7 @@ from bot.modules.gen_pyro_sess import get_decrypt_key
 
 @new_task
 async def _mirror_leech(
-    client, message, isQbit=False, isLeech=False, sameDir=None, bulk=[]
+    client, message, isQbit=False, isLeech=False, sameDir=None, bulk=[], isCover=False
 ):
     text = message.text.split("\n")
     input_list = text[0].split(" ")
@@ -215,7 +215,7 @@ async def _mirror_leech(
             chat_id=message.chat.id, message_ids=nextmsg.id
         )
         nextmsg.from_user = message.from_user
-        _mirror_leech(client, nextmsg, isQbit, isLeech, sameDir, bulk)
+        _mirror_leech(client, nextmsg, isQbit, isLeech, sameDir, bulk, isCover)
         return
 
     if len(bulk) != 0:
@@ -245,7 +245,7 @@ async def _mirror_leech(
             sameDir["tasks"].add(nextmsg.id)
         nextmsg.from_user = message.from_user
         await sleep(5)
-        _mirror_leech(client, nextmsg, isQbit, isLeech, sameDir, bulk)
+        _mirror_leech(client, nextmsg, isQbit, isLeech, sameDir, bulk, isCover)
 
     __run_multi()
 
@@ -492,6 +492,11 @@ async def _mirror_leech(
         source_url=org_link or link,
         leech_utils={"screenshots": sshots, "thumb": thumb},
     )
+    if isCover:
+        listener.isCover = True
+        listener.upload_details["mode"] = listener.upload_details["mode"].replace(
+            "#Leech", "#Cover", 1
+        )
     if args["-ff"] and config_dict["DISABLE_FF_MODE"]:
         await sendMessage(message, "<i>FFmpeg Cmds are disabled by the Owner!</i>")
         await delete_links(message)
@@ -688,6 +693,19 @@ async def qb_leech(client, message):
     _mirror_leech(client, message, isQbit=True, isLeech=True)
 
 
+async def cover(client, message):
+    user_dict = user_data.get(message.from_user.id, {})
+    if not await aiopath.exists(f"Thumbnails/{message.from_user.id}.jpg") and not (
+        user_dict.get("auto_thumb") and config_dict.get("TMDB_ACCESS_TOKEN")
+    ):
+        await sendMessage(
+            message,
+            "<i>Set a Custom Thumbnail or enable Auto Thumbnail in User Settings to use Cover!</i>",
+        )
+        return
+    _mirror_leech(client, message, isLeech=True, isCover=True)
+
+
 bot.add_handler(
     MessageHandler(
         mirror,
@@ -716,6 +734,14 @@ bot.add_handler(
     MessageHandler(
         qb_leech,
         filters=command(BotCommands.QbLeechCommand)
+        & CustomFilters.authorized
+        & ~CustomFilters.blacklisted,
+    )
+)
+bot.add_handler(
+    MessageHandler(
+        cover,
+        filters=command(BotCommands.CoverCommand)
         & CustomFilters.authorized
         & ~CustomFilters.blacklisted,
     )
