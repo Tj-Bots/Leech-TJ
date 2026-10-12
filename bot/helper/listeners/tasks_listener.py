@@ -68,6 +68,7 @@ from bot.helper.ext_utils.user_tools import (
     parse_extensions,
     remove_excluded,
     run_ffmpeg_cmds,
+    convert_media,
 )
 from bot.helper.mirror_utils.status_utils.ffmpeg_status import FFmpegStatus
 from bot.helper.mirror_utils.status_utils.extract_status import ExtractStatus
@@ -148,6 +149,8 @@ class MirrorLeechListener:
         self.isPM = config_dict["BOT_PM"] or self.user_dict.get("bot_pm")
         self.suproc = None
         self.ffmpeg_cmds = []
+        self.convert_audio = ""
+        self.convert_video = ""
         self.isCover = False
         self.sameDir = sameDir
         self.rcFlags = rcFlags
@@ -416,6 +419,23 @@ class MirrorLeechListener:
                 LOGGER.info("Not any valid archive, uploading file as it is.")
                 self.newDir = ""
                 up_path = dl_path
+
+        if self.convert_audio or self.convert_video:
+            cv_path = up_path or dl_path
+            async with download_dict_lock:
+                download_dict[self.uid] = FFmpegStatus(name, size, gid, self)
+            await update_all_messages()
+            cv_path = await convert_media(
+                self, cv_path, self.convert_audio, self.convert_video
+            )
+            if cv_path is None or self.suproc == "cancelled":
+                return
+            self.suproc = None
+            if up_path:
+                up_path = cv_path
+            else:
+                dl_path = cv_path
+            name = ospath.basename(cv_path)
 
         if self.ffmpeg_cmds:
             ff_path = up_path or dl_path

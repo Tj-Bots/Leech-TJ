@@ -20,7 +20,8 @@ YT_HELP_MESSAGE = ["""<i>Send links/files along with cmd or reply to cmd to mirr
 13. <b>-ud or -dump :</b> Dump category to Upload, Specific Name (case insensitive) or chat_id or chat_username
 14. <b>-ss or -screenshots :</b> Generate Screenshots for Leeched Files
 15. <b>-t or -thumb :</b> Custom Thumb for Specific Leech
-16. <b>-ff :</b> Run your FFmpeg Cmds from User Settings, e.g. <code>-ff tomp3</code> </blockquote>
+16. <b>-ff :</b> Run your FFmpeg Cmds from User Settings, e.g. <code>-ff tomp3</code>
+17. <b>-ca / -cv :</b> Convert Audios / Videos, e.g. <code>-ca mp3</code>, <code>-cv mp4</code>, <code>-ca mp3 + flac ogg</code> (only these), <code>-cv mkv - webm flv</code> (all except these) </blockquote>
 """, """
 <blockquote>➲ <b><i>Send link along with command line</i></b>:
 <code>/cmd</code> link -s -n new name -opt x:y|x1:y1
@@ -133,7 +134,8 @@ MIRROR_HELP_MESSAGE = ["""<i>Send links/files along with cmd or reply to cmd to 
 19. <b>-ud or -dump :</b> Dump category to Upload, Specific Name (case insensitive) or chat_id or chat_username
 20. <b>-ss or -screenshots :</b> Generate Screenshots for Leeched Files
 21. <b>-t or -thumb :</b> Custom Thumb for Specific Leech
-22. <b>-ff :</b> Run your FFmpeg Cmds from User Settings, e.g. <code>-ff tomp3</code></blockquote>
+22. <b>-ff :</b> Run your FFmpeg Cmds from User Settings, e.g. <code>-ff tomp3</code>
+23. <b>-ca / -cv :</b> Convert Audios / Videos, e.g. <code>-ca mp3</code>, <code>-cv mp4</code>, <code>-ca mp3 + flac ogg</code> (only these), <code>-cv mkv - webm flv</code> (all except these)</blockquote>
 """, """
 <blockquote>➲ <b><i>By along the cmd</i></b>:
 <code>/cmd</code> link -n new name

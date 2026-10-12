@@ -128,6 +128,8 @@ async def _mirror_leech(
         "-t": "",
         "-thumb": "",
         "-ff": "",
+        "-ca": "",
+        "-cv": "",
     }
 
     args = arg_parser(input_list[1:], arg_base)
@@ -498,6 +500,8 @@ async def _mirror_leech(
         listener.upload_details["mode"] = listener.upload_details["mode"].replace(
             "#Leech", "#Cover", 1
         )
+    listener.convert_audio = args["-ca"]
+    listener.convert_video = args["-cv"]
     if args["-ff"] and config_dict["DISABLE_FF_MODE"]:
         await sendMessage(message, "<i>FFmpeg Cmds are disabled by the Owner!</i>")
         await delete_links(message)

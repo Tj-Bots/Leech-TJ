@@ -476,3 +476,74 @@ def store_link(bot_name, file_link):
     if not chat:
         return None
     return f"https://t.me/{bot_name}?start={encode_store(chat, msg_id)}"
+
+
+def parse_convert(value):
+    """'mp3 + flac ogg' -> ('mp3', '+', ['.flac', '.ogg']), same rules as WZML-X."""
+    data = str(value or "").split()
+    if not data:
+        return "", "", []
+    ext = data[0].lower().lstrip(".")
+    if len(data) > 2 and data[1] in ("+", "-"):
+        return ext, data[1], [f".{e.lower().lstrip('.')}" for e in data[2:]]
+    return ext, "", []
+
+
+def _want_convert(f_path, target, mode, exts):
+    low = f_path.lower()
+    if not target or low.endswith(f".{target}"):
+        return False
+    if mode == "+":
+        return low.endswith(tuple(exts))
+    if mode == "-":
+        return not low.endswith(tuple(exts))
+    return True
+
+
+async def convert_media(listener, path, audio_arg, video_arg):
+    """-ca / -cv: convert audios and videos. Returns the new path, None if cancelled."""
+    vext, vmode, vexts = parse_convert(video_arg)
+    aext, amode, aexts = parse_convert(audio_arg)
+    single = await aiopath.isfile(path)
+    if single:
+        files = [path]
+    else:
+        files = []
+        for dirpath, _, fnames in await sync_to_async(walk, path):
+            files.extend(ospath.join(dirpath, f) for f in fnames)
+
+    for f_path in files:
+        if listener.suproc == "cancelled":
+            return None
+        kind = await _media_kind(f_path)
+        base = ospath.splitext(f_path)[0]
+        if kind == "video" and _want_convert(f_path, vext, vmode, vexts):
+            output = f"{base}.{vext}"
+            LOGGER.info(f"Converting video: {f_path} -> {vext}")
+            # fast: only change the container, keep all streams
+            done = await _run_ff(listener, ["-i", f_path, "-map", "0", "-c", "copy", output])
+            if not done and listener.suproc != "cancelled":
+                sub_codec = {"mp4": "mov_text", "mkv": "ass"}.get(vext, "copy")
+                done = await _run_ff(
+                    listener,
+                    ["-i", f_path, "-map", "0", "-c:v", "libx264", "-c:a", "aac",
+                     "-c:s", sub_codec, output],
+                )
+        elif kind == "audio" and _want_convert(f_path, aext, amode, aexts):
+            output = f"{base}.{aext}"
+            LOGGER.info(f"Converting audio: {f_path} -> {aext}")
+            done = await _run_ff(listener, ["-i", f_path, output])
+            if not done and listener.suproc != "cancelled":
+                # some formats can't keep the cover art, drop it
+                done = await _run_ff(listener, ["-i", f_path, "-vn", output])
+        else:
+            continue
+        if listener.suproc == "cancelled":
+            return None
+        if done:
+            await aioremove(f_path)
+            if single:
+                return output
+        elif await aiopath.exists(output):
+            await aioremove(output)
+    return path
