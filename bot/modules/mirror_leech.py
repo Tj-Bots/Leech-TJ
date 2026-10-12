@@ -67,6 +67,7 @@ from bot.helper.telegram_helper.message_utils import (
     open_category_btns,
     open_dump_btns,
 )
+from bot.helper.mirror_utils.cover_task import cover_task
 from bot.helper.listeners.tasks_listener import MirrorLeechListener
 from bot.helper.ext_utils.help_messages import (
     MIRROR_HELP_MESSAGE,
@@ -703,7 +704,7 @@ async def cover(client, message):
             "<i>Set a Custom Thumbnail or enable Auto Thumbnail in User Settings to use Cover!</i>",
         )
         return
-    _mirror_leech(client, message, isLeech=True, isCover=True)
+    cover_task(client, message)
 
 
 bot.add_handler(
