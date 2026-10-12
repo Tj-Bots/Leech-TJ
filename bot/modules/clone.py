@@ -23,7 +23,6 @@ from bot.helper.telegram_helper.message_utils import (
     deleteMessage,
     sendStatusMessage,
     delete_links,
-    auto_delete_message,
     open_category_btns,
 )
 from bot.helper.telegram_helper.filters import CustomFilters
@@ -280,10 +279,9 @@ async def gdcloneNode(message, link, listen_up):
         LOGGER.info(f"Cloning Done: {name}")
         await listener.onUploadComplete(link, size, files, folders, mime_type, name)
     else:
-        reply_message = await sendMessage(
-            message, *help_menu("CLONE", message.from_user.id)
+        await sendMessage(
+            message, *help_menu("CLONE", message.from_user.id, message.text.split()[0])
         )
-        await auto_delete_message(message, reply_message)
 
 
 @new_task
@@ -350,8 +348,9 @@ async def clone(client, message):
         drive_id = GoogleDriveHelper.getIdFromUrl(drive_id)
 
     if len(link) == 0:
-        await sendMessage(message, *help_menu("CLONE", message.from_user.id))
-        await delete_links(message)
+        await sendMessage(
+            message, *help_menu("CLONE", message.from_user.id, input_list[0])
+        )
         return
 
     error_msg = []

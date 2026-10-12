@@ -550,236 +550,362 @@ default_desp = {'AS_DOCUMENT': 'Default type of Telegram file upload. Default is
                 'YT_DLP_OPTIONS': 'Default yt-dlp options. Check all possible options HERE or use this script to convert cli arguments to api options. Format: key:value|key:value|key:value. Add ^ before integer or float, some numbers must be numeric and some string. \nExample: "format:bv*+mergeall[vcodec=none]|nocheckcertificate:True"'
                 }
 
-_new_name = """➲ <b><i>New Name</i></b>: -n or -name
-<blockquote><code>/cmd</code> link -n new name
-<b>Note:</b> Doesn't work with torrents.</blockquote>"""
+_ARGS = {
+    "name": (
+        "New Name",
+        """㊂ <b>New Name</b> » <code>-n</code>
 
-_yt_new_name = """➲ <b><i>New Name</i></b>: -n or -name
-<blockquote><code>/cmd</code> link -n new name
-<b>Note:</b> Don't add file extension.</blockquote>"""
+<blockquote>Rename the file or folder before upload.
+➲ <code>/cmd link -n My Movie 2024.mkv</code></blockquote>
+<i>Not for torrents with many files. Your Prefix / Suffix / Remname from /us are still applied.</i>""",
+    ),
+    "yt_name": (
+        "New Name",
+        """㊂ <b>New Name</b> » <code>-n</code>
 
-_dl_auth = """➲ <b><i>Direct Link Authorization</i></b>: -u -p or -user -pass
-<blockquote><code>/cmd</code> link -u username -p password</blockquote>"""
+<blockquote>Rename the downloaded file.
+➲ <code>/cmd link -n My Video</code></blockquote>
+<i>Don't add the extension, yt-dlp adds it by itself.</i>""",
+    ),
+    "zip": (
+        "Extract / Zip",
+        """㊂ <b>Extract / Zip</b> » <code>-e</code> <code>-z</code>
 
-_headers = """➲ <b><i>Direct Link Custom Headers</i></b>: -h or -headers
-<blockquote><code>/cmd</code> link -h key: value key1: value1</blockquote>"""
+<blockquote>➲ <code>/cmd link -e</code> extract the archive
+➲ <code>/cmd link -e pass123</code> extract with password
+➲ <code>/cmd link -z</code> zip the files
+➲ <code>/cmd link -z pass123</code> zip with password
+➲ <code>/cmd link -e -z</code> extract, then zip again</blockquote>
+<i>When both are used it always extracts first.</i>""",
+    ),
+    "yt_zip": (
+        "Zip",
+        """㊂ <b>Zip</b> » <code>-z</code>
 
-_extract_zip = """➲ <b><i>Extract / Zip</i></b>: -e -z or -extract -zip
-<blockquote><code>/cmd</code> link -e password (extract password protected)
-<code>/cmd</code> link -z password (zip password protected)
-<code>/cmd</code> link -z password -e (extract and zip password protected)
-<code>/cmd</code> link -e password -z password (extract password protected and zip password protected)
-<b>Note:</b> When both are added it will extract first and then zip.</blockquote>"""
+<blockquote>➲ <code>/cmd link -z</code> zip the files
+➲ <code>/cmd link -z pass123</code> zip with password</blockquote>
+<i>Useful for playlists, you get one archive.</i>""",
+    ),
+    "upload": (
+        "Upload To",
+        """㊂ <b>Upload To</b> » <code>-up</code>
 
-_yt_zip = """➲ <b><i>Zip</i></b>: -z or -zip
-<blockquote><code>/cmd</code> link -z (zip)
-<code>/cmd</code> link -z password (zip password protected)</blockquote>"""
+<blockquote>Choose where the files go. Without it the bot uses the default upload.
+➲ <code>/cmd link -up gd</code> Google Drive
+➲ <code>/cmd link -up rc</code> your RClone Path
+➲ <code>/cmd link -up ddl</code> your DDL Servers (GoFile, PixelDrain...)
+➲ <code>/cmd link -up rcl</code> pick remote and folder with buttons
+➲ <code>/cmd link -up remote:folder</code> direct rclone path
+➲ <code>/cmd link -up mrcc:remote:folder</code> with your own rclone.conf
+➲ <code>/cmd link -up movies</code> an Upload Path saved in /us</blockquote>
+<i>Set DDL Servers, RClone and Upload Paths in /us → Mirror.</i>""",
+    ),
+    "dump": (
+        "Dump Chat",
+        """㊂ <b>Dump Chat</b> » <code>-ud</code>
 
-_select = """➲ <b><i>Torrent File Selection</i></b>: -s or -select
-<blockquote><code>/cmd</code> link -s or by replying to file/link</blockquote>"""
+<blockquote>Send the files to a chat or channel instead of here.
+➲ <code>/cmd link -ud MyChannel</code> a Leech Dump saved in /us
+➲ <code>/cmd link -ud -100123456789</code> chat id
+➲ <code>/cmd link -ud @mychannel</code> username
+➲ <code>/cmd link -ud all</code> all of your Leech Dumps</blockquote>
+<i>The bot must be admin there. With more than one dump and no -ud, you get buttons.</i>""",
+    ),
+    "multi": (
+        "Multi Links",
+        """㊂ <b>Multi Links</b> » <code>-i</code>
 
-_yt_select = """➲ <b><i>Quality Buttons</i></b>: -s or -select
-<blockquote>In case default quality is added from yt-dlp options and you need to select quality for a specific link.
-<code>/cmd</code> link -s</blockquote>"""
+<blockquote>Run several links/files in a row. Reply to the <b>first</b> one:
+➲ <code>/cmd -i 5</code> this message and the next 4</blockquote>
+<i>Each one runs as a separate task.</i>""",
+    ),
+    "samedir": (
+        "Same Folder",
+        """㊂ <b>Same Folder</b> » <code>-m</code>
 
-_seed = """➲ <b><i>Torrent Seed</i></b>: -d or -seed
-<blockquote><code>/cmd</code> link -d ratio:seed_time or by replying to file/link
-Ex: <code>-d 0.7:10</code> (ratio and time), <code>-d 0.7</code> (only ratio) or <code>-d :10</code> (only time), time in minutes.</blockquote>"""
+<blockquote>Put the files of multi or bulk links in one folder.
+➲ <code>/cmd -i 5 -m Season 1</code>
+➲ <code>/cmd -b -m Season 1</code></blockquote>
+<i>Good with -z to get one archive of everything.</i>""",
+    ),
+    "bulk": (
+        "Bulk",
+        """㊂ <b>Bulk</b> » <code>-b</code>
 
-_multi = """➲ <b><i>Multi Links</i></b>: -i
-<blockquote>Only by replying to the first link/file:
-<code>/cmd</code> -i 10 (number of links/files)</blockquote>"""
+<blockquote>Reply to a message or a .txt file with one link per line:
+<code>link1 -n first name</code>
+<code>link2 -z</code>
+<code>link3 -e</code>
+Then reply to it with <code>/cmd -b</code>
+➲ <code>/cmd -b 3:8</code> only links 3 to 8
+➲ <code>/cmd -b :10</code> first 10 links</blockquote>
+<i>Args for each link go on its own line.</i>""",
+    ),
+    "join": (
+        "Join Parts",
+        """㊂ <b>Join Parts</b> » <code>-j</code>
 
-_same_dir = """➲ <b><i>Same Directory</i></b>: -m or -sd or -samedir
-<blockquote>Download multi links within the same upload directory:
-<code>/cmd</code> -i 10 -m folder name (multi message)
-<code>/cmd</code> -b -m folder name (bulk message/file)</blockquote>"""
+<blockquote>Join split files (.001 .002 ...) back to one file.
+➲ <code>/cmd link -j</code> link with split files
+➲ <code>/cmd -i 3 -j -m folder</code> parts sent as 3 messages</blockquote>
+<i>Runs before extract and zip.</i>""",
+    ),
+    "select": (
+        "Select Files",
+        """㊂ <b>Select Files</b> » <code>-s</code>
 
-_bulk = """➲ <b><i>Bulk Download</i></b>: -b or -bulk
-<blockquote>Reply to a text message or a text file with links separated by new lines.
-All options should be along with the link!
-<b>Example:</b>
-link1 -n new name -up remote1:path1 -rcf |key:value|key:value
-link2 -z -n new name -up remote2:path2
-link3 -e -n new name -up ddl
-Then reply with <code>/cmd</code> -b
-Set start and end with <code>-b start:end</code>, <code>-b :end</code> or <code>-b start</code>.
-<b>Note:</b> You can't add -m for some links only, do it for all links.</blockquote>"""
+<blockquote>Choose which files of a torrent to download.
+➲ <code>/cmd magnet -s</code></blockquote>
+<i>You get a button to open the file list.</i>""",
+    ),
+    "yt_select": (
+        "Quality",
+        """㊂ <b>Quality</b> » <code>-s</code>
 
-_join = """➲ <b><i>Join Splitted Files</i></b>: -j or -join
-<blockquote>Works before extract and zip, mostly used with -m (same dir).
-This is not merging of two different links/files.
-<code>/cmd</code> -i 3 -j -m folder name
-<code>/cmd</code> -b -j -m folder name
-<code>/cmd</code> link -j (link with splitted files)</blockquote>"""
+<blockquote>Always show the quality buttons, even if a default format is set in your YT-DLP Options.
+➲ <code>/cmd link -s</code></blockquote>""",
+    ),
+    "seed": (
+        "Seed",
+        """㊂ <b>Seed</b> » <code>-d</code>
 
-_upload = """➲ <b><i>Upload Destination</i></b>: -up or -upload
-<blockquote><code>/cmd</code> link -up <code>rcl</code> (select rclone config, remote and path)
-<code>/cmd</code> link -up <code>ddl</code> (your DDL servers)
-<code>/cmd</code> link -up <code>gd</code> or <code>rc</code>
-<code>/cmd</code> link -up remote:dir/subdir
-<code>/cmd</code> link -up name (an Upload Path saved in User Settings)
-Add <code>mrcc:</code> before the path to use your own rclone config:
-<code>/cmd</code> link -up <code>mrcc:</code>main:dump</blockquote>"""
+<blockquote>Keep seeding the torrent after upload.
+➲ <code>/cmd magnet -d</code> default ratio and time
+➲ <code>/cmd magnet -d 1.5:60</code> ratio 1.5 or 60 minutes
+➲ <code>/cmd magnet -d 2</code> only ratio
+➲ <code>/cmd magnet -d :30</code> only time</blockquote>""",
+    ),
+    "auth": (
+        "Login",
+        """㊂ <b>Login</b> » <code>-u</code> <code>-p</code>
 
-_rcf = """➲ <b><i>RClone Flags</i></b>: -rcf
-<blockquote><code>/cmd</code> link -up path|rcl -rcf --buffer-size:8M|--drive-starred-only|key|key:value
-This will override all other flags except --exclude.
-Check all <a href='https://rclone.org/flags/'>RClone Flags</a>.</blockquote>"""
+<blockquote>For direct links or indexes that need a username and password.
+➲ <code>/cmd link -u user -p pass</code></blockquote>""",
+    ),
+    "headers": (
+        "Headers",
+        """㊂ <b>Headers</b> » <code>-h</code>
 
-_drive = """➲ <b><i>Upload Custom Drive</i></b>: -id & -index (optional)
-<blockquote><code>/cmd</code> link -id <code>drive_folder_link</code> or <code>drive_id</code> -index <code>https://example.com/0:</code>
-drive_id must be a folder id or folder link and index must be a url.</blockquote>"""
+<blockquote>Add custom headers to a direct link.
+➲ <code>/cmd link -h Referer: https://site.com Cookie: a=b</code></blockquote>""",
+    ),
+    "rcf": (
+        "RClone Flags",
+        """㊂ <b>RClone Flags</b> » <code>-rcf</code>
 
-_category = """➲ <b><i>Custom Category</i></b>: -c or -category
-<blockquote><code>/cmd</code> link -c <code>category_name</code>
-Works for Bot Categories and UserTDs (if enabled).
-Without it you can select from buttons when there is more than one.</blockquote>"""
+<blockquote>Extra rclone flags for this task, separated by <code>|</code>
+➲ <code>/cmd link -up rc -rcf --buffer-size:8M|--drive-starred-only</code></blockquote>
+<i>Overrides your RClone Flags from /us. All flags: <a href='https://rclone.org/flags/'>rclone.org/flags</a></i>""",
+    ),
+    "drive": (
+        "Drive Folder",
+        """㊂ <b>Drive Folder</b> » <code>-id</code> <code>-index</code>
 
-_dump = """➲ <b><i>Custom Dump</i></b>: -ud or -dump
-<blockquote><code>/cmd</code> link -ud <code>dump_name</code> or <code>@username</code> or <code>-100xxxxxx</code> or <code>all</code>
-<code>all</code> uploads to all of your Dump Chats.
-Make sure the bot is admin in the chat.</blockquote>"""
+<blockquote>Upload to a specific Google Drive folder.
+➲ <code>/cmd link -id folder_link</code>
+➲ <code>/cmd link -id folder_id -index https://index.site/0:</code></blockquote>""",
+    ),
+    "category": (
+        "Category",
+        """㊂ <b>Category</b> » <code>-c</code>
 
-_screenshots = """➲ <b><i>Screenshots</i></b>: -ss or -screenshots
-<blockquote><code>/cmd</code> link -ss 6 (6 screenshots for each video)</blockquote>"""
+<blockquote>Upload to a Drive category by name (bot categories or your User TDs).
+➲ <code>/cmd link -c Movies</code></blockquote>
+<i>Without it, you get buttons when there is more than one.</i>""",
+    ),
+    "screenshots": (
+        "Screenshots",
+        """㊂ <b>Screenshots</b> » <code>-ss</code>
 
-_thumb = """➲ <b><i>Custom Thumbnail</i></b>: -t or -thumb
-<blockquote><code>/cmd</code> link -t tg_link|dl_link
-<b>Direct Link:</b> image url
-<b>Tg Link:</b> Public/Private/Super link of an image</blockquote>"""
+<blockquote>Send screenshots of every video with the upload.
+➲ <code>/cmd link -ss 6</code></blockquote>
+<i>To always get them, set Screenshots / Sample Video in /us → Leech.</i>""",
+    ),
+    "thumb": (
+        "Thumbnail",
+        """㊂ <b>Thumbnail</b> » <code>-t</code>
 
-_ffmpeg = """➲ <b><i>FFmpeg Cmds</i></b>: -ff
-<blockquote>Run a named FFmpeg Cmd saved in User Settings:
-<code>/cmd</code> link -ff tomp3
-Use <code>mltb</code> as the input file name in your commands.</blockquote>"""
+<blockquote>Use another thumbnail only for this task.
+➲ <code>/cmd link -t https://site.com/image.jpg</code>
+➲ <code>/cmd link -t https://t.me/channel/123</code> image from Telegram</blockquote>
+<i>Your thumbnail from /us and Auto Thumbnail are used when this is not set.</i>""",
+    ),
+    "convert": (
+        "Convert Media",
+        """㊂ <b>Convert Media</b> » <code>-ca</code> <code>-cv</code>
 
-_convert = """➲ <b><i>Convert Media</i></b>: -ca -cv
-<blockquote><code>/cmd</code> link -ca mp3 -cv mp4 (all audios to mp3 and all videos to mp4)
-<code>/cmd</code> link -ca mp3 (all audios to mp3)
-<code>/cmd</code> link -cv mp4 (all videos to mp4)
-<code>/cmd</code> link -ca mp3 + flac ogg (only flac and ogg audios to mp3)
-<code>/cmd</code> link -cv mkv - webm flv (all videos to mkv except webm and flv)
-<b>Note:</b> Videos are remuxed without re-encoding when possible.</blockquote>"""
+<blockquote>➲ <code>/cmd link -cv mp4</code> all videos to mp4
+➲ <code>/cmd link -ca mp3</code> all audios to mp3
+➲ <code>/cmd link -ca mp3 -cv mp4</code> both
+➲ <code>/cmd link -ca mp3 + flac ogg</code> only flac and ogg to mp3
+➲ <code>/cmd link -cv mkv - webm flv</code> all videos to mkv except webm and flv</blockquote>
+<i>Videos change format without re-encoding when possible, so it's fast. Original files are replaced.</i>""",
+    ),
+    "ffmpeg": (
+        "FFmpeg Cmds",
+        """㊂ <b>FFmpeg Cmds</b> » <code>-ff</code>
 
-_rclone_dl = """➲ <b><i>RClone Download</i></b>
-<blockquote>Treat rclone paths exactly like links:
-<code>/cmd</code> main:dump/ubuntu.iso or <code>rcl</code> (select config, remote and path)
-Add <code>mrcc:</code> before the path to use your own config:
-<code>/cmd</code> <code>mrcc:</code>main:dump/ubuntu.iso</blockquote>"""
+<blockquote>Run an FFmpeg command you saved in /us → Universal → FFmpeg Cmds.
+➲ <code>/cmd link -ff tomp3</code>
+In the saved command write <code>mltb</code> as the input and output name:
+<code>tomp3: -i mltb.m4a -c:a libmp3lame mltb.mp3</code>
+➲ <code>/cmd link -ff tomp3 subs</code> run more than one</blockquote>""",
+    ),
+    "rclone_dl": (
+        "From RClone",
+        """㊂ <b>From RClone</b>
 
-_tg_links = """➲ <b><i>TG Links</i></b>
-<blockquote>Treat tg links like any direct link. Some need USER_SESSION_STRING.
-• <b>Public:</b> <code>https://t.me/channel_name/message_id</code>
-• <b>Private:</b> <code>tg://openmessage?user_id=xxxxxx&message_id=xxxxx</code>
-• <b>Super:</b> <code>https://t.me/c/channel_id/message_id</code></blockquote>"""
+<blockquote>Download from your cloud like a link.
+➲ <code>/cmd rcl</code> pick the file with buttons
+➲ <code>/cmd remote:folder/file.mkv</code>
+➲ <code>/cmd mrcc:remote:folder</code> with your own rclone.conf</blockquote>""",
+    ),
+    "tg": (
+        "Telegram Links",
+        """㊂ <b>Telegram Links</b>
 
-_yt_opt = """➲ <b><i>yt-dlp Options</i></b>: -opt or -options
-<blockquote><code>/cmd</code> link -opt playliststart:^10|fragment_retries:^inf|matchtitle:S13|writesubtitles:true|live_from_start:true|wait_for_video:(5, 100)
-Add <code>^</code> before integer or float values. Tuples and dicts are supported, use double quotes inside dict.
-Check all <a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L184'>yt-dlp options</a>.</blockquote>"""
+<blockquote>Reply to a file, or send a message link:
+➲ <code>/cmd https://t.me/channel/123</code> public
+➲ <code>/cmd https://t.me/c/123456/78</code> private
+➲ <code>/cmd -i 5</code> reply to the first file to take 5 in a row</blockquote>
+<i>Private chats need your User Session (/us) or the bot's.</i>""",
+    ),
+    "yt_opt": (
+        "YT-DLP Options",
+        """㊂ <b>YT-DLP Options</b> » <code>-opt</code>
 
-_clone_links = """➲ <b><i>Links</i></b>
-<blockquote>Gdrive | Gdtot | Filepress | Filebee | Appdrive | Gdflix link or rclone path
-<code>/cmd</code> gdrive_link
-<code>/cmd</code> rcl or rclone_path -up rcl or rclone_path</blockquote>"""
+<blockquote>Extra yt-dlp options for this task, separated by <code>|</code>
+➲ <code>/cmd link -opt playliststart:^5|playlistend:^10</code>
+➲ <code>/cmd link -opt writesubtitles:true|format:bv*+ba</code>
+Add <code>^</code> before numbers.</blockquote>
+<i>Save options you always use in /us → Universal. Cookies too.</i>""",
+    ),
+    "clone_links": (
+        "Supported",
+        """㊂ <b>Supported</b>
 
-_clone_upload = """➲ <b><i>Upload Destination</i></b>: -up or -upload
-<blockquote><code>/cmd</code> link -up <code>rcl</code> or rclone_path
-If not set, RCLONE_PATH from config is used for rclone paths.</blockquote>"""
+<blockquote>➲ <code>/cmd gdrive_link</code>
+➲ GDTot · Filepress · Filebee · Appdrive · GDFlix links
+➲ <code>/cmd remote:folder -up remote2:folder</code> rclone to rclone</blockquote>""",
+    ),
+    "clone_up": (
+        "Upload To",
+        """㊂ <b>Upload To</b> » <code>-up</code>
 
-MIRROR_HELP_DICT = {
-    "main": """<i>Send links/files along with cmd or reply to cmd to mirror or leech on Telegram or GDrive or DDLs with different Engines like RClone, Aria2 or qBit</i>
-
-<blockquote>➲ <code>/cmd</code> link -n new name
-➲ <code>/cmd</code> -n new name -z -e -up destination (by reply)</blockquote>
-
-<i>Choose an arg below to see how it works:</i>""",
-    "New Name": _new_name,
-    "Extract / Zip": _extract_zip,
-    "Upload": _upload,
-    "Multi Links": _multi,
-    "Same Dir": _same_dir,
-    "Bulk": _bulk,
-    "Join": _join,
-    "Select Files": _select,
-    "Seed": _seed,
-    "DL Auth": _dl_auth,
-    "Headers": _headers,
-    "RClone Flags": _rcf,
-    "Custom Drive": _drive,
-    "Category": _category,
-    "Dump": _dump,
-    "Screenshots": _screenshots,
-    "Thumbnail": _thumb,
-    "Convert Media": _convert,
-    "FFmpeg Cmds": _ffmpeg,
-    "RClone DL": _rclone_dl,
-    "TG Links": _tg_links,
+<blockquote>For rclone paths, choose where to copy.
+➲ <code>/cmd remote:folder -up rcl</code> pick with buttons
+➲ <code>/cmd remote:folder -up remote2:folder</code></blockquote>
+<i>Without it your RClone Path is used.</i>""",
+    ),
 }
 
-YT_HELP_DICT = {
-    "main": """<i>Send links along with cmd or reply to cmd to mirror or leech yt-dlp supported sites on Telegram or GDrive or DDLs</i>
+_MAIN = {
+    "leech": """㊂ <b>Leech</b>
 
-<blockquote>➲ <code>/cmd</code> link -s -n new name -opt x:y|x1:y1
-➲ <code>/cmd</code> -n new name -z password -opt x:y|x1:y1 (by reply)</blockquote>
+<blockquote>Download anything and upload it to Telegram.
+➲ <code>/cmd link</code>
+➲ Reply to a link or file with <code>/cmd</code></blockquote>
+<blockquote>Direct links · Telegram files · Torrents · GDrive · Mega · RClone and more.
+Your settings from /us are used: thumbnail, caption, transfer mode, dumps...</blockquote>
+<i>Tap an arg to see how to use it:</i>""",
+    "mirror": """㊂ <b>Mirror</b>
 
-<i>Choose an arg below to see how it works:</i>""",
-    "New Name": _yt_new_name,
-    "Zip": _yt_zip,
-    "Quality": _yt_select,
-    "Options": _yt_opt,
-    "Upload": _upload,
-    "Multi Links": _multi,
-    "Same Dir": _same_dir,
-    "Bulk": _bulk,
-    "RClone Flags": _rcf,
-    "Custom Drive": _drive,
-    "Category": _category,
-    "Dump": _dump,
-    "Screenshots": _screenshots,
-    "Thumbnail": _thumb,
-    "Convert Media": _convert,
-    "FFmpeg Cmds": _ffmpeg,
+<blockquote>Download anything and upload it to GDrive, RClone or DDL.
+➲ <code>/cmd link</code>
+➲ Reply to a link or file with <code>/cmd</code></blockquote>
+<blockquote>Direct links · Telegram files · Torrents · GDrive · Mega · RClone and more.
+You get the links in a message when it's done.</blockquote>
+<i>Tap an arg to see how to use it:</i>""",
+    "qbleech": """㊂ <b>qBittorrent Leech</b>
+
+<blockquote>Download torrents with qBittorrent and upload to Telegram.
+➲ <code>/cmd magnet</code>
+➲ Reply to a .torrent file with <code>/cmd</code></blockquote>
+<i>Tap an arg to see how to use it:</i>""",
+    "qbmirror": """㊂ <b>qBittorrent Mirror</b>
+
+<blockquote>Download torrents with qBittorrent and upload to GDrive, RClone or DDL.
+➲ <code>/cmd magnet</code>
+➲ Reply to a .torrent file with <code>/cmd</code></blockquote>
+<i>Tap an arg to see how to use it:</i>""",
+    "ytleech": """㊂ <b>YT-DLP Leech</b>
+
+<blockquote>Download from YouTube and 1000+ sites and upload to Telegram.
+➲ <code>/cmd link</code>
+You choose the quality with buttons.</blockquote>
+<i>Tap an arg to see how to use it:</i>""",
+    "ytmirror": """㊂ <b>YT-DLP Mirror</b>
+
+<blockquote>Download from YouTube and 1000+ sites and upload to GDrive, RClone or DDL.
+➲ <code>/cmd link</code>
+You choose the quality with buttons.</blockquote>
+<i>Tap an arg to see how to use it:</i>""",
+    "clone": """㊂ <b>Clone</b>
+
+<blockquote>Copy files between clouds without downloading them.
+➲ <code>/cmd link</code>
+➲ Reply to a link with <code>/cmd</code></blockquote>
+<i>Tap an arg to see how to use it:</i>""",
 }
 
-CLONE_HELP_DICT = {
-    "main": """<i>Send Gdrive | Gdtot | Filepress | Filebee | Appdrive | Gdflix link or RClone path along with or by replying to the link/rc_path by command with args.</i>
-
-<i>Choose an arg below to see how it works:</i>""",
-    "Links": _clone_links,
-    "Upload": _clone_upload,
-    "Multi Links": """➲ <b><i>Multi Links</i></b>: -i
-<blockquote>Only by replying to the first link/path:
-<code>/cmd</code> -i 10 (number of links/paths)</blockquote>""",
-    "RClone Flags": _rcf,
-    "Custom Drive": _drive,
-    "Category": _category,
+_MENUS = {
+    "leech": ["name", "zip", "dump", "multi", "samedir", "bulk", "join", "select",
+              "seed", "auth", "headers", "screenshots", "thumb", "convert", "ffmpeg",
+              "rclone_dl", "tg"],
+    "mirror": ["name", "zip", "upload", "multi", "samedir", "bulk", "join", "select",
+               "seed", "auth", "headers", "rcf", "drive", "category", "convert",
+               "ffmpeg", "rclone_dl", "tg"],
+    "qbleech": ["name", "zip", "dump", "select", "seed", "multi", "samedir", "bulk",
+                "screenshots", "thumb", "convert", "ffmpeg"],
+    "qbmirror": ["name", "zip", "upload", "select", "seed", "multi", "samedir", "bulk",
+                 "rcf", "drive", "category", "convert", "ffmpeg"],
+    "ytleech": ["yt_name", "yt_select", "yt_opt", "yt_zip", "dump", "multi", "samedir",
+                "bulk", "screenshots", "thumb", "convert", "ffmpeg"],
+    "ytmirror": ["yt_name", "yt_select", "yt_opt", "yt_zip", "upload", "multi",
+                 "samedir", "bulk", "rcf", "drive", "category", "convert", "ffmpeg"],
+    "clone": ["clone_links", "clone_up", "multi", "rcf", "drive", "category"],
 }
 
-HELP_DICTS = {"MIRROR": MIRROR_HELP_DICT, "YT": YT_HELP_DICT, "CLONE": CLONE_HELP_DICT}
+
+def _menu_type(key, cmd):
+    if key == "CLONE":
+        return "clone"
+    leech = cmd in (
+        BotCommands.LeechCommand
+        + BotCommands.QbLeechCommand
+        + BotCommands.YtdlLeechCommand
+    )
+    kind = "leech" if leech else "mirror"
+    if key == "YT":
+        return f"yt{kind}"
+    if cmd in BotCommands.QbLeechCommand + BotCommands.QbMirrorCommand:
+        return f"qb{kind}"
+    return kind
 
 
-def help_menu(key, user_id, page=0, item=None):
+def help_menu(key, user_id, cmd, page=0, item=None):
     from bot.helper.telegram_helper.button_build import ButtonMaker
 
-    help_dict = HELP_DICTS[key]
-    names = list(help_dict.keys())[1:]
+    cmd = cmd.lstrip("/").split("@")[0]
+    mtype = _menu_type(key, cmd)
+    names = _MENUS[mtype]
+    base = f"wzmlx {user_id} help {key} {cmd}"
     buttons = ButtonMaker()
-    if item is not None:
-        buttons.ibutton("◀️ Back", f"wzmlx {user_id} help {key} p {page}")
+    if item is not None and 0 <= item < len(names):
+        text = _ARGS[names[item]][1]
+        buttons.ibutton("◀️ Back", f"{base} p {page}")
         buttons.ibutton("Cʟᴏsᴇ", f"wzmlx {user_id} close")
-        return help_dict[names[item]], buttons.build_menu(2)
-    per_page = 12
+        return text.replace("/cmd", f"/{cmd}"), buttons.build_menu(1)
+    per_page = 14
     pages = max(1, -(-len(names) // per_page))
     page = min(max(page, 0), pages - 1)
     for i in range(page * per_page, min((page + 1) * per_page, len(names))):
-        buttons.ibutton(names[i], f"wzmlx {user_id} help {key} i {i} {page}")
+        buttons.ibutton(_ARGS[names[i]][0], f"{base} i {i} {page}")
     if pages > 1:
         if page > 0:
-            buttons.ibutton("⫷", f"wzmlx {user_id} help {key} p {page - 1}", "footer")
-        buttons.ibutton(f"{page + 1}/{pages}", f"wzmlx {user_id} help {key} p {page}", "footer")
+            buttons.ibutton("⫷", f"{base} p {page - 1}", "l_body")
+        buttons.ibutton(f"{page + 1}/{pages}", f"{base} p {page}", "l_body")
         if page < pages - 1:
-            buttons.ibutton("⫸", f"wzmlx {user_id} help {key} p {page + 1}", "footer")
+            buttons.ibutton("⫸", f"{base} p {page + 1}", "l_body")
     buttons.ibutton("Cʟᴏsᴇ", f"wzmlx {user_id} close", "footer")
-    return help_dict["main"], buttons.build_menu(2)
+    return _MAIN[mtype].replace("/cmd", f"/{cmd}"), buttons.build_menu(2, lb_cols=3)

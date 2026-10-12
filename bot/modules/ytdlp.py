@@ -435,8 +435,9 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
         link = reply_to.text.split("\n", 1)[0].strip()
 
     if not is_url(link):
-        await sendMessage(message, *help_menu("YT", message.from_user.id))
-        await delete_links(message)
+        await sendMessage(
+            message, *help_menu("YT", message.from_user.id, input_list[0])
+        )
         return
 
     error_msg = []

@@ -308,8 +308,9 @@ async def _mirror_leech(
         and not is_rclone_path(link)
         and file_ is None
     ):
-        await sendMessage(message, *help_menu("MIRROR", message.from_user.id))
-        await delete_links(message)
+        await sendMessage(
+            message, *help_menu("MIRROR", message.from_user.id, input_list[0])
+        )
         return
 
     error_msg = []
@@ -598,11 +599,14 @@ async def wzmlxcb(_, query):
         await query.answer(url=f"https://t.me/{bot_name}?start=wzmlx")
     elif data[2] == "help":
         await query.answer()
-        if len(data) > 6 and data[4] == "i":
-            text, markup = help_menu(data[3], user_id, int(data[6]), int(data[5]))
+        if len(data) < 5:
+            return
+        key, cmd = data[3], data[4]
+        if len(data) > 7 and data[5] == "i":
+            text, markup = help_menu(key, user_id, cmd, int(data[7]), int(data[6]))
         else:
-            page = int(data[5]) if len(data) > 5 and data[4] == "p" else 0
-            text, markup = help_menu(data[3], user_id, page)
+            page = int(data[6]) if len(data) > 6 and data[5] == "p" else 0
+            text, markup = help_menu(key, user_id, cmd, page)
         await editMessage(message, text, markup)
     elif data[2] == "guide":
         btn = ButtonMaker()
