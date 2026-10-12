@@ -915,6 +915,10 @@ async def set_commands(client):
                 BotCommands.CategorySelect,
                 "Select Upload Category with UserTD or Bot Categories to upload only GDrive upload",
             ),
+            BotCommand(
+                BotCommands.CoverCommand,
+                "Reply to a video to set your thumbnail/TMDB poster as cover",
+            ),
             BotCommand(BotCommands.CancelMirror, "Cancel a Task of yours!"),
             BotCommand(
                 BotCommands.CancelAllCommand[0],

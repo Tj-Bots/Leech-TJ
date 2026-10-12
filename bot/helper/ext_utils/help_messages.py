@@ -350,7 +350,8 @@ help_string = [f'''⌬ <b><i>Bᴀsɪᴄ Cᴏᴍᴍᴀɴᴅs!</i></b>
 f'''⌬ <b><i>Usᴇʀs Cᴏᴍᴍᴀɴᴅs!</i></b>
 
 <blockquote><b>Bot Settings:</b>
-╰ /{BotCommands.UserSetCommand[0]} or /{BotCommands.UserSetCommand[1]} [query]: Open User Settings (PM also)
+┊ /{BotCommands.UserSetCommand[0]} or /{BotCommands.UserSetCommand[1]} [query]: Open User Settings (PM also)
+╰ /{BotCommands.CoverCommand}: Reply to a video to set your Thumbnail / TMDB poster as its cover
 
 <b>Authentication:</b>
 ╰ /login: Login to Bot to Access Bot without Temp Pass System (Private)
