@@ -609,7 +609,7 @@ _ARGS = {
 ➲ <code>/cmd link -ud -100123456789</code> chat id
 ➲ <code>/cmd link -ud @mychannel</code> username
 ➲ <code>/cmd link -ud all</code> all of your Leech Dumps</blockquote>
-<i>The bot must be admin there. With more than one dump and no -ud, you get buttons.</i>""",
+<i>The bot must be admin there. With more than one dump and no <code>-ud</code>, you get buttons.</i>""",
     ),
     "multi": (
         "Multi Links",
@@ -626,7 +626,7 @@ _ARGS = {
 <blockquote>Put the files of multi or bulk links in one folder.
 ➲ <code>/cmd -i 5 -m Season 1</code>
 ➲ <code>/cmd -b -m Season 1</code></blockquote>
-<i>Good with -z to get one archive of everything.</i>""",
+<i>Good with <code>-z</code> to get one archive of everything.</i>""",
     ),
     "bulk": (
         "Bulk",
@@ -799,6 +799,36 @@ Add <code>^</code> before numbers.</blockquote>
     ),
 }
 
+_EXAMPLES = {
+    "name": "/cmd link -n My Movie 2024.mkv",
+    "yt_name": "/cmd link -n My Video",
+    "zip": "/cmd link -e -z pass123",
+    "yt_zip": "/cmd link -z",
+    "upload": "/cmd link -up ddl",
+    "dump": "/cmd link -ud all",
+    "multi": "/cmd -i 5",
+    "samedir": "/cmd -i 5 -m Season 1",
+    "bulk": "/cmd -b",
+    "join": "/cmd link -j",
+    "select": "/cmd magnet -s",
+    "yt_select": "/cmd link -s",
+    "seed": "/cmd magnet -d 1.5:60",
+    "auth": "/cmd link -u user -p pass",
+    "headers": "/cmd link -h Referer: https://site.com",
+    "rcf": "/cmd link -up rc -rcf --buffer-size:8M",
+    "drive": "/cmd link -id folder_link",
+    "category": "/cmd link -c Movies",
+    "screenshots": "/cmd link -ss 6",
+    "thumb": "/cmd link -t https://site.com/image.jpg",
+    "convert": "/cmd link -ca mp3 -cv mp4",
+    "ffmpeg": "/cmd link -ff tomp3",
+    "rclone_dl": "/cmd rcl",
+    "tg": "/cmd https://t.me/channel/123",
+    "yt_opt": "/cmd link -opt playliststart:^5|playlistend:^10",
+    "clone_links": "/cmd gdrive_link",
+    "clone_up": "/cmd remote:folder -up rcl",
+}
+
 _MAIN = {
     "leech": """㊂ <b>Leech</b>
 
@@ -893,10 +923,12 @@ def help_menu(key, user_id, cmd, page=0, item=None):
     buttons = ButtonMaker()
     if item is not None and 0 <= item < len(names):
         text = _ARGS[names[item]][1]
+        if example := _EXAMPLES.get(names[item]):
+            text += f"\n\n<b>Example:</b> <code>{example}</code>"
         buttons.ibutton("◀️ Back", f"{base} p {page}")
         buttons.ibutton("Cʟᴏsᴇ", f"wzmlx {user_id} close")
         return text.replace("/cmd", f"/{cmd}"), buttons.build_menu(1)
-    per_page = 14
+    per_page = 8
     pages = max(1, -(-len(names) // per_page))
     page = min(max(page, 0), pages - 1)
     for i in range(page * per_page, min((page + 1) * per_page, len(names))):
