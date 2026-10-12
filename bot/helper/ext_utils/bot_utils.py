@@ -6,7 +6,7 @@ from os import path as ospath
 from pkg_resources import get_distribution, DistributionNotFound
 from aiofiles import open as aiopen
 from aiofiles.os import remove as aioremove, path as aiopath, mkdir
-from re import match as re_match
+from re import match as re_match, search as re_search, findall as re_findall, MULTILINE
 from time import time
 from html import escape
 from uuid import uuid4
@@ -609,15 +609,46 @@ def new_thread(func):
     return wrapper
 
 
+async def get_latest_version():
+    """Version of the bot on UPSTREAM_REPO / UPSTREAM_BRANCH, '' if unknown."""
+    match = re_search(
+        r"github\.com[/:]([^/]+)/([^/\s]+?)(?:\.git)?/?$",
+        str(config_dict.get("UPSTREAM_REPO") or ""),
+    )
+    if not match:
+        return ""
+    owner, repo = match.group(1).split("@")[-1], match.group(2)
+    branch = config_dict.get("UPSTREAM_BRANCH") or "master"
+    url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/bot/version.py"
+    try:
+        async with aioClientSession() as session:
+            async with session.get(url, timeout=15) as resp:
+                if resp.status != 200:
+                    return ""
+                text = await resp.text()
+    except Exception as e:
+        LOGGER.error(f"Latest version check failed: {e}")
+        return ""
+    parts = {
+        k: v for k, v in re_findall(r'^\s*(MAJOR|MINOR|PATCH|STATE)\s*=\s*"([^"]*)"', text, MULTILINE)
+    }
+    if not all(k in parts for k in ("MAJOR", "MINOR", "PATCH")):
+        return ""
+    return f"v{parts['MAJOR']}.{parts['MINOR']}.{parts['PATCH']}-{parts.get('STATE', 'x')}"
+
+
 async def compare_versions(v1, v2):
-    v1_parts = [int(part) for part in v1.split("-")[0][1:].split(".")]
-    v2_parts = [int(part) for part in v2.split("-")[0][1:].split(".")]
-    for i in range(3):
+    try:
+        v1_parts = [int(part) for part in v1.split("-")[0][1:].split(".")]
+        v2_parts = [int(part) for part in v2.split("-")[0][1:].split(".")]
+    except (ValueError, IndexError):
+        return "Can't check latest version right now"
+    for i in range(min(3, len(v1_parts), len(v2_parts))):
         v1_part, v2_part = v1_parts[i], v2_parts[i]
         if v1_part < v2_part:
             return "New Version Update is Available! Check Now!"
         elif v1_part > v2_part:
-            return "More Updated! Kindly Contribute in Official"
+            return "Running a newer version than the repo"
     return "Already up to date with latest version"
 
 
@@ -710,17 +741,12 @@ async def get_stats(event, key="home"):
                     "git log -1 --pretty=format:'<code>%s</code> <b>By</b> %an'", True
                 )
             )[0]
-        official_v = (
-            await cmd_exec(
-                f"curl -o latestversion.py https://raw.githubusercontent.com/weebzone/WZML-X/{config_dict['UPSTREAM_BRANCH']}/bot/version.py -s && python3 latestversion.py && rm latestversion.py",
-                True,
-            )
-        )[0]
+        official_v = await get_latest_version()
         msg = BotTheme(
             "REPO_STATS",
             last_commit=last_commit,
             bot_version=get_version(),
-            lat_version=official_v,
+            lat_version=official_v or "N/A",
             commit_details=changelog,
             remarks=await compare_versions(get_version(), official_v),
         )
