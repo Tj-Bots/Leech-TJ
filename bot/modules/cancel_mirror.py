@@ -10,12 +10,15 @@ from bot.helper.telegram_helper.message_utils import (
     sendMessage,
     deleteMessage,
     auto_delete_message,
+    editMessage,
+    editReplyMarkup,
 )
 from bot.helper.ext_utils.bot_utils import (
     getDownloadByGid,
     getAllDownload,
     MirrorStatus,
     new_task,
+    multi_tags,
 )
 from bot.helper.telegram_helper import button_build
 
@@ -56,8 +59,8 @@ async def cancel_mirror(_, message):
     await obj.cancel_download()
 
 
-async def cancel_all(status):
-    matches = await getAllDownload(status)
+async def cancel_all(status, user_id=None):
+    matches = await getAllDownload(status, user_id)
     if not matches:
         return False
     for dl in matches:
@@ -67,26 +70,50 @@ async def cancel_all(status):
     return True
 
 
+def _is_sudo(user_id):
+    return user_id == OWNER_ID or user_data.get(user_id, {}).get("is_sudo")
+
+
+def cancel_all_menu(owner_id, scope):
+    """scope 0 = all tasks of the bot (sudo), else only that user's tasks."""
+    buttons = button_build.ButtonMaker()
+    for label, status in [
+        ("Downloading", MirrorStatus.STATUS_DOWNLOADING),
+        ("Uploading", MirrorStatus.STATUS_UPLOADING),
+        ("Seeding", MirrorStatus.STATUS_SEEDING),
+        ("Cloning", MirrorStatus.STATUS_CLONING),
+        ("Extracting", MirrorStatus.STATUS_EXTRACTING),
+        ("Archiving", MirrorStatus.STATUS_ARCHIVING),
+        ("QueuedDl", MirrorStatus.STATUS_QUEUEDL),
+        ("QueuedUp", MirrorStatus.STATUS_QUEUEUP),
+        ("Paused", MirrorStatus.STATUS_PAUSED),
+        ("All", "all"),
+    ]:
+        buttons.ibutton(label, f"canall {owner_id} {scope} {status}")
+    if _is_sudo(owner_id):
+        if scope:
+            buttons.ibutton("🌐 All Tasks", f"canall {owner_id} scope 0", "footer")
+        else:
+            buttons.ibutton("👤 My Tasks", f"canall {owner_id} scope {owner_id}", "footer")
+    buttons.ibutton("Close", f"canall {owner_id} close", "footer")
+    whose = "<b>all tasks of the bot</b>" if not scope else "<b>your tasks</b>"
+    return f"Choose which of {whose} to cancel.", buttons.build_menu(2)
+
+
 async def cancell_all_buttons(_, message):
+    user_id = message.from_user.id
+    scope = 0 if _is_sudo(user_id) else user_id
     async with download_dict_lock:
-        count = len(download_dict)
+        count = sum(
+            1
+            for dl in download_dict.values()
+            if not scope or dl.message.from_user.id == scope
+        )
     if count == 0:
         await sendMessage(message, "No active tasks!")
         return
-    buttons = button_build.ButtonMaker()
-    buttons.ibutton("Downloading", f"canall {MirrorStatus.STATUS_DOWNLOADING}")
-    buttons.ibutton("Uploading", f"canall {MirrorStatus.STATUS_UPLOADING}")
-    buttons.ibutton("Seeding", f"canall {MirrorStatus.STATUS_SEEDING}")
-    buttons.ibutton("Cloning", f"canall {MirrorStatus.STATUS_CLONING}")
-    buttons.ibutton("Extracting", f"canall {MirrorStatus.STATUS_EXTRACTING}")
-    buttons.ibutton("Archiving", f"canall {MirrorStatus.STATUS_ARCHIVING}")
-    buttons.ibutton("QueuedDl", f"canall {MirrorStatus.STATUS_QUEUEDL}")
-    buttons.ibutton("QueuedUp", f"canall {MirrorStatus.STATUS_QUEUEUP}")
-    buttons.ibutton("Paused", f"canall {MirrorStatus.STATUS_PAUSED}")
-    buttons.ibutton("All", "canall all")
-    buttons.ibutton("Close", "canall close")
-    button = buttons.build_menu(2)
-    can_msg = await sendMessage(message, "Choose tasks to cancel.", button)
+    text, button = cancel_all_menu(user_id, scope)
+    can_msg = await sendMessage(message, text, button)
     await auto_delete_message(message, can_msg)
 
 
@@ -95,14 +122,43 @@ async def cancel_all_update(_, query):
     data = query.data.split()
     message = query.message
     reply_to = message.reply_to_message
-    await query.answer()
-    if data[1] == "close":
+    if len(data) < 3 or not data[1].isdigit():
+        await query.answer()
+        return await deleteMessage(message)
+    owner_id = int(data[1])
+    if query.from_user.id != owner_id:
+        return await query.answer("This is not for you!", show_alert=True)
+    if data[2] == "close":
+        await query.answer()
         await deleteMessage(reply_to)
         await deleteMessage(message)
+    elif data[2] == "scope":
+        await query.answer()
+        scope = int(data[3]) if _is_sudo(owner_id) else owner_id
+        text, button = cancel_all_menu(owner_id, scope)
+        await editMessage(message, text, button)
     else:
-        res = await cancel_all(data[1])
+        scope = int(data[2])
+        if not scope and not _is_sudo(owner_id):
+            scope = owner_id
+        status = " ".join(data[3:])
+        await query.answer("Cancelling...")
+        res = await cancel_all(status, scope or None)
         if not res:
-            await sendMessage(reply_to, f"No matching tasks for {data[1]}!")
+            await sendMessage(reply_to or message, f"No matching tasks for {status}!")
+
+
+async def cancel_multi(_, query):
+    tag = query.data.split()[1]
+    owner = multi_tags.get(tag)
+    if owner is None:
+        await query.answer("This multi task already finished or stopped!", show_alert=True)
+        return await editReplyMarkup(query.message, None)
+    if query.from_user.id != owner and not _is_sudo(query.from_user.id):
+        return await query.answer("This is not for you!", show_alert=True)
+    multi_tags.pop(tag, None)
+    await query.answer("Multi stopped! Running tasks keep going.", show_alert=True)
+    await editReplyMarkup(query.message, None)
 
 
 bot.add_handler(
@@ -116,7 +172,10 @@ bot.add_handler(
 bot.add_handler(
     MessageHandler(
         cancell_all_buttons,
-        filters=command(BotCommands.CancelAllCommand) & CustomFilters.sudo,
+        filters=command(BotCommands.CancelAllCommand)
+        & CustomFilters.authorized
+        & ~CustomFilters.blacklisted,
     )
 )
 bot.add_handler(CallbackQueryHandler(cancel_all_update, filters=regex(r"^canall")))
+bot.add_handler(CallbackQueryHandler(cancel_multi, filters=regex(r"^cmulti")))

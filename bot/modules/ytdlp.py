@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from secrets import token_hex
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 from pyrogram.filters import command, regex, user
 from asyncio import sleep, wait_for, Event, wrap_future
@@ -27,6 +28,8 @@ from bot.helper.telegram_helper.message_utils import (
 )
 from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.ext_utils.bot_utils import (
+    multi_tags,
+    multi_cancel_button,
     get_readable_file_size,
     fetch_user_tds,
     fetch_user_dumps,
@@ -278,7 +281,7 @@ async def _mdisk(link, name):
 
 
 @new_task
-async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
+async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[], multi_tag=None):
     text = message.text.split("\n")
     input_list = text[0].split(" ")
     qual = ""
@@ -385,13 +388,21 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
 
     @new_task
     async def __run_multi():
+        nonlocal multi_tag
         if multi <= 1:
+            multi_tags.pop(multi_tag, None)
             return
+        if not multi_tag:
+            multi_tag = token_hex(3)
+            multi_tags[multi_tag] = message.from_user.id
         await sleep(5)
+        if multi_tag not in multi_tags:
+            return  # Cancel Multi pressed
+        cbtn = multi_cancel_button(multi_tag)
         if len(bulk) != 0:
             msg = input_list[:1]
             msg.append(f"{bulk[0]} -i {multi - 1}")
-            nextmsg = await sendMessage(message, " ".join(msg))
+            nextmsg = await sendMessage(message, " ".join(msg), cbtn)
         else:
             msg = [s.strip() for s in input_list]
             index = msg.index("-i")
@@ -399,7 +410,7 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
             nextmsg = await client.get_messages(
                 chat_id=message.chat.id, message_ids=message.reply_to_message_id + 1
             )
-            nextmsg = await sendMessage(nextmsg, " ".join(msg))
+            nextmsg = await sendMessage(nextmsg, " ".join(msg), cbtn)
         nextmsg = await client.get_messages(
             chat_id=message.chat.id, message_ids=nextmsg.id
         )
@@ -407,7 +418,9 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
             sameDir["tasks"].add(nextmsg.id)
         nextmsg.from_user = message.from_user
         await sleep(5)
-        _ytdl(client, nextmsg, isLeech, sameDir, bulk)
+        if multi_tag not in multi_tags:
+            return
+        _ytdl(client, nextmsg, isLeech, sameDir, bulk, multi_tag)
 
     path = f"{DOWNLOAD_DIR}{message.id}{folder_name}"
 

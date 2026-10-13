@@ -1,3 +1,4 @@
+from secrets import token_hex
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 from pyrogram.filters import command, regex
 from html import escape
@@ -24,6 +25,8 @@ from bot.helper.ext_utils.user_tools import (
 )
 from bot.helper.mirror_utils.download_utils.direct_downloader import add_direct_download
 from bot.helper.ext_utils.bot_utils import (
+    multi_tags,
+    multi_cancel_button,
     is_url,
     is_magnet,
     is_mega_link,
@@ -79,7 +82,14 @@ from bot.modules.gen_pyro_sess import get_decrypt_key
 
 @new_task
 async def _mirror_leech(
-    client, message, isQbit=False, isLeech=False, sameDir=None, bulk=[], isCover=False
+    client,
+    message,
+    isQbit=False,
+    isLeech=False,
+    sameDir=None,
+    bulk=[],
+    isCover=False,
+    multi_tag=None,
 ):
     text = message.text.split("\n")
     input_list = text[0].split(" ")
@@ -225,13 +235,21 @@ async def _mirror_leech(
 
     @new_task
     async def __run_multi():
+        nonlocal multi_tag
         if multi <= 1:
+            multi_tags.pop(multi_tag, None)
             return
+        if not multi_tag:
+            multi_tag = token_hex(3)
+            multi_tags[multi_tag] = message.from_user.id
         await sleep(5)
+        if multi_tag not in multi_tags:
+            return  # Cancel Multi pressed
+        cbtn = multi_cancel_button(multi_tag)
         if len(bulk) != 0:
             msg = input_list[:1]
             msg.append(f"{bulk[0]} -i {multi - 1}")
-            nextmsg = await sendMessage(message, " ".join(msg))
+            nextmsg = await sendMessage(message, " ".join(msg), cbtn)
         else:
             msg = [s.strip() for s in input_list]
             index = msg.index("-i")
@@ -239,7 +257,7 @@ async def _mirror_leech(
             nextmsg = await client.get_messages(
                 chat_id=message.chat.id, message_ids=message.reply_to_message_id + 1
             )
-            nextmsg = await sendMessage(nextmsg, " ".join(msg))
+            nextmsg = await sendMessage(nextmsg, " ".join(msg), cbtn)
         nextmsg = await client.get_messages(
             chat_id=message.chat.id, message_ids=nextmsg.id
         )
@@ -247,7 +265,9 @@ async def _mirror_leech(
             sameDir["tasks"].add(nextmsg.id)
         nextmsg.from_user = message.from_user
         await sleep(5)
-        _mirror_leech(client, nextmsg, isQbit, isLeech, sameDir, bulk, isCover)
+        if multi_tag not in multi_tags:
+            return
+        _mirror_leech(client, nextmsg, isQbit, isLeech, sameDir, bulk, isCover, multi_tag)
 
     __run_multi()
 

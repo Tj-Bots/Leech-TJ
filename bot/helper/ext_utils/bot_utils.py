@@ -256,6 +256,15 @@ class EngineStatus:
         self.STATUS_RCLONE = f"RClone {version_cache['rclone']}"
 
 
+multi_tags = {}  # Cancel Multi: tag -> user_id
+
+
+def multi_cancel_button(tag):
+    buttons = ButtonMaker()
+    buttons.ibutton("Cancel Multi", f"cmulti {tag}")
+    return buttons.build_menu(1)
+
+
 class RichText(str):
     """Status text that is sent as a Telegram Rich Message."""
 
