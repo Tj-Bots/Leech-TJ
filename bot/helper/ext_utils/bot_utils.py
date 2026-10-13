@@ -277,19 +277,30 @@ def rich_button(text, data, style):
     return f'<tg-button type="callback_data" style="{style}" data="{data}">{text}</tg-button>'
 
 
-def get_readable_message():
+def get_readable_message(user_id=None):
     msg = ""
     button = None
     rich = rich_enabled()
     STATUS_LIMIT = config_dict["STATUS_LIMIT"]
-    tasks = len(download_dict)
-    globals()["PAGES"] = (tasks + STATUS_LIMIT - 1) // STATUS_LIMIT
-    if PAGE_NO > PAGES and PAGES != 0:
-        globals()["STATUS_START"] = STATUS_LIMIT * (PAGES - 1)
-        globals()["PAGE_NO"] = PAGES
-    for download in list(download_dict.values())[
-        STATUS_START : STATUS_LIMIT + STATUS_START
-    ]:
+    if user_id:
+        # one user's tasks only, no paging
+        shown = [
+            dl for dl in download_dict.values() if dl.message.from_user.id == user_id
+        ]
+        tasks = len(shown)
+        shown = shown[:STATUS_LIMIT]
+        page_no, pages = 1, 1
+        if shown:
+            msg += f"➲ <b>Tasks of:</b> {escape(shown[0].message.from_user.first_name or str(user_id))} ({tasks})\n"
+    else:
+        tasks = len(download_dict)
+        globals()["PAGES"] = (tasks + STATUS_LIMIT - 1) // STATUS_LIMIT
+        if PAGE_NO > PAGES and PAGES != 0:
+            globals()["STATUS_START"] = STATUS_LIMIT * (PAGES - 1)
+            globals()["PAGE_NO"] = PAGES
+        shown = list(download_dict.values())[STATUS_START : STATUS_LIMIT + STATUS_START]
+        page_no, pages = PAGE_NO, PAGES
+    for download in shown:
         msg_link = (
             download.message.link
             if download.message.chat.type in [ChatType.SUPERGROUP, ChatType.CHANNEL]
@@ -375,7 +386,7 @@ def get_readable_message():
             "CANCEL", Cancel=f"/{BotCommands.CancelMirror}_{download.gid()}"
         )
 
-    if len(msg) == 0:
+    if not shown:
         return None, None
 
     dl_speed = 0
@@ -412,10 +423,10 @@ def get_readable_message():
 
     if not rich:
         msg += BotTheme("FOOTER")
-    page_text = f"Page {PAGE_NO}/{PAGES}" if PAGES > 1 else "Refresh"
+    page_text = f"Page {page_no}/{pages}" if pages > 1 else "Refresh"
     buttons = ButtonMaker()
     buttons.ibutton(BotTheme("REFRESH", Page=page_text), "status ref")
-    if tasks > STATUS_LIMIT:
+    if tasks > STATUS_LIMIT and not user_id:
         if config_dict["BOT_MAX_TASKS"]:
             msg += BotTheme(
                 "BOT_TASKS",

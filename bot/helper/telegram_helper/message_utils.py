@@ -443,30 +443,38 @@ async def update_all_messages(force=False):
             return
         for chat_id in list(status_reply_dict.keys()):
             status_reply_dict[chat_id][1] = time()
+    pages = {}
     async with download_dict_lock:
-        msg, buttons = await sync_to_async(get_readable_message)
-    if msg is None:
-        return
+        for key in [None, *list(status_reply_dict.keys())]:
+            uid = key[1] if isinstance(key, tuple) else None
+            if uid not in pages:
+                pages[uid] = await sync_to_async(get_readable_message, uid)
     async with status_reply_dict_lock:
-        for chat_id in list(status_reply_dict.keys()):
-            if status_reply_dict[chat_id] and msg != status_reply_dict[chat_id][0].text:
-                rmsg = await editMessage(
-                    status_reply_dict[chat_id][0], msg, buttons, "IMAGES"
-                )
+        for key in list(status_reply_dict.keys()):
+            uid = key[1] if isinstance(key, tuple) else None
+            msg, buttons = pages[uid]
+            if msg is None:
+                if uid:
+                    # this user has no more tasks
+                    await deleteMessage(status_reply_dict[key][0])
+                    del status_reply_dict[key]
+                continue
+            if status_reply_dict[key] and msg != status_reply_dict[key][0].text:
+                rmsg = await editMessage(status_reply_dict[key][0], msg, buttons, "IMAGES")
                 if isinstance(rmsg, str) and rmsg.startswith("Telegram says: [400"):
-                    del status_reply_dict[chat_id]
+                    del status_reply_dict[key]
                     continue
-                status_reply_dict[chat_id][0].text = msg
-                status_reply_dict[chat_id][1] = time()
+                status_reply_dict[key][0].text = msg
+                status_reply_dict[key][1] = time()
 
 
-async def sendStatusMessage(msg):
+async def sendStatusMessage(msg, user_id=None):
     async with download_dict_lock:
-        progress, buttons = await sync_to_async(get_readable_message)
+        progress, buttons = await sync_to_async(get_readable_message, user_id)
     if progress is None:
         return
     async with status_reply_dict_lock:
-        chat_id = msg.chat.id
+        chat_id = (msg.chat.id, user_id) if user_id else msg.chat.id
         if chat_id in list(status_reply_dict.keys()):
             message = status_reply_dict[chat_id][0]
             await deleteMessage(message)

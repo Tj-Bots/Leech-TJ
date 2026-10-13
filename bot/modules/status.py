@@ -4,6 +4,10 @@ from pyrogram.filters import command, regex
 from psutil import cpu_percent, virtual_memory, disk_usage
 from time import time
 from asyncio import sleep
+from contextlib import suppress
+from html import escape
+
+from pyrogram.enums import ChatType
 
 from bot import (
     bot_cache,
@@ -16,6 +20,7 @@ from bot import (
     bot,
     OWNER_ID,
     user_data,
+    LOGGER,
 )
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
@@ -38,13 +43,37 @@ from bot.helper.ext_utils.bot_utils import (
     getDownloadByGid,
 )
 from bot.helper.themes import BotTheme
+from bot.helper.telegram_helper.button_build import ButtonMaker
+
+try:
+    from pyrogram.enums import ButtonStyle
+
+    DANGER, SUCCESS = ButtonStyle.DANGER, ButtonStyle.SUCCESS
+except ImportError:
+    DANGER = SUCCESS = None
 
 
 @new_task
 async def mirror_status(_, message):
+    args = message.text.split()
+    user_id = None
+    if len(args) > 1:
+        if args[1].lower() == "me":
+            user_id = message.from_user.id
+        elif args[1].isdigit():
+            user_id = int(args[1])
     async with download_dict_lock:
         count = len(download_dict)
-    if count == 0:
+        if user_id:
+            count = sum(
+                1 for dl in download_dict.values() if dl.message.from_user.id == user_id
+            )
+    if count == 0 and user_id:
+        reply_message = await sendMessage(
+            message, f"<i>No active tasks for <code>{user_id}</code>!</i>"
+        )
+        await auto_delete_message(message, reply_message)
+    elif count == 0:
         currentTime = get_readable_time(time() - botStartTime)
         free = get_readable_file_size(disk_usage(config_dict["DOWNLOAD_DIR"]).free)
         msg = BotTheme(
@@ -58,7 +87,7 @@ async def mirror_status(_, message):
         reply_message = await sendMessage(message, msg)
         await auto_delete_message(message, reply_message)
     else:
-        await sendStatusMessage(message)
+        await sendStatusMessage(message, user_id)
         await deleteMessage(message)
         async with status_reply_dict_lock:
             if Interval:
@@ -71,22 +100,82 @@ async def mirror_status(_, message):
                 )
 
 
+async def _send_confirm(query, text, buttons):
+    """Show the confirm only to the user who pressed (ephemeral), else a reply."""
+    message = query.message
+    if message.chat.type != ChatType.PRIVATE:
+        try:
+            from pyrogram.types import EphemeralMessageParameters, ReplyParameters
+
+            await bot.send_message(
+                message.chat.id,
+                text,
+                reply_markup=buttons,
+                reply_parameters=ReplyParameters(message_id=message.id),
+                ephemeral_message_parameters=EphemeralMessageParameters(
+                    receiver_user_id=query.from_user.id,
+                    callback_query_id=query.id,
+                    replace_callback_query_message=True,
+                ),
+            )
+            with suppress(Exception):
+                await query.answer()
+            return
+        except Exception as e:
+            LOGGER.warning(f"Ephemeral confirm failed, sending a reply: {e}")
+    await query.answer()
+    await sendMessage(message, text, buttons)
+
+
+async def _close_confirm(query):
+    message = query.message
+    if eph_id := getattr(message, "ephemeral_message_id", None):
+        with suppress(Exception):
+            await bot.delete_ephemeral_message(
+                message.chat.id, query.from_user.id, eph_id
+            )
+            return
+    await deleteMessage(message)
+
+
+def _can_manage(user_id, dl):
+    return (
+        OWNER_ID == user_id
+        or dl.message.from_user.id == user_id
+        or user_data.get(user_id, {}).get("is_sudo")
+    )
+
+
 @new_task
 async def status_pages(_, query):
     data = query.data.split()
-    if data[1] in ["cancel", "sel"] and len(data) > 2:
+    user_id = query.from_user.id
+    if data[1] == "cno":
+        if len(data) > 2 and int(data[2]) != user_id:
+            return await query.answer("This is not for you!", show_alert=True)
+        await query.answer()
+        return await _close_confirm(query)
+    if data[1] in ["cancel", "cyes", "sel"] and len(data) > 2:
         dl = await getDownloadByGid(data[2])
         if dl is None:
-            return await query.answer("This task is already done!", show_alert=True)
-        user_id = query.from_user.id
-        if (
-            OWNER_ID != user_id
-            and dl.message.from_user.id != user_id
-            and not user_data.get(user_id, {}).get("is_sudo")
-        ):
+            await query.answer("This task is already done!", show_alert=True)
+            if data[1] == "cyes":
+                await _close_confirm(query)
+            return
+        if not _can_manage(user_id, dl):
             return await query.answer("This task is not for you!", show_alert=True)
         if data[1] == "cancel":
+            buttons = ButtonMaker()
+            buttons.ibutton("Yes, Cancel", f"status cyes {data[2]}", style=DANGER)
+            buttons.ibutton("No", f"status cno {user_id}", style=SUCCESS)
+            text = (
+                "<b>Cancel this task?</b>\n"
+                f"<blockquote><code>{escape(dl.name())}</code></blockquote>"
+            )
+            await _send_confirm(query, text, buttons.build_menu(2))
+        elif data[1] == "cyes":
             await query.answer("Cancelling...")
+            await _close_confirm(query)
             await dl.download().cancel_download()
         else:
             from bot.modules.torrent_select import start_selection
