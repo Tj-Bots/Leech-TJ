@@ -37,6 +37,9 @@ from bot import (
 )
 from bot.helper.ext_utils.bot_utils import (
     extra_btns,
+    RichText,
+    rich_enabled,
+    to_rich_html,
     sync_to_async,
     get_readable_file_size,
     get_readable_time,
@@ -736,9 +739,21 @@ class MirrorLeechListener:
                     )
                 fmsg = "\n"
                 use_store = media_store_enabled(user_id)
+                rich = use_store and rich_enabled()
+
+                def _out(text):
+                    return RichText(to_rich_html(text)) if rich else text
+
                 for index, (link, name) in enumerate(files.items(), start=1):
                     if not link:
                         fmsg += f"<blockquote>{index}. {name}</blockquote>\n"
+                    elif rich and (slink := store_link(bot_name, link)):
+                        share = f"https://t.me/share/url?url={slink}"
+                        fmsg += (
+                            f"<blockquote>{index}. <a href='{link}'>{name}</a>\n"
+                            f'╰ <tg-button type="url" style="primary" url="{slink}">Store Link</tg-button> '
+                            f'<tg-button type="url" style="success" url="{share}">Share Link</tg-button></blockquote>\n'
+                        )
                     elif use_store and (slink := store_link(bot_name, link)):
                         fmsg += (
                             f"<blockquote>{index}. <a href='{link}'>{name}</a>\n"
@@ -755,14 +770,14 @@ class MirrorLeechListener:
                             if self.isSuperGroup:
                                 await sendMessage(
                                     self.botpmmsg,
-                                    msg + BotTheme("L_LL_MSG") + fmsg,
+                                    _out(msg + BotTheme("L_LL_MSG") + fmsg),
                                     btns,
                                     photo=self.random_pic,
                                 )
                             else:
                                 await sendMessage(
                                     self.message,
-                                    message + fmsg,
+                                    _out(message + fmsg),
                                     buttons.build_menu(2),
                                     photo=self.random_pic,
                                 )
@@ -776,7 +791,7 @@ class MirrorLeechListener:
                                 buttons.ibutton(BotTheme("SAVE_MSG"), "save", "footer")
                             await sendMessage(
                                 self.message,
-                                message + fmsg,
+                                _out(message + fmsg),
                                 buttons.build_menu(2),
                                 photo=self.random_pic,
                             )
@@ -788,14 +803,14 @@ class MirrorLeechListener:
                         if self.isSuperGroup:
                             await sendMessage(
                                 self.botpmmsg,
-                                msg + BotTheme("L_LL_MSG") + fmsg,
+                                _out(msg + BotTheme("L_LL_MSG") + fmsg),
                                 btns,
                                 photo=self.random_pic,
                             )
                         else:
                             await sendMessage(
                                 self.message,
-                                message + fmsg,
+                                _out(message + fmsg),
                                 buttons.build_menu(2),
                                 photo=self.random_pic,
                             )
@@ -805,7 +820,7 @@ class MirrorLeechListener:
                             buttons.ibutton(BotTheme("SAVE_MSG"), "save", "footer")
                         await sendMessage(
                             self.message,
-                            message + fmsg,
+                            _out(message + fmsg),
                             buttons.build_menu(2),
                             photo=self.random_pic,
                         )
