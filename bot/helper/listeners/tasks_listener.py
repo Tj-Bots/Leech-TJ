@@ -35,6 +35,12 @@ from bot import (
     bot,
     GLOBAL_EXTENSION_FILTER,
 )
+try:
+    from pyrogram.enums import ButtonStyle
+
+    SHARE_STYLE = ButtonStyle.SUCCESS
+except ImportError:
+    SHARE_STYLE = None
 from bot.helper.ext_utils.bot_utils import (
     extra_btns,
     RichText,
@@ -739,29 +745,37 @@ class MirrorLeechListener:
                     )
                 fmsg = "\n"
                 use_store = media_store_enabled(user_id)
-                rich = use_store and rich_enabled()
+                # one file: Store / Share as keyboard buttons
+                # many files: buttons inside the text (rich) or text links
+                single = use_store and len(files) == 1
+                rich = use_store and not single and rich_enabled()
 
                 def _out(text):
                     return RichText(to_rich_html(text)) if rich else text
 
                 for index, (link, name) in enumerate(files.items(), start=1):
+                    slink = store_link(bot_name, link) if use_store and link else ""
+                    share = f"https://t.me/share/url?url={slink}"
                     if not link:
-                        fmsg += f"<blockquote>{index}. {name}</blockquote>\n"
-                    elif rich and (slink := store_link(bot_name, link)):
-                        share = f"https://t.me/share/url?url={slink}"
+                        fmsg += f"<blockquote>\u200e{index}. {name}</blockquote>\n"
+                    elif single and slink:
+                        fmsg += f"<blockquote>\u200e{index}. <a href='{link}'>{name}</a></blockquote>\n"
+                        buttons.ubutton("Store Link", slink, "header")
+                        buttons.ubutton("Share Link", share, "header", style=SHARE_STYLE)
+                    elif rich and slink:
                         fmsg += (
-                            f"<blockquote>{index}. <a href='{link}'>{name}</a>\n"
+                            f"<blockquote>\u200e{index}. <a href='{link}'>{name}</a>\n"
                             f'╰ <tg-button type="url" style="primary" url="{slink}">Store Link</tg-button> '
                             f'<tg-button type="url" style="success" url="{share}">Share Link</tg-button></blockquote>\n'
                         )
-                    elif use_store and (slink := store_link(bot_name, link)):
+                    elif slink:
                         fmsg += (
-                            f"<blockquote>{index}. <a href='{link}'>{name}</a>\n"
+                            f"<blockquote>\u200e{index}. <a href='{link}'>{name}</a>\n"
                             f"╰ <b>Get Media :</b> <a href='{slink}'>Store Link</a> | "
-                            f"<a href='https://t.me/share/url?url={slink}'>Share Link</a></blockquote>\n"
+                            f"<a href='{share}'>Share Link</a></blockquote>\n"
                         )
                     else:
-                        fmsg += f"<blockquote>{index}. <a href='{link}'>{name}</a></blockquote>\n"
+                        fmsg += f"<blockquote>\u200e{index}. <a href='{link}'>{name}</a></blockquote>\n"
                     if len(msg.encode() + fmsg.encode()) > (
                         4000 if len(config_dict["IMAGES"]) == 0 else 1000
                     ):

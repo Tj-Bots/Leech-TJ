@@ -109,7 +109,7 @@ def _confirm_content(dl, gid, user_id):
     name = f"<code>{escape(dl.name())}</code>"
     if hasattr(bot, "send_rich_message"):
         html = (
-            f"<blockquote>╭ <b>Cancel this task?</b><br>┊ {name}<br>╰ "
+            f"<blockquote>╭ <b>Cancel this task?</b><br>\u200e┊ {name}<br>╰ "
             + rich_button("Yes, Cancel", f"status cyes {gid}", "danger")
             + " "
             + rich_button("No", f"status cno {user_id}", "success")

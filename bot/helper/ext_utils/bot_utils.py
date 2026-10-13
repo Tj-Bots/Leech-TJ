@@ -270,6 +270,8 @@ def to_rich_html(msg):
     html = re_sub(r'<a href="">(.*?)</a>', r"\1", msg.strip()).replace("\n", "<br>")
     html = re_sub(r"(?:<br>\s*)+(<(?:/?blockquote|hr|/?p)\b[^>]*>)", r"\1", html)
     html = re_sub(r"(</blockquote>|<hr/>|</p>)(?:\s*<br>)+", r"\1", html)
+    # keep every line left-to-right, also when it starts with a Hebrew name
+    html = re_sub(r"(<br>|<blockquote>|<p>)(?!\u200e)", "\\1\u200e", html)
     return html
 
 
