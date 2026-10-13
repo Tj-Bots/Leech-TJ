@@ -130,6 +130,21 @@ async def sendMessage(message, text, buttons=None, photo=None, **kwargs):
 
 
 async def sendCustomMsg(chat_id, text, buttons=None, photo=None, debug=False):
+    if isinstance(text, RichText):
+        from pyrogram.types import InputRichMessage
+
+        if buttons is not None and not getattr(buttons, "inline_keyboard", True):
+            buttons = None
+        try:
+            return await bot.send_rich_message(
+                chat_id,
+                InputRichMessage(html=str(text)),
+                reply_markup=buttons,
+                disable_notification=True,
+            )
+        except Exception as e:
+            LOGGER.error(f"Rich message failed, sending normal text: {e}")
+            text = str(text).replace("<br>", "\n")
     try:
         if photo:
             try:

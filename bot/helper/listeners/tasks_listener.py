@@ -39,6 +39,7 @@ from bot.helper.ext_utils.bot_utils import (
     extra_btns,
     RichText,
     rich_enabled,
+    rich_or_plain,
     to_rich_html,
     sync_to_async,
     get_readable_file_size,
@@ -243,7 +244,7 @@ class MirrorLeechListener:
         if self.isPM and self.isSuperGroup:
             self.botpmmsg = await sendCustomMsg(
                 self.message.from_user.id,
-                BotTheme("PM_START", msg_link=self.source_url),
+                rich_or_plain(BotTheme("PM_START", msg_link=self.source_url)),
             )
         if (
             self.isSuperGroup
@@ -1019,7 +1020,7 @@ class MirrorLeechListener:
 ┊ <b>Due To:</b> {escape(error)}
 ┊ <b>Mode:</b> {self.upload_details['mode']}
 ╰ <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""
-        await sendMessage(self.message, msg, button)
+        await sendMessage(self.message, rich_or_plain(msg), button)
         if count == 0:
             await self.clean()
         else:
@@ -1061,7 +1062,7 @@ class MirrorLeechListener:
 ┊ <b>Due To:</b> {escape(error)}
 ┊ <b>Mode:</b> {self.upload_details['mode']}
 ╰ <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""
-        await sendMessage(self.message, msg)
+        await sendMessage(self.message, rich_or_plain(msg))
         if count == 0:
             await self.clean()
         else:

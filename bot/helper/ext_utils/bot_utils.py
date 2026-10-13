@@ -259,6 +259,22 @@ class EngineStatus:
 multi_tags = {}  # Cancel Multi: tag -> user_id
 
 
+def status_text(download):
+    """Status name, with the place in the queue for queued tasks."""
+    status = download.status()
+    from bot import queued_dl, queued_up
+
+    queue = {
+        MirrorStatus.STATUS_QUEUEDL: queued_dl,
+        MirrorStatus.STATUS_QUEUEUP: queued_up,
+    }.get(status)
+    if queue is not None:
+        uids = list(queue.keys())
+        if (uid := download.message.id) in uids:
+            return f"{status} {uids.index(uid) + 1}/{len(uids)}"
+    return status
+
+
 def multi_cancel_button(tag):
     buttons = ButtonMaker()
     buttons.ibutton("Cancel Multi", f"cmulti {tag}")
@@ -282,6 +298,11 @@ def to_rich_html(msg):
     # keep every line left-to-right, also when it starts with a Hebrew name
     html = re_sub(r"(<br>|<blockquote>|<p>)(?!\u200e)", "\\1\u200e", html)
     return html
+
+
+def rich_or_plain(text):
+    """Rich message when RICH_MESSAGES is on, else the normal text."""
+    return RichText(to_rich_html(text)) if rich_enabled() else text
 
 
 def rich_button(text, data, style):
@@ -343,7 +364,7 @@ def get_readable_message(user_id=None):
                 "PROCESSED",
                 Processed=f"{download.processed_bytes()} of {download.size()}",
             )
-            msg += BotTheme("STATUS", Status=download.status(), Url=msg_link)
+            msg += BotTheme("STATUS", Status=status_text(download), Url=msg_link)
             msg += BotTheme("ETA", Eta=download.eta())
             msg += BotTheme("SPEED", Speed=download.speed())
             msg += BotTheme("ELAPSED", Elapsed=get_readable_time(elapsed))
@@ -356,7 +377,7 @@ def get_readable_message(user_id=None):
                 except Exception:
                     pass
         elif download.status() == MirrorStatus.STATUS_SEEDING:
-            msg += BotTheme("STATUS", Status=download.status(), Url=msg_link)
+            msg += BotTheme("STATUS", Status=status_text(download), Url=msg_link)
             msg += BotTheme("SEED_SIZE", Size=download.size())
             msg += BotTheme("SEED_SPEED", Speed=download.upload_speed())
             msg += BotTheme("UPLOADED", Upload=download.uploaded_bytes())
@@ -364,7 +385,7 @@ def get_readable_message(user_id=None):
             msg += BotTheme("TIME", Time=download.seeding_time())
             msg += BotTheme("SEED_ENGINE", Engine=download.eng())
         else:
-            msg += BotTheme("STATUS", Status=download.status(), Url=msg_link)
+            msg += BotTheme("STATUS", Status=status_text(download), Url=msg_link)
             msg += BotTheme("STATUS_SIZE", Size=download.size())
             msg += BotTheme("NON_ENGINE", Engine=download.eng())
 
