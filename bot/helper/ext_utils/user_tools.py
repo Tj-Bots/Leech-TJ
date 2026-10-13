@@ -365,7 +365,7 @@ async def _run_ff(listener, cmd):
     _, stderr = await listener.suproc.communicate()
     code = listener.suproc.returncode
     if code != 0 and listener.suproc != "cancelled":
-        LOGGER.error(f"Sample/Screenshots ffmpeg error: {stderr.decode(errors='ignore').strip()}")
+        LOGGER.error(f"FFmpeg error: {stderr.decode(errors='ignore').strip()}")
     return code == 0
 
 
@@ -500,8 +500,36 @@ def _want_convert(f_path, target, mode, exts):
     return True
 
 
-async def convert_media(listener, path, audio_arg, video_arg):
-    """-ca / -cv: convert audios and videos. Returns the new path, None if cancelled."""
+AUDIO_CODECS = {
+    "mp3": ["-c:a", "libmp3lame", "-q:a", "2"],
+    "m4a": ["-c:a", "aac", "-b:a", "192k"],
+    "aac": ["-c:a", "aac", "-b:a", "192k"],
+    "opus": ["-c:a", "libopus", "-b:a", "128k"],
+    "ogg": ["-c:a", "libvorbis", "-q:a", "5"],
+    "flac": ["-c:a", "flac"],
+    "wav": ["-c:a", "pcm_s16le"],
+}
+
+
+async def _extract_audio(listener, f_path, ext):
+    output = f"{ospath.splitext(f_path)[0]}.{ext}"
+    base_cmd = ["-i", f_path, "-map", "0:a:0", "-vn", "-sn", "-dn", "-map_metadata", "0"]
+    LOGGER.info(f"Extracting audio: {f_path} -> {ext}")
+    # fast: keep the audio as is when the container allows it
+    done = False
+    if ext not in ("mp3", "flac", "wav"):
+        done = await _run_ff(listener, [*base_cmd, "-c:a", "copy", output])
+    if not done and listener.suproc != "cancelled":
+        done = await _run_ff(listener, [*base_cmd, *AUDIO_CODECS.get(ext, []), output])
+    return done, output
+
+
+async def convert_media(listener, path, audio_arg, video_arg, ea_arg=""):
+    """-ca / -cv / -ea: convert audios and videos, or extract the audio of videos.
+    Returns the new path, None if cancelled."""
+    ea_ext = ""
+    if ea_arg:
+        ea_ext = "mp3" if ea_arg is True else str(ea_arg).split()[0].lower().lstrip(".")
     vext, vmode, vexts = parse_convert(video_arg)
     aext, amode, aexts = parse_convert(audio_arg)
     single = await aiopath.isfile(path)
@@ -517,7 +545,9 @@ async def convert_media(listener, path, audio_arg, video_arg):
             return None
         kind = await _media_kind(f_path)
         base = ospath.splitext(f_path)[0]
-        if kind == "video" and _want_convert(f_path, vext, vmode, vexts):
+        if kind == "video" and ea_ext:
+            done, output = await _extract_audio(listener, f_path, ea_ext)
+        elif kind == "video" and _want_convert(f_path, vext, vmode, vexts):
             output = f"{base}.{vext}"
             LOGGER.info(f"Converting video: {f_path} -> {vext}")
             # fast: only change the container, keep all streams

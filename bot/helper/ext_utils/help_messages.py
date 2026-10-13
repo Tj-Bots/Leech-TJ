@@ -741,14 +741,26 @@ Then reply to it with <code>/cmd -b</code>
 ➲ <code>/cmd link -cv mkv - webm flv</code> all videos to mkv except webm and flv</blockquote>
 <i>Videos change format without re-encoding when possible, so it's fast. Original files are replaced.</i>""",
     ),
+    "extract_audio": (
+        "Extract Audio",
+        """㊂ <b>Extract Audio</b> » <code>-ea</code>
+
+<blockquote>Take the audio out of every video and upload only the audio.
+➲ <code>/cmd link -ea</code> as mp3
+➲ <code>/cmd link -ea m4a</code> as m4a (fastest, mostly without re-encoding)
+➲ <code>/cmd link -ea flac</code> also <code>opus</code> <code>ogg</code> <code>wav</code></blockquote>
+<i>Videos without audio stay as they are.</i>""",
+    ),
     "ffmpeg": (
         "FFmpeg Cmds",
         """㊂ <b>FFmpeg Cmds</b> » <code>-ff</code>
 
 <blockquote>Run an FFmpeg command you saved in /us → Universal → FFmpeg Cmds.
 ➲ <code>/cmd link -ff tomp3</code>
-In the saved command write <code>mltb</code> as the input and output name:
-<code>tomp3: -i mltb.m4a -c:a libmp3lame mltb.mp3</code>
+In the saved command write <code>mltb</code> as the input and output name.
+The input decides which files it runs on:
+<code>mltb</code> all files · <code>mltb.video</code> all videos · <code>mltb.audio</code> all audios · <code>mltb.mkv</code> only mkv
+<code>tomp3: -i mltb.audio -c:a libmp3lame mltb.mp3</code>
 ➲ <code>/cmd link -ff tomp3 subs</code> run more than one</blockquote>""",
     ),
     "rclone_dl": (
@@ -822,6 +834,7 @@ _EXAMPLES = {
     "thumb": "/cmd link -t https://site.com/image.jpg",
     "convert": "/cmd link -ca mp3 -cv mp4",
     "ffmpeg": "/cmd link -ff tomp3",
+    "extract_audio": "/cmd link -ea mp3",
     "rclone_dl": "/cmd rcl",
     "tg": "/cmd https://t.me/channel/123",
     "yt_opt": "/cmd link -opt playliststart:^5|playlistend:^10",
@@ -880,19 +893,19 @@ You choose the quality with buttons.</blockquote>
 
 _MENUS = {
     "leech": ["name", "zip", "dump", "multi", "samedir", "bulk", "join", "select",
-              "seed", "auth", "headers", "screenshots", "thumb", "convert", "ffmpeg",
+              "seed", "auth", "headers", "screenshots", "thumb", "convert", "extract_audio", "ffmpeg",
               "rclone_dl", "tg"],
     "mirror": ["name", "zip", "upload", "multi", "samedir", "bulk", "join", "select",
                "seed", "auth", "headers", "rcf", "drive", "category", "convert",
-               "ffmpeg", "rclone_dl", "tg"],
+               "extract_audio", "ffmpeg", "rclone_dl", "tg"],
     "qbleech": ["name", "zip", "dump", "select", "seed", "multi", "samedir", "bulk",
-                "screenshots", "thumb", "convert", "ffmpeg"],
+                "screenshots", "thumb", "convert", "extract_audio", "ffmpeg"],
     "qbmirror": ["name", "zip", "upload", "select", "seed", "multi", "samedir", "bulk",
-                 "rcf", "drive", "category", "convert", "ffmpeg"],
+                 "rcf", "drive", "category", "convert", "extract_audio", "ffmpeg"],
     "ytleech": ["yt_name", "yt_select", "yt_opt", "yt_zip", "dump", "multi", "samedir",
-                "bulk", "screenshots", "thumb", "convert", "ffmpeg"],
+                "bulk", "screenshots", "thumb", "convert", "extract_audio", "ffmpeg"],
     "ytmirror": ["yt_name", "yt_select", "yt_opt", "yt_zip", "upload", "multi",
-                 "samedir", "bulk", "rcf", "drive", "category", "convert", "ffmpeg"],
+                 "samedir", "bulk", "rcf", "drive", "category", "convert", "extract_audio", "ffmpeg"],
     "clone": ["clone_links", "clone_up", "multi", "rcf", "drive", "category"],
 }
 

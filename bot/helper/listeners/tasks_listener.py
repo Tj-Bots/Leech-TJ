@@ -151,6 +151,7 @@ class MirrorLeechListener:
         self.ffmpeg_cmds = []
         self.convert_audio = ""
         self.convert_video = ""
+        self.extract_audio = False
         self.isCover = False
         self.sameDir = sameDir
         self.rcFlags = rcFlags
@@ -420,13 +421,13 @@ class MirrorLeechListener:
                 self.newDir = ""
                 up_path = dl_path
 
-        if self.convert_audio or self.convert_video:
+        if self.convert_audio or self.convert_video or self.extract_audio:
             cv_path = up_path or dl_path
             async with download_dict_lock:
                 download_dict[self.uid] = FFmpegStatus(name, size, gid, self)
             await update_all_messages()
             cv_path = await convert_media(
-                self, cv_path, self.convert_audio, self.convert_video
+                self, cv_path, self.convert_audio, self.convert_video, self.extract_audio
             )
             if cv_path is None or self.suproc == "cancelled":
                 return

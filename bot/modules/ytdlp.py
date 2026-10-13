@@ -314,6 +314,7 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
         "-ff": "",
         "-ca": "",
         "-cv": "",
+        "-ea": False,
     }
 
     args = arg_parser(input_list[1:], arg_base)
@@ -558,6 +559,7 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[]):
     )
     listener.convert_audio = args["-ca"]
     listener.convert_video = args["-cv"]
+    listener.extract_audio = args["-ea"]
     if args["-ff"] and config_dict["DISABLE_FF_MODE"]:
         await sendMessage(message, "<i>FFmpeg Cmds are disabled by the Owner!</i>")
         await delete_links(message)
