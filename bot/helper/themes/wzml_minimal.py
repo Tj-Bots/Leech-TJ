@@ -312,6 +312,7 @@ class WZMLStyle:
 ┊<b> Equal Splits :</b> <i>{EQUAL_SPLIT}</i>
 ┊<b> Media Group :</b> <i>{MEDIA_GROUP}</i>
 ┊<b> Leech Caption :</b> <code>{LCAPTION}</code>
+┊<b> Caption Font :</b> <i>{CFONT}</i>
 ┊<b> Leech Prefix :</b> <code>{LPREFIX}</code>
 ┊<b> Leech Suffix :</b> <code>{LSUFFIX}</code>
 ┊<b> Leech Dumps :</b> <code>{LDUMP}</code>

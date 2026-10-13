@@ -103,25 +103,28 @@ async def mirror_status(_, message):
                 )
 
 
-def _confirm_content(dl, gid, user_id):
+def _confirm_content(dl, gid, user):
     """Question in the text, Yes / No as inline keyboard buttons."""
+    user_id = user.id
     name = f"<code>{escape(dl.name())}</code>"
+    tag = f'<a href="tg://user?id={user_id}">{escape(user.first_name or str(user_id))}</a>'
+    head = f"㊂ <b><u>Cancel Task :</u></b> {tag}"
     buttons = ButtonMaker()
     buttons.ibutton("Yes, Cancel", f"status cyes {gid}", style=DANGER)
     buttons.ibutton("No", f"status cno {user_id}", style=SUCCESS)
     if hasattr(bot, "send_rich_message"):
         text = RichText(
-            f"<blockquote>╭ <b>Cancel this task?</b><br>\u200e╰ {name}</blockquote>"
+            f"<p>{head}</p><blockquote>╭ <b>Cancel this task?</b><br>\u200e╰ {name}</blockquote>"
         )
     else:
-        text = f"<b>Cancel this task?</b>\n<blockquote>{name}</blockquote>"
+        text = f"{head}\n\n<blockquote>╭ <b>Cancel this task?</b>\n\u200e╰ {name}</blockquote>"
     return text, buttons.build_menu(2)
 
 
 async def _send_confirm(query, dl, gid):
     message = query.message
     user_id = query.from_user.id
-    text, buttons = _confirm_content(dl, gid, user_id)
+    text, buttons = _confirm_content(dl, gid, query.from_user)
     if message.chat.type != ChatType.PRIVATE:
         # group: the status is replaced only for the user who pressed
         try:

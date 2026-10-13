@@ -47,7 +47,24 @@ from bot.helper.telegram_helper.message_utils import (
 )
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
-from bot.helper.telegram_helper.button_build import ButtonMaker
+from bot.helper.telegram_helper.button_build import ButtonMaker, page_style
+
+CAP_FONTS = {
+    "": "Regular",
+    "b": "Bold",
+    "i": "Italic",
+    "u": "Underline",
+    "s": "Strike",
+    "code": "Code",
+    "spoiler": "Spoiler",
+}
+
+
+def cap_font_name(user_dict):
+    font = user_dict.get("cap_font")
+    if font is None:
+        return f"Default ({CAP_FONTS.get(config_dict['CAP_FONT'], 'Regular')})"
+    return CAP_FONTS.get(font, "Regular")
 from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
 from bot.helper.ext_utils.db_handler import DbManger
 from bot.helper.ext_utils.bot_utils import (
@@ -576,6 +593,10 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
         buttons.ibutton(
             f"Mode: {TRANSFER_MODES[tmode]}", f"userset {user_id} tmode", "header"
         )
+        buttons.ibutton(
+            f"{'✅️' if user_dict.get('cap_font') is not None else ''} Caption Font",
+            f"userset {user_id} capfont",
+        )
 
         extra_button(buttons, user_dict, user_id, "excluded_ext")
         extra_button(buttons, user_dict, user_id, "thumb_layout")
@@ -619,6 +640,7 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             LREMNAME=escape(lremname),
             LMETA=escape(lmeta),
             TMODE=TRANSFER_MODES[tmode],
+            CFONT=cap_font_name(user_dict),
             EXCLUDED=escape(user_dict.get("excluded_ext") or "Not Exists"),
             TLAYOUT=user_dict.get("thumb_layout") or "Not Exists",
             SAMPLE=f"{v} sec" if (v := user_dict.get("sample_video")) else "Disabled",
@@ -633,6 +655,30 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
 
         buttons.ibutton("◀️", f"userset {user_id} back", "footer")
         buttons.ibutton("❌", f"userset {user_id} close", "footer")
+        button = buttons.build_menu(2)
+    elif key == "capfont":
+        current = user_dict.get("cap_font")
+        buttons.ibutton(
+            f"Default ({CAP_FONTS.get(config_dict['CAP_FONT'], 'Regular')})",
+            f"userset {user_id} setfont default",
+            style=page_style(current is None),
+        )
+        for font, label in CAP_FONTS.items():
+            buttons.ibutton(
+                label,
+                f"userset {user_id} setfont {font or 'regular'}",
+                style=page_style(current == font),
+            )
+        buttons.ibutton("◀️", f"userset {user_id} leech", "footer")
+        buttons.ibutton("❌", f"userset {user_id} close", "footer")
+        ex_font = current if current is not None else config_dict["CAP_FONT"]
+        example = f"<{ex_font}>Movie.2024.1080p.mkv</{ex_font}>" if ex_font else "Movie.2024.1080p.mkv"
+        text = f"""㊂ <b><u>Caption Font Settings :</u></b>
+
+<blockquote>╭<b> Caption Font :</b> <i>{cap_font_name(user_dict)}</i>
+╰<b> Example :</b> {example}</blockquote>
+
+<i>Choose how the file name looks in the caption of your leeched files.</i>"""
         button = buttons.build_menu(2)
     elif key == "ddl_servers":
         ddl_serv, serv_list = 0, []
@@ -1130,6 +1176,21 @@ async def edit_user_settings(client, query):
         await query.answer()
         update_user_ldata(user_id, "auto_thumb", not user_dict.get("auto_thumb", False))
         await update_user_settings(query, "leech")
+        if DATABASE_URL:
+            await DbManger().update_user_data(user_id)
+    elif data[2] == "capfont":
+        handler_dict[user_id] = False
+        await query.answer()
+        await update_user_settings(query, "capfont")
+    elif data[2] == "setfont":
+        handler_dict[user_id] = False
+        font = data[3]
+        value = None if font == "default" else ("" if font == "regular" else font)
+        if value is not None and value not in CAP_FONTS:
+            return await query.answer("Unknown font!", show_alert=True)
+        await query.answer("Caption Font changed!")
+        update_user_ldata(user_id, "cap_font", value)
+        await update_user_settings(query, "capfont")
         if DATABASE_URL:
             await DbManger().update_user_data(user_id)
     elif data[2] == "tmode":

@@ -461,11 +461,10 @@ async def format_filename(file_, user_id, dirpath=None, isMirror=False):
             else f"{file_}{suffix}"
         )
 
-    cap_mono = (
-        f"<{config_dict['CAP_FONT']}>{nfile_}</{config_dict['CAP_FONT']}>"
-        if config_dict["CAP_FONT"]
-        else nfile_
-    )
+    cap_font = user_dict.get("cap_font")
+    if cap_font is None:
+        cap_font = config_dict["CAP_FONT"]
+    cap_mono = f"<{cap_font}>{nfile_}</{cap_font}>" if cap_font else nfile_
     if lcaption and dirpath and not isMirror:
 
         def lowerVars(match):

@@ -972,8 +972,17 @@ async def get_buttons(key=None, edit_type=None, edit_mode=None, mess=None):
             msg += "<i>Send a valid value for the above Var.</i> <b>Timeout:</b> 60 sec"
         if key in bool_vars:
             msg += "<i>Choose a valid value for the above Var</i>"
-            buttons.ibutton("True", f"botset boolvar {key} on")
-            buttons.ibutton("False", f"botset boolvar {key} off")
+            current = bool(config_dict.get(key))
+            buttons.ibutton(
+                f"{'✓ ' if current else ''}True",
+                f"botset boolvar {key} on",
+                style=page_style(current),
+            )
+            buttons.ibutton(
+                f"{'' if current else '✓ '}False",
+                f"botset boolvar {key} off",
+                style=page_style(not current),
+            )
     elif edit_type == "editaria":
         buttons.ibutton("Back", "botset back aria")
         if key != "newkey":
