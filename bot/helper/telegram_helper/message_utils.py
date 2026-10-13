@@ -55,6 +55,8 @@ from bot.helper.ext_utils.exceptions import TgLinkException
 async def sendRich(message, text, buttons=None):
     from pyrogram.types import InputRichMessage, ReplyParameters
 
+    if buttons is not None and not getattr(buttons, "inline_keyboard", True):
+        buttons = None  # empty keyboard is rejected by Telegram
     try:
         return await bot.send_rich_message(
             message.chat.id,
@@ -67,6 +69,8 @@ async def sendRich(message, text, buttons=None):
         LOGGER.warning(str(f))
         await sleep(f.value * 1.2)
         return await sendRich(message, text, buttons)
+    except ReplyMarkupInvalid:
+        return await sendRich(message, text, None)
     except Exception as e:
         LOGGER.error(format_exc())
         return str(e)
@@ -233,6 +237,9 @@ async def editMessage(message, text, buttons=None, photo=None):
     try:
         if isinstance(text, RichText):
             from pyrogram.types import InputRichMessage
+
+            if buttons is not None and not getattr(buttons, "inline_keyboard", True):
+                buttons = None
 
             return await bot.edit_message_text(
                 message.chat.id,
