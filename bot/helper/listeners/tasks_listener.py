@@ -35,12 +35,6 @@ from bot import (
     bot,
     GLOBAL_EXTENSION_FILTER,
 )
-try:
-    from pyrogram.enums import ButtonStyle
-
-    SHARE_STYLE = ButtonStyle.SUCCESS
-except ImportError:
-    SHARE_STYLE = None
 from bot.helper.ext_utils.bot_utils import (
     extra_btns,
     RichText,
@@ -743,12 +737,11 @@ class MirrorLeechListener:
                         buttons.build_menu(2),
                         photo=self.random_pic,
                     )
-                fmsg = "\n"
                 use_store = media_store_enabled(user_id)
-                # one file: Store / Share as keyboard buttons
-                # many files: buttons inside the text (rich) or text links
-                single = use_store and len(files) == 1
-                rich = use_store and not single and rich_enabled()
+                # rich: Store / Share as buttons inside the text and a line before the files
+                rich = rich_enabled()
+                fstart = "<hr/>" if rich else "\n"
+                fmsg = fstart
 
                 def _out(text):
                     return RichText(to_rich_html(text)) if rich else text
@@ -758,10 +751,6 @@ class MirrorLeechListener:
                     share = f"https://t.me/share/url?url={slink}"
                     if not link:
                         fmsg += f"<blockquote>\u200e{index}. {name}</blockquote>\n"
-                    elif single and slink:
-                        fmsg += f"<blockquote>\u200e{index}. <a href='{link}'>{name}</a></blockquote>\n"
-                        buttons.ubutton("Store Link", slink, "header")
-                        buttons.ubutton("Share Link", share, "header", style=SHARE_STYLE)
                     elif rich and slink:
                         fmsg += (
                             f"<blockquote>\u200e{index}. <a href='{link}'>{name}</a>\n"
@@ -810,9 +799,9 @@ class MirrorLeechListener:
                                 photo=self.random_pic,
                             )
                         await sleep(1.5)
-                        fmsg = ""
+                        fmsg = fstart
 
-                if fmsg != "\n":
+                if fmsg != fstart:
                     if config_dict["SAFE_MODE"]:
                         if self.isSuperGroup:
                             await sendMessage(
