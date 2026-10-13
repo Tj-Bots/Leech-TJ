@@ -105,21 +105,18 @@ async def mirror_status(_, message):
 
 
 def _confirm_content(dl, gid, user_id):
-    """Yes / No as buttons inside the text when rich messages work, else a keyboard."""
+    """Question in the text, Yes / No as inline keyboard buttons."""
     name = f"<code>{escape(dl.name())}</code>"
-    if hasattr(bot, "send_rich_message"):
-        html = (
-            f"<blockquote>╭ <b>Cancel this task?</b><br>\u200e┊ {name}<br>╰ "
-            + rich_button("Yes, Cancel", f"status cyes {gid}", "danger")
-            + " "
-            + rich_button("No", f"status cno {user_id}", "success")
-            + "</blockquote>"
-        )
-        return RichText(html), None
     buttons = ButtonMaker()
     buttons.ibutton("Yes, Cancel", f"status cyes {gid}", style=DANGER)
     buttons.ibutton("No", f"status cno {user_id}", style=SUCCESS)
-    return f"<b>Cancel this task?</b>\n<blockquote>{name}</blockquote>", buttons.build_menu(2)
+    if hasattr(bot, "send_rich_message"):
+        text = RichText(
+            f"<blockquote>╭ <b>Cancel this task?</b><br>\u200e╰ {name}</blockquote>"
+        )
+    else:
+        text = f"<b>Cancel this task?</b>\n<blockquote>{name}</blockquote>"
+    return text, buttons.build_menu(2)
 
 
 async def _send_confirm(query, dl, gid):
@@ -144,6 +141,7 @@ async def _send_confirm(query, dl, gid):
                 await bot.send_rich_message(
                     message.chat.id,
                     InputRichMessage(html=str(text)),
+                    reply_markup=buttons,
                     reply_parameters=ReplyParameters(message_id=message.id),
                     ephemeral_message_parameters=eph,
                 )
