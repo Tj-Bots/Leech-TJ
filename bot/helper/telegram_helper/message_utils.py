@@ -433,6 +433,21 @@ async def get_tg_link_content(link, user_id, decrypter=None):
         )
 
 
+STATUS_HOLD = {}
+
+
+def hold_status(msg_id, secs=60):
+    """Stop refreshing a status message while it shows a confirm."""
+    STATUS_HOLD[msg_id] = time() + secs
+
+
+def release_status(msg_id):
+    STATUS_HOLD.pop(msg_id, None)
+    held = [v for v in status_reply_dict.values() if v and v[0].id == msg_id]
+    for data in held:
+        data[0].text = ""
+
+
 async def update_all_messages(force=False):
     async with status_reply_dict_lock:
         if (
@@ -458,6 +473,8 @@ async def update_all_messages(force=False):
                     # this user has no more tasks
                     await deleteMessage(status_reply_dict[key][0])
                     del status_reply_dict[key]
+                continue
+            if STATUS_HOLD.get(status_reply_dict[key][0].id, 0) > time():
                 continue
             if status_reply_dict[key] and msg != status_reply_dict[key][0].text:
                 rmsg = await editMessage(status_reply_dict[key][0], msg, buttons, "IMAGES")

@@ -33,6 +33,8 @@ from bot.helper.telegram_helper.message_utils import (
     user_info,
     update_all_messages,
     delete_all_messages,
+    hold_status,
+    release_status,
 )
 from bot.helper.ext_utils.bot_utils import (
     get_readable_file_size,
@@ -41,6 +43,8 @@ from bot.helper.ext_utils.bot_utils import (
     setInterval,
     new_task,
     getDownloadByGid,
+    RichText,
+    rich_button,
 )
 from bot.helper.themes import BotTheme
 from bot.helper.telegram_helper.button_build import ButtonMaker
@@ -100,31 +104,66 @@ async def mirror_status(_, message):
                 )
 
 
-async def _send_confirm(query, text, buttons):
-    """Show the confirm only to the user who pressed (ephemeral), else a reply."""
-    message = query.message
-    if message.chat.type != ChatType.PRIVATE:
-        try:
-            from pyrogram.types import EphemeralMessageParameters, ReplyParameters
+def _confirm_content(dl, gid, user_id):
+    """Yes / No as buttons inside the text when rich messages work, else a keyboard."""
+    name = f"<code>{escape(dl.name())}</code>"
+    if hasattr(bot, "send_rich_message"):
+        html = (
+            f"<blockquote>╭ <b>Cancel this task?</b><br>┊ {name}<br>╰ "
+            + rich_button("Yes, Cancel", f"status cyes {gid}", "danger")
+            + " "
+            + rich_button("No", f"status cno {user_id}", "success")
+            + "</blockquote>"
+        )
+        return RichText(html), None
+    buttons = ButtonMaker()
+    buttons.ibutton("Yes, Cancel", f"status cyes {gid}", style=DANGER)
+    buttons.ibutton("No", f"status cno {user_id}", style=SUCCESS)
+    return f"<b>Cancel this task?</b>\n<blockquote>{name}</blockquote>", buttons.build_menu(2)
 
-            await bot.send_message(
-                message.chat.id,
-                text,
-                reply_markup=buttons,
-                reply_parameters=ReplyParameters(message_id=message.id),
-                ephemeral_message_parameters=EphemeralMessageParameters(
-                    receiver_user_id=query.from_user.id,
-                    callback_query_id=query.id,
-                    replace_callback_query_message=True,
-                ),
+
+async def _send_confirm(query, dl, gid):
+    message = query.message
+    user_id = query.from_user.id
+    text, buttons = _confirm_content(dl, gid, user_id)
+    if message.chat.type != ChatType.PRIVATE:
+        # group: the status is replaced only for the user who pressed
+        try:
+            from pyrogram.types import (
+                EphemeralMessageParameters,
+                InputRichMessage,
+                ReplyParameters,
             )
+
+            eph = EphemeralMessageParameters(
+                receiver_user_id=user_id,
+                callback_query_id=query.id,
+                replace_callback_query_message=True,
+            )
+            if isinstance(text, RichText):
+                await bot.send_rich_message(
+                    message.chat.id,
+                    InputRichMessage(html=str(text)),
+                    reply_parameters=ReplyParameters(message_id=message.id),
+                    ephemeral_message_parameters=eph,
+                )
+            else:
+                await bot.send_message(
+                    message.chat.id,
+                    text,
+                    reply_markup=buttons,
+                    reply_parameters=ReplyParameters(message_id=message.id),
+                    ephemeral_message_parameters=eph,
+                )
             with suppress(Exception):
                 await query.answer()
             return
         except Exception as e:
-            LOGGER.warning(f"Ephemeral confirm failed, sending a reply: {e}")
+            LOGGER.warning(f"Ephemeral confirm failed, editing the status: {e}")
+    # private chat (only this user sees it): edit the status message itself
     await query.answer()
-    await sendMessage(message, text, buttons)
+    hold_status(message.id)
+    await editMessage(message, text, buttons)
 
 
 async def _close_confirm(query):
@@ -135,7 +174,9 @@ async def _close_confirm(query):
                 message.chat.id, query.from_user.id, eph_id
             )
             return
-    await deleteMessage(message)
+    # the status message itself was edited: bring the status back
+    release_status(message.id)
+    await update_all_messages(True)
 
 
 def _can_manage(user_id, dl):
@@ -165,18 +206,11 @@ async def status_pages(_, query):
         if not _can_manage(user_id, dl):
             return await query.answer("This task is not for you!", show_alert=True)
         if data[1] == "cancel":
-            buttons = ButtonMaker()
-            buttons.ibutton("Yes, Cancel", f"status cyes {data[2]}", style=DANGER)
-            buttons.ibutton("No", f"status cno {user_id}", style=SUCCESS)
-            text = (
-                "<b>Cancel this task?</b>\n"
-                f"<blockquote><code>{escape(dl.name())}</code></blockquote>"
-            )
-            await _send_confirm(query, text, buttons.build_menu(2))
+            await _send_confirm(query, dl, data[2])
         elif data[1] == "cyes":
             await query.answer("Cancelling...")
-            await _close_confirm(query)
             await dl.download().cancel_download()
+            await _close_confirm(query)
         else:
             from bot.modules.torrent_select import start_selection
 
