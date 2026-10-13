@@ -1039,7 +1039,7 @@ class MirrorLeechListener:
             count = len(download_dict)
         msg = f"""<i><b>〶 Upload Stopped!</b></i>
 
-<blockquote><b>╭ Task for:</b> {self.tag}
+<blockquote>╭ <b>Task for:</b> {self.tag}
 ┊ <b>Due To:</b> {escape(error)}
 ┊ <b>Mode:</b> {self.upload_details['mode']}
 ╰ <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""

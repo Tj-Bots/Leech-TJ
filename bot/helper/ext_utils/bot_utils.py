@@ -351,9 +351,9 @@ def get_readable_message():
                 "USER", User=escape(download.message.from_user.first_name or "User")
             )
             msg += BotTheme("ID", Id=download.message.from_user.id)
-            msg += BotTheme("CANCEL", Cancel=f"<b>GID:</b> <code>{download.gid()}</code>")
+            msg += f"\n┊ <b>GID:</b> <code>{download.gid()}</code>"
             actions = [
-                "⋗ " + rich_button("Cancel Task", f"status cancel {download.gid()}", "danger")
+                rich_button("Cancel Task", f"status cancel {download.gid()}", "danger")
             ]
             if (download.eng()).startswith("qBit") and download.status() in [
                 MirrorStatus.STATUS_DOWNLOADING,
@@ -361,9 +361,9 @@ def get_readable_message():
                 MirrorStatus.STATUS_QUEUEDL,
             ]:
                 actions.append(
-                    "⋗ " + rich_button("Select Files", f"status sel {download.gid()}", "primary")
+                    rich_button("Select Files", f"status sel {download.gid()}", "primary")
                 )
-            msg += f"<p>{'<br>'.join(actions)}</p><hr/>"
+            msg += f"\n╰ {' '.join(actions)}</blockquote><hr/>"
             continue
         msg += BotTheme("USER", User=download.message.from_user.mention(style="html"))
         msg += BotTheme("ID", Id=download.message.from_user.id)
@@ -412,8 +412,9 @@ def get_readable_message():
 
     if not rich:
         msg += BotTheme("FOOTER")
+    page_text = f"Page {PAGE_NO}/{PAGES}" if PAGES > 1 else "Refresh"
     buttons = ButtonMaker()
-    buttons.ibutton(BotTheme("REFRESH", Page=f"{PAGE_NO}/{PAGES}"), "status ref")
+    buttons.ibutton(BotTheme("REFRESH", Page=page_text), "status ref")
     if tasks > STATUS_LIMIT:
         if config_dict["BOT_MAX_TASKS"]:
             msg += BotTheme(
@@ -426,7 +427,7 @@ def get_readable_message():
             msg += BotTheme("TASKS", Tasks=tasks)
         buttons = ButtonMaker()
         buttons.ibutton(BotTheme("PREVIOUS"), "status pre")
-        buttons.ibutton(BotTheme("REFRESH", Page=f"{PAGE_NO}/{PAGES}"), "status ref")
+        buttons.ibutton(BotTheme("REFRESH", Page=page_text), "status ref")
         buttons.ibutton(BotTheme("NEXT"), "status nex")
     button = buttons.build_menu(3)
     msg += BotTheme("Cpu", cpu=cpu_percent())
