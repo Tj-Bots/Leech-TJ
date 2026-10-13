@@ -35,7 +35,7 @@ SUCCESS_KEYS = (
 PRIMARY_KEYS = ("◀️", "⌫", "back", "bᴀᴄᴋ", "♻️", "view in")
 
 
-CURRENT_PAGE = ButtonStyle.PRIMARY if ButtonStyle else None
+CURRENT_PAGE = ButtonStyle.SUCCESS if ButtonStyle else None
 
 
 def page_style(current):
