@@ -63,6 +63,10 @@ async def select(client, message):
     ):
         await sendMessage(message, "This task is not for you!")
         return
+    await start_selection(message, dl)
+
+
+async def start_selection(message, dl):
     if dl.status() not in [
         MirrorStatus.STATUS_DOWNLOADING,
         MirrorStatus.STATUS_PAUSED,

@@ -39,6 +39,7 @@ from bot import (
     download_dict_lock,
 )
 from bot.helper.ext_utils.bot_utils import (
+    RichText,
     get_readable_message,
     setInterval,
     sync_to_async,
@@ -51,7 +52,29 @@ from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.ext_utils.exceptions import TgLinkException
 
 
+async def sendRich(message, text, buttons=None):
+    from pyrogram.types import InputRichMessage, ReplyParameters
+
+    try:
+        return await bot.send_rich_message(
+            message.chat.id,
+            InputRichMessage(html=str(text)),
+            reply_markup=buttons,
+            disable_notification=True,
+            reply_parameters=ReplyParameters(message_id=message.id),
+        )
+    except FloodWait as f:
+        LOGGER.warning(str(f))
+        await sleep(f.value * 1.2)
+        return await sendRich(message, text, buttons)
+    except Exception as e:
+        LOGGER.error(format_exc())
+        return str(e)
+
+
 async def sendMessage(message, text, buttons=None, photo=None, **kwargs):
+    if isinstance(text, RichText):
+        return await sendRich(message, text, buttons)
     try:
         if photo:
             try:
@@ -208,6 +231,16 @@ async def sendMultiMessage(chat_ids, text, buttons=None, photo=None):
 
 async def editMessage(message, text, buttons=None, photo=None):
     try:
+        if isinstance(text, RichText):
+            from pyrogram.types import InputRichMessage
+
+            return await bot.edit_message_text(
+                message.chat.id,
+                message.id,
+                "",
+                rich_text=InputRichMessage(html=str(text)),
+                reply_markup=buttons,
+            )
         if message.media:
             if photo:
                 photo = rchoice(config_dict["IMAGES"]) if photo == "IMAGES" else photo

@@ -14,6 +14,8 @@ from bot import (
     Interval,
     config_dict,
     bot,
+    OWNER_ID,
+    user_data,
 )
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
@@ -33,6 +35,7 @@ from bot.helper.ext_utils.bot_utils import (
     turn_page,
     setInterval,
     new_task,
+    getDownloadByGid,
 )
 from bot.helper.themes import BotTheme
 
@@ -71,6 +74,26 @@ async def mirror_status(_, message):
 @new_task
 async def status_pages(_, query):
     data = query.data.split()
+    if data[1] in ["cancel", "sel"] and len(data) > 2:
+        dl = await getDownloadByGid(data[2])
+        if dl is None:
+            return await query.answer("This task is already done!", show_alert=True)
+        user_id = query.from_user.id
+        if (
+            OWNER_ID != user_id
+            and dl.message.from_user.id != user_id
+            and not user_data.get(user_id, {}).get("is_sudo")
+        ):
+            return await query.answer("This task is not for you!", show_alert=True)
+        if data[1] == "cancel":
+            await query.answer("Cancelling...")
+            await dl.download().cancel_download()
+        else:
+            from bot.modules.torrent_select import start_selection
+
+            await query.answer()
+            await start_selection(query.message, dl)
+        return
     if data[1] == "ref":
         await update_all_messages(True)
     elif data[1] in ["nex", "pre"]:

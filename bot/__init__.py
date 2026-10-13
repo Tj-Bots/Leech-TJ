@@ -290,6 +290,7 @@ helper_bots = {}
 helper_users = {}
 TMDB_ACCESS_TOKEN = environ.get("TMDB_ACCESS_TOKEN", "").strip()
 DISABLE_FF_MODE = environ.get("DISABLE_FF_MODE", "False").lower() == "true"
+RICH_MESSAGES = environ.get("RICH_MESSAGES", "False").lower() == "true"
 MEDIA_STORE = environ.get("MEDIA_STORE", "False").lower() == "true"
 COVER_DUMP = environ.get("COVER_DUMP", "False").lower() == "true"
 
@@ -786,6 +787,7 @@ config_dict = {
     "HYPER_PIPELINE": HYPER_PIPELINE,
     "TMDB_ACCESS_TOKEN": TMDB_ACCESS_TOKEN,
     "DISABLE_FF_MODE": DISABLE_FF_MODE,
+    "RICH_MESSAGES": RICH_MESSAGES,
     "MEDIA_STORE": MEDIA_STORE,
     "COVER_DUMP": COVER_DUMP,
     "USER_TD_MODE": USER_TD_MODE,

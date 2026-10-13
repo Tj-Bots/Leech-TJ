@@ -6,7 +6,7 @@ from os import path as ospath
 from pkg_resources import get_distribution, DistributionNotFound
 from aiofiles import open as aiopen
 from aiofiles.os import remove as aioremove, path as aiopath, mkdir
-from re import match as re_match, search as re_search, findall as re_findall, MULTILINE
+from re import match as re_match, search as re_search, findall as re_findall, sub as re_sub, MULTILINE
 from time import time
 from html import escape
 from uuid import uuid4
@@ -256,9 +256,31 @@ class EngineStatus:
         self.STATUS_RCLONE = f"RClone {version_cache['rclone']}"
 
 
+class RichText(str):
+    """Status text that is sent as a Telegram Rich Message."""
+
+
+def rich_enabled():
+    from bot import bot
+
+    return bool(config_dict.get("RICH_MESSAGES")) and hasattr(bot, "send_rich_message")
+
+
+def to_rich_html(msg):
+    html = re_sub(r'<a href="">(.*?)</a>', r"\1", msg.strip()).replace("\n", "<br>")
+    html = re_sub(r"(?:<br>\s*)+(<(?:/?blockquote|hr|/?p)\b[^>]*>)", r"\1", html)
+    html = re_sub(r"(</blockquote>|<hr/>|</p>)(?:\s*<br>)+", r"\1", html)
+    return html
+
+
+def rich_button(text, data, style):
+    return f'<tg-button type="callback_data" style="{style}" data="{data}">{text}</tg-button>'
+
+
 def get_readable_message():
     msg = ""
     button = None
+    rich = rich_enabled()
     STATUS_LIMIT = config_dict["STATUS_LIMIT"]
     tasks = len(download_dict)
     globals()["PAGES"] = (tasks + STATUS_LIMIT - 1) // STATUS_LIMIT
@@ -324,6 +346,25 @@ def get_readable_message():
             msg += BotTheme("STATUS_SIZE", Size=download.size())
             msg += BotTheme("NON_ENGINE", Engine=download.eng())
 
+        if rich:
+            msg += BotTheme(
+                "USER", User=escape(download.message.from_user.first_name or "User")
+            )
+            msg += BotTheme("ID", Id=download.message.from_user.id)
+            msg += BotTheme("CANCEL", Cancel=f"<b>GID:</b> <code>{download.gid()}</code>")
+            actions = [
+                "⋗ " + rich_button("Cancel Task", f"status cancel {download.gid()}", "danger")
+            ]
+            if (download.eng()).startswith("qBit") and download.status() in [
+                MirrorStatus.STATUS_DOWNLOADING,
+                MirrorStatus.STATUS_PAUSED,
+                MirrorStatus.STATUS_QUEUEDL,
+            ]:
+                actions.append(
+                    "⋗ " + rich_button("Select Files", f"status sel {download.gid()}", "primary")
+                )
+            msg += f"<p>{'<br>'.join(actions)}</p><hr/>"
+            continue
         msg += BotTheme("USER", User=download.message.from_user.mention(style="html"))
         msg += BotTheme("ID", Id=download.message.from_user.id)
         if (download.eng()).startswith("qBit"):
@@ -369,7 +410,8 @@ def get_readable_message():
         ]:
             up_speed += speed_in_bytes_per_second
 
-    msg += BotTheme("FOOTER")
+    if not rich:
+        msg += BotTheme("FOOTER")
     buttons = ButtonMaker()
     buttons.ibutton(BotTheme("REFRESH", Page=f"{PAGE_NO}/{PAGES}"), "status ref")
     if tasks > STATUS_LIMIT:
@@ -397,6 +439,8 @@ def get_readable_message():
     msg += BotTheme("uptime", uptime=get_readable_time(time() - botStartTime))
     msg += BotTheme("DL", DL=get_readable_file_size(dl_speed))
     msg += BotTheme("UL", UL=get_readable_file_size(up_speed))
+    if rich:
+        return RichText(to_rich_html(msg)), button
     return msg, button
 
 
