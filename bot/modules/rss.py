@@ -21,7 +21,7 @@ from bot.helper.telegram_helper.message_utils import (
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.ext_utils.db_handler import DbManger
-from bot.helper.telegram_helper.button_build import ButtonMaker
+from bot.helper.telegram_helper.button_build import ButtonMaker, page_style
 from bot.helper.ext_utils.bot_utils import new_thread
 from bot.helper.ext_utils.exceptions import RssShutdownException
 from bot.helper.ext_utils.help_messages import RSS_HELP_MESSAGE
@@ -285,7 +285,12 @@ async def rssList(query, start, all_users=False):
     buttons.ibutton("Close", f"rss close {user_id}")
     if keysCount > 5:
         for x in range(0, keysCount, 5):
-            buttons.ibutton(f"{int(x/5)}", f"rss list {user_id} {x}", position="footer")
+            buttons.ibutton(
+                f"{int(x/5)}",
+                f"rss list {user_id} {x}",
+                position="footer",
+                style=page_style(x == start),
+            )
     button = buttons.build_menu(2)
     if query.message.text.html == list_feed:
         return

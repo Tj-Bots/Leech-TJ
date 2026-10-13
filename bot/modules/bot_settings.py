@@ -48,7 +48,7 @@ from bot.helper.telegram_helper.message_utils import (
 )
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
-from bot.helper.telegram_helper.button_build import ButtonMaker
+from bot.helper.telegram_helper.button_build import ButtonMaker, page_style
 from bot.helper.ext_utils.bot_utils import setInterval, sync_to_async, new_thread
 from bot.helper.ext_utils.db_handler import DbManger
 from bot.helper.ext_utils.task_manager import start_from_queued
@@ -851,7 +851,10 @@ async def get_buttons(key=None, edit_type=None, edit_mode=None, mess=None):
         buttons.ibutton("Close", "botset close")
         for x in range(0, len(config_dict) - 1, 10):
             buttons.ibutton(
-                f"{int(x/10)+1}", f"botset start var {x}", position="footer"
+                f"{int(x/10)+1}",
+                f"botset start var {x}",
+                position="footer",
+                style=page_style(x == START),
             )
         msg = f"<b>Config Variables</b> | <b>Page: {int(START/10)+1}</b>"
     elif key == "hyper":
@@ -900,7 +903,10 @@ async def get_buttons(key=None, edit_type=None, edit_mode=None, mess=None):
         buttons.ibutton("Close", "botset close")
         for x in range(0, len(aria2_options) - 1, 10):
             buttons.ibutton(
-                f"{int(x/10)+1}", f"botset start aria {x}", position="footer"
+                f"{int(x/10)+1}",
+                f"botset start aria {x}",
+                position="footer",
+                style=page_style(x == START),
             )
         msg = f"Aria2c Options | Page: {int(START/10)+1} | State: {STATE}"
     elif key == "qbit":
@@ -914,7 +920,10 @@ async def get_buttons(key=None, edit_type=None, edit_mode=None, mess=None):
         buttons.ibutton("Close", "botset close")
         for x in range(0, len(qbit_options) - 1, 10):
             buttons.ibutton(
-                f"{int(x/10)+1}", f"botset start qbit {x}", position="footer"
+                f"{int(x/10)+1}",
+                f"botset start qbit {x}",
+                position="footer",
+                style=page_style(x == START),
             )
         msg = f"Qbittorrent Options | Page: {int(START/10)+1} | State: {STATE}"
     elif edit_type == "editvar":

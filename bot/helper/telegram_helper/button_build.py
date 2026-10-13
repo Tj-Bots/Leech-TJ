@@ -35,9 +35,18 @@ SUCCESS_KEYS = (
 PRIMARY_KEYS = ("◀️", "⌫", "back", "bᴀᴄᴋ", "♻️", "view in")
 
 
+CURRENT_PAGE = ButtonStyle.PRIMARY if ButtonStyle else None
+
+
+def page_style(current):
+    return CURRENT_PAGE if current else None
+
+
 def auto_style(key, is_url=False):
     if ButtonStyle is None:
         return None
+    if str(key).isupper() and "_" in str(key):
+        return ButtonStyle.DEFAULT  # config var names like DELETE_LINKS
     text = str(key).lower()
     if any(k in text for k in DANGER_KEYS):
         return ButtonStyle.DANGER
