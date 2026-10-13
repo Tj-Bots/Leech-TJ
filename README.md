@@ -26,6 +26,8 @@
 | 🎞️ **Sample & Screenshots** | Optional short sample clip (cut without re-encoding, takes a second) and screenshots uploaded with every leeched video. |
 | ☁️ **DDL hosts** | GoFile *(works as guest, no key)*, VikingFile *(guest)*, PixelDrain, BuzzHeavier, DevUploads, StreamTape. |
 | 🛠️ **FFmpeg Cmds** | Save named ffmpeg commands and run them on any task with `-ff name`. |
+| 🔄 **Convert Media** | `-cv mp4` / `-ca mp3` change formats (videos are remuxed without re-encoding when possible), `-ea` takes the audio out of videos. |
+| 💬 **Rich Messages** | Optional Telegram Rich status: Cancel / Select buttons inside every task (with a confirm only you can see), lines between tasks, Store / Share buttons on finished files. |
 | 🎨 **TJ style** | Clean blockquote messages, colored buttons (red close, green confirm, blue links) via `wzgram`. |
 
 ---
@@ -91,11 +93,13 @@ Even with only `USER_SESSION_STRING`, downloads use many requests in parallel.
 | `/cover` | Reply to a video to set your thumbnail / TMDB poster as cover |
 | `/us` | User settings |
 | `/bs` | Bot settings (owner) |
-| `/status` `/stats` | Tasks and server stats |
+| `/status` `/stats` | Tasks and server stats · `/status me` or `/status user_id` for one user's tasks |
 | `/cancel` `/cancelall` | Stop tasks |
 | `/help` | Everything else |
 
-**Useful args:** `-up ddl` upload to your DDL hosts · `-up name` use an Upload Path · `-ff name` run an FFmpeg Cmd · `-n` new name · `-z` zip · `-e` extract · `-i 5` multi links · `-b` bulk · `-s` select files.
+**Useful args:** `-up ddl` upload to your DDL hosts · `-up name` use an Upload Path · `-ff name` run an FFmpeg Cmd · `-cv mp4` / `-ca mp3` convert · `-ea` extract audio · `-n` new name · `-z` zip · `-e` extract · `-i 5` multi links · `-b` bulk · `-s` select files.
+
+Send any command without a link (`/l`, `/m`, `/ytdl`...) to get a button menu that explains every arg with examples you can copy.
 
 ---
 
@@ -123,6 +127,7 @@ New Python packages need a rebuild: `docker compose up -d --build`.
 | `HYPER_THREADS`, `HYPER_CHUNK`, `HYPER_PIPELINE` | Hyper tuning, leave empty for auto |
 | `TMDB_ACCESS_TOKEN` | Auto Thumbnail / `/cover` posters |
 | `DISABLE_FF_MODE` | Hide FFmpeg Cmds from users |
+| `RICH_MESSAGES` | Rich status and finish messages with buttons inside the text |
 | `DEFAULT_UPLOAD` | `gd`, `rc` or `ddl` |
 | `UPSTREAM_REPO`, `UPSTREAM_BRANCH` | Where `/restart` updates from |
 
