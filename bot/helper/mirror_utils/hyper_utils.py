@@ -59,29 +59,15 @@ async def ensure_peer(client, chat_id):
         return
     try:
         await client.resolve_peer(chat_id)
-        _known_peers.add(key)
-        return
     except Exception:
-        pass
-    try:
-        async for dialog in client.get_dialogs():
-            if dialog.chat.id == chat_id:
-                _known_peers.add(key)
-                return
-    except Exception as e:
-        LOGGER.warning(f"Hyper: peer warmup failed for {chat_id}: {e}")
-    # a user account that is not in the dump chat yet: the bot invites it
-    if client is not bot and not getattr(getattr(client, "me", None), "is_bot", True):
         try:
-            link = await bot.export_chat_invite_link(chat_id)
-            await client.join_chat(link)
-            await client.resolve_peer(chat_id)
-            LOGGER.info(f"Hyper: user session joined dump chat {chat_id}")
-            _known_peers.add(key)
+            async for dialog in client.get_dialogs():
+                if dialog.chat.id == chat_id:
+                    break
         except Exception as e:
-            LOGGER.warning(
-                f"Hyper: add the user session to dump chat {chat_id} (bot needs invite rights): {e}"
-            )
+            LOGGER.warning(f"Hyper: peer warmup failed for {chat_id}: {e}")
+            return
+    _known_peers.add(key)
 
 
 class _Budget:
@@ -143,25 +129,6 @@ def hyper_clients():
     return clients
 
 
-def hyper_connections(key):
-    """Download connections (MTProto sessions) per client. 0 = auto."""
-    if conn := config_dict.get("HYPER_CONNECTIONS"):
-        return min(max(1, int(conn)), 64)
-    return 8 if key < 0 else 4  # user accounts get more than bots
-
-
-def download_clients():
-    """Every client once per connection, as virtual keys that keep the sign
-    (bots > 0, users < 0). Each virtual key gets its own session in the pool,
-    so one account downloads over several connections at once."""
-    clients = {}
-    for key, client in hyper_clients().items():
-        for slot in range(hyper_connections(key)):
-            vkey = key * 100 + slot if key > 0 else key * 100 - slot
-            clients[vkey] = client
-    return clients
-
-
 class MtprotoPool:
     def __init__(self, clients):
         if isinstance(clients, dict):
@@ -172,8 +139,6 @@ class MtprotoPool:
             self._client_order = list(self._client_map.keys())
         self._sessions = {}
         self._locks = {}
-        self._auth_keys = {}  # (client, dc) -> auth key already authorized
-        self._auth_locks = {}
 
     def _resolve_key(self, client_key):
         if client_key in self._client_map:
@@ -208,29 +173,11 @@ class MtprotoPool:
                 except Exception:
                     pass
             client = self._client_map[ck]
-            akey = (id(client), dc_id)
-            alock = self._auth_locks.setdefault(akey, Lock())
-            await alock.acquire()
-            if akey in self._auth_keys:
-                # another connection of this account already authorized this DC
-                alock.release()
-                alock = None
-                ak, is_cross = self._auth_keys[akey], False
-            else:
-                try:
-                    ak, is_cross = await self._get_auth_key(client, dc_id)
-                except BaseException:
-                    alock.release()
-                    raise
+            ak, is_cross = await self._get_auth_key(client, dc_id)
             s = Session(
                 client, dc_id, ak, await client.storage.test_mode(), is_media=is_media
             )
-            try:
-                await s.start()
-            except BaseException:
-                if alock is not None:
-                    alock.release()
-                raise
+            await s.start()
             if is_cross:
                 try:
                     for attempt in range(6):
@@ -255,12 +202,7 @@ class MtprotoPool:
                         await s.stop()
                     except Exception:
                         pass
-                    if alock is not None:
-                        alock.release()
                     raise
-            if alock is not None:
-                self._auth_keys[akey] = ak
-                alock.release()
             self._sessions[cache_key] = s
         return s
 
@@ -285,14 +227,12 @@ class MtprotoPool:
                 pass
         self._sessions.clear()
         self._locks.clear()
-        self._auth_keys.clear()
-        self._auth_locks.clear()
 
 
 class HypertgTransfer:
     def __init__(self, listener=None):
         self._listener = listener
-        self.clients = download_clients() if config_dict["USE_HYPER"] else {}
+        self.clients = hyper_clients() if config_dict["USE_HYPER"] else {}
         self.client_ids = list(self.clients.keys())
         self.num_clients = len(self.clients)
         self.work_loads = get_global_work_loads()
@@ -401,28 +341,22 @@ class HypertgDownload(HypertgTransfer):
     _MAX_PIPELINE_MULT = 4
     _LOW_WORKERS = 2
     _HIGH_WORKERS = max(8, len(allowed_cpus()) * 2)
-    _MAX_PARTS = 32
-    _AUTO_PIPELINE = 8
     _MAX_RETRIES = 4
 
     def __init__(self, listener=None):
         super().__init__(listener)
         self.chunk_size = max(
-            config_dict["HYPER_CHUNK"] or 1024 * self.KB, self._MIN_CHUNK
+            config_dict["HYPER_CHUNK"] or 256 * self.KB, self._MIN_CHUNK
         )
-        self.chunk_size = min(self.chunk_size, 1024 * self.KB)  # Telegram max
-        # auto: one part per connection (fair share between tasks via work loads)
         self.num_parts = config_dict["HYPER_THREADS"] or max(
-            self._LOW_WORKERS, min(self._MAX_PARTS, self.num_clients)
+            self._LOW_WORKERS, min(self._HIGH_WORKERS, self.num_clients)
         )
-        if config_dict["HYPER_PIPELINE"]:
-            base_pipe = max(config_dict["HYPER_PIPELINE"], self._MIN_PIPELINE)
-            self.pipeline_depth = max(
-                base_pipe // max(self.num_parts, 1), self._MIN_PIPELINE
-            )
-        else:
-            # auto: enough requests in flight on every connection
-            self.pipeline_depth = self._AUTO_PIPELINE
+        base_pipe = max(
+            config_dict["HYPER_PIPELINE"] or self._DEFAULT_PIPELINE, self._MIN_PIPELINE
+        )
+        self.pipeline_depth = max(
+            base_pipe // max(self.num_parts, 1), self._MIN_PIPELINE
+        )
         self.message = None
         self.media = None
         self.dump_chat = None
@@ -445,14 +379,11 @@ class HypertgDownload(HypertgTransfer):
     async def _fetch_ref(self, idx, client, force=False):
         if not force:
             cached = self._ref_get(idx)
-            if cached is None:
-                cached = self._ref_get(("client", id(client)))
             if cached is not None:
                 return cached
         fid = await self._fetch_ref_try(client)
         if fid:
             self._ref_put(idx, fid)
-            self._ref_put(("client", id(client)), fid)
             return fid
         LOGGER.warning(
             "HypertgDL ref ci=%d: client can't access dump_chat=%s, trying bots",
@@ -1051,7 +982,6 @@ class HypertgDownload(HypertgTransfer):
             for i in range(n_parts)
         ]
         assigns = [cidx[i % n_use] for i in range(n_parts)]
-        self.active_parts = n_parts
 
         unique_clients = set(assigns)
         fid_map = {}
@@ -1149,28 +1079,17 @@ class HypertgDownload(HypertgTransfer):
             self._cdn_info.clear()
             await self._close_all()
 
-    async def download_media(
-        self, message, file_name="downloads/", dump_chat=None, copier=None
-    ):
+    async def download_media(self, message, file_name="downloads/", dump_chat=None):
         try:
             if dump_chat and dump_chat == message.chat.id:
                 dump_chat = None
             if dump_chat:
                 try:
-                    copier = copier or bot
-                    if copier is not bot:
-                        await ensure_peer(copier, dump_chat)
-                    copied = await copier.copy_message(
+                    self.message = await bot.copy_message(
                         chat_id=dump_chat,
                         from_chat_id=message.chat.id,
                         message_id=message.id,
                         disable_notification=True,
-                    )
-                    # read it back with the bot so the file_id fits our clients
-                    self.message = (
-                        copied
-                        if copier is bot
-                        else await bot.get_messages(dump_chat, copied.id)
                     )
                 except Exception as e:
                     LOGGER.warning(

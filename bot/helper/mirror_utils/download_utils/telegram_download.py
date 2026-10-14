@@ -58,12 +58,6 @@ class TelegramDownloadHelper:
         return self.processed_bytes / (time() - self.__start_time)
 
     @property
-    def hyper_conns(self):
-        if self.__hyper is None:
-            return 0
-        return getattr(self.__hyper, "active_parts", 0) or self.__hyper.num_clients
-
-    @property
     def processed_bytes(self):
         if self.__hyper is not None:
             return self.__hyper.processed_bytes
@@ -113,32 +107,24 @@ class TelegramDownloadHelper:
     async def __hyper_download(self, message, path):
         if (
             not config_dict["USE_HYPER"]
+            or self.__client is not bot
             or transfer_mode(self.__listener.user_dict) != "hyper"
         ):
             return None
         dump_chat = await get_dump_chat()
-        if dump_chat is None and (
-            self.__client is not bot
-            or message.chat.type not in (ChatType.SUPERGROUP, ChatType.CHANNEL)
+        if dump_chat is None and message.chat.type not in (
+            ChatType.SUPERGROUP,
+            ChatType.CHANNEL,
         ):
-            LOGGER.warning(
-                "Hyper skipped: set LEECH_LOG_ID (dump chat) so the file can be "
-                "copied there and downloaded by all clients"
-            )
             return None
         hyper = HypertgDownload(self.__listener)
         if not hyper.clients:
-            LOGGER.warning(
-                "Hyper skipped: no clients, add USER_SESSION_STRING or helpers"
-            )
             return None
         self.__hyper = hyper
         hpath = ospath.abspath(path) + ("/" if path.endswith("/") else "")
-        LOGGER.info(f"Hyper Download with {hyper.num_clients} connection(s): {self.name}")
+        LOGGER.info(f"Hyper Download with {hyper.num_clients} client(s): {self.name}")
         try:
-            download = await hyper.download_media(
-                message, hpath, dump_chat, copier=self.__client
-            )
+            download = await hyper.download_media(message, hpath, dump_chat)
             if download is None and not self.__is_cancelled:
                 raise RuntimeError("Hyper returned nothing")
             return download or False

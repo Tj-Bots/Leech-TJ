@@ -32,7 +32,7 @@ SUCCESS_KEYS = (
     "start rss",
     "save message",
 )
-PRIMARY_KEYS = ("◀️", "⌫", "back", "bᴀᴄᴋ", "♻️", "view in", "page ")
+PRIMARY_KEYS = ("◀️", "⌫", "back", "bᴀᴄᴋ", "♻️", "view in")
 
 
 CURRENT_PAGE = ButtonStyle.SUCCESS if ButtonStyle else None

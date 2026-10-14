@@ -125,7 +125,6 @@ New Python packages need a rebuild: `docker compose up -d --build`.
 | `LEECH_LOG_ID` | Dump chat for leeched files (needed for Hyper) |
 | `USE_HYPER`, `HELPER_TOKENS`, `HELPER_STRINGS` | Hyper transfers |
 | `HYPER_THREADS`, `HYPER_CHUNK`, `HYPER_PIPELINE` | Hyper tuning, leave empty for auto |
-| `HYPER_CONNECTIONS` | Download connections per client (auto: user 8, bot 4) |
 | `TMDB_ACCESS_TOKEN` | Auto Thumbnail / `/cover` posters |
 | `DISABLE_FF_MODE` | Hide FFmpeg Cmds from users |
 | `RICH_MESSAGES` | Rich status and finish messages with buttons inside the text |
