@@ -879,8 +879,8 @@ async def get_buttons(key=None, edit_type=None, edit_mode=None, mess=None):
 ╰<b> Total Clients :</b> <code>{clients}</code></blockquote>
 
 <blockquote>╭<b> Threads :</b> <code>{config_dict["HYPER_THREADS"] or "Auto"}</code>
-┊<b> Chunk Size :</b> <code>{f"{chunk // 1024} KB" if chunk else "256 KB"}</code>
-┊<b> Pipeline :</b> <code>{config_dict["HYPER_PIPELINE"] or 32}</code>
+┊<b> Chunk Size :</b> <code>{f"{chunk // 1024} KB" if chunk else "1024 KB"}</code>
+┊<b> Pipeline :</b> <code>{config_dict["HYPER_PIPELINE"] or "Auto (8 per connection)"}</code>
 ┊<b> Connections :</b> <code>{config_dict["HYPER_CONNECTIONS"] or "Auto (User 8 / Bot 4)"}</code> per client
 ┊<b> Download Connections :</b> <code>{len(download_clients())}</code>
 ╰<b> Dump Chat :</b> <code>{config_dict["LEECH_LOG_ID"] or "Not Set"}</code></blockquote>

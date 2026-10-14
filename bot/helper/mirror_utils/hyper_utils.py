@@ -402,23 +402,27 @@ class HypertgDownload(HypertgTransfer):
     _LOW_WORKERS = 2
     _HIGH_WORKERS = max(8, len(allowed_cpus()) * 2)
     _MAX_PARTS = 32
+    _AUTO_PIPELINE = 8
     _MAX_RETRIES = 4
 
     def __init__(self, listener=None):
         super().__init__(listener)
         self.chunk_size = max(
-            config_dict["HYPER_CHUNK"] or 256 * self.KB, self._MIN_CHUNK
+            config_dict["HYPER_CHUNK"] or 1024 * self.KB, self._MIN_CHUNK
         )
+        self.chunk_size = min(self.chunk_size, 1024 * self.KB)  # Telegram max
         # auto: one part per connection (fair share between tasks via work loads)
         self.num_parts = config_dict["HYPER_THREADS"] or max(
             self._LOW_WORKERS, min(self._MAX_PARTS, self.num_clients)
         )
-        base_pipe = max(
-            config_dict["HYPER_PIPELINE"] or self._DEFAULT_PIPELINE, self._MIN_PIPELINE
-        )
-        self.pipeline_depth = max(
-            base_pipe // max(self.num_parts, 1), self._MIN_PIPELINE
-        )
+        if config_dict["HYPER_PIPELINE"]:
+            base_pipe = max(config_dict["HYPER_PIPELINE"], self._MIN_PIPELINE)
+            self.pipeline_depth = max(
+                base_pipe // max(self.num_parts, 1), self._MIN_PIPELINE
+            )
+        else:
+            # auto: enough requests in flight on every connection
+            self.pipeline_depth = self._AUTO_PIPELINE
         self.message = None
         self.media = None
         self.dump_chat = None
