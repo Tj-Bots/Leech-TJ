@@ -1130,17 +1130,28 @@ class HypertgDownload(HypertgTransfer):
             self._cdn_info.clear()
             await self._close_all()
 
-    async def download_media(self, message, file_name="downloads/", dump_chat=None):
+    async def download_media(
+        self, message, file_name="downloads/", dump_chat=None, copier=None
+    ):
         try:
             if dump_chat and dump_chat == message.chat.id:
                 dump_chat = None
             if dump_chat:
                 try:
-                    self.message = await bot.copy_message(
+                    copier = copier or bot
+                    if copier is not bot:
+                        await ensure_peer(copier, dump_chat)
+                    copied = await copier.copy_message(
                         chat_id=dump_chat,
                         from_chat_id=message.chat.id,
                         message_id=message.id,
                         disable_notification=True,
+                    )
+                    # read it back with the bot so the file_id fits our clients
+                    self.message = (
+                        copied
+                        if copier is bot
+                        else await bot.get_messages(dump_chat, copied.id)
                     )
                 except Exception as e:
                     LOGGER.warning(

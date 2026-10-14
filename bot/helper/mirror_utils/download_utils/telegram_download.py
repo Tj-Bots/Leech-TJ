@@ -107,12 +107,16 @@ class TelegramDownloadHelper:
     async def __hyper_download(self, message, path):
         if (
             not config_dict["USE_HYPER"]
-            or self.__client is not bot
             or transfer_mode(self.__listener.user_dict) != "hyper"
         ):
             return None
         dump_chat = await get_dump_chat()
-        if dump_chat is None and message.chat.type not in (
+        if self.__client is not bot:
+            # only the user session can open this chat: it copies the file
+            # to the dump chat, then every client downloads from there
+            if dump_chat is None:
+                return None
+        elif dump_chat is None and message.chat.type not in (
             ChatType.SUPERGROUP,
             ChatType.CHANNEL,
         ):
@@ -124,7 +128,9 @@ class TelegramDownloadHelper:
         hpath = ospath.abspath(path) + ("/" if path.endswith("/") else "")
         LOGGER.info(f"Hyper Download with {hyper.num_clients} connection(s): {self.name}")
         try:
-            download = await hyper.download_media(message, hpath, dump_chat)
+            download = await hyper.download_media(
+                message, hpath, dump_chat, copier=self.__client
+            )
             if download is None and not self.__is_cancelled:
                 raise RuntimeError("Hyper returned nothing")
             return download or False
