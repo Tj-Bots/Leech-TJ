@@ -129,6 +129,25 @@ def hyper_clients():
     return clients
 
 
+def hyper_connections(key):
+    """Download connections (MTProto sessions) per client. 0 = auto."""
+    if conn := config_dict.get("HYPER_CONNECTIONS"):
+        return min(max(1, int(conn)), 64)
+    return 8 if key < 0 else 4  # user accounts get more than bots
+
+
+def download_clients():
+    """Every client once per connection, as virtual keys that keep the sign
+    (bots > 0, users < 0). Each virtual key gets its own session in the pool,
+    so one account downloads over several connections at once."""
+    clients = {}
+    for key, client in hyper_clients().items():
+        for slot in range(hyper_connections(key)):
+            vkey = key * 100 + slot if key > 0 else key * 100 - slot
+            clients[vkey] = client
+    return clients
+
+
 class MtprotoPool:
     def __init__(self, clients):
         if isinstance(clients, dict):
@@ -139,6 +158,8 @@ class MtprotoPool:
             self._client_order = list(self._client_map.keys())
         self._sessions = {}
         self._locks = {}
+        self._auth_keys = {}  # (client, dc) -> auth key already authorized
+        self._auth_locks = {}
 
     def _resolve_key(self, client_key):
         if client_key in self._client_map:
@@ -173,11 +194,29 @@ class MtprotoPool:
                 except Exception:
                     pass
             client = self._client_map[ck]
-            ak, is_cross = await self._get_auth_key(client, dc_id)
+            akey = (id(client), dc_id)
+            alock = self._auth_locks.setdefault(akey, Lock())
+            await alock.acquire()
+            if akey in self._auth_keys:
+                # another connection of this account already authorized this DC
+                alock.release()
+                alock = None
+                ak, is_cross = self._auth_keys[akey], False
+            else:
+                try:
+                    ak, is_cross = await self._get_auth_key(client, dc_id)
+                except BaseException:
+                    alock.release()
+                    raise
             s = Session(
                 client, dc_id, ak, await client.storage.test_mode(), is_media=is_media
             )
-            await s.start()
+            try:
+                await s.start()
+            except BaseException:
+                if alock is not None:
+                    alock.release()
+                raise
             if is_cross:
                 try:
                     for attempt in range(6):
@@ -202,7 +241,12 @@ class MtprotoPool:
                         await s.stop()
                     except Exception:
                         pass
+                    if alock is not None:
+                        alock.release()
                     raise
+            if alock is not None:
+                self._auth_keys[akey] = ak
+                alock.release()
             self._sessions[cache_key] = s
         return s
 
@@ -227,12 +271,14 @@ class MtprotoPool:
                 pass
         self._sessions.clear()
         self._locks.clear()
+        self._auth_keys.clear()
+        self._auth_locks.clear()
 
 
 class HypertgTransfer:
     def __init__(self, listener=None):
         self._listener = listener
-        self.clients = hyper_clients() if config_dict["USE_HYPER"] else {}
+        self.clients = download_clients() if config_dict["USE_HYPER"] else {}
         self.client_ids = list(self.clients.keys())
         self.num_clients = len(self.clients)
         self.work_loads = get_global_work_loads()
@@ -341,6 +387,7 @@ class HypertgDownload(HypertgTransfer):
     _MAX_PIPELINE_MULT = 4
     _LOW_WORKERS = 2
     _HIGH_WORKERS = max(8, len(allowed_cpus()) * 2)
+    _MAX_PARTS = 32
     _MAX_RETRIES = 4
 
     def __init__(self, listener=None):
@@ -348,8 +395,9 @@ class HypertgDownload(HypertgTransfer):
         self.chunk_size = max(
             config_dict["HYPER_CHUNK"] or 256 * self.KB, self._MIN_CHUNK
         )
+        # auto: one part per connection (fair share between tasks via work loads)
         self.num_parts = config_dict["HYPER_THREADS"] or max(
-            self._LOW_WORKERS, min(self._HIGH_WORKERS, self.num_clients)
+            self._LOW_WORKERS, min(self._MAX_PARTS, self.num_clients)
         )
         base_pipe = max(
             config_dict["HYPER_PIPELINE"] or self._DEFAULT_PIPELINE, self._MIN_PIPELINE
@@ -379,11 +427,14 @@ class HypertgDownload(HypertgTransfer):
     async def _fetch_ref(self, idx, client, force=False):
         if not force:
             cached = self._ref_get(idx)
+            if cached is None:
+                cached = self._ref_get(("client", id(client)))
             if cached is not None:
                 return cached
         fid = await self._fetch_ref_try(client)
         if fid:
             self._ref_put(idx, fid)
+            self._ref_put(("client", id(client)), fid)
             return fid
         LOGGER.warning(
             "HypertgDL ref ci=%d: client can't access dump_chat=%s, trying bots",

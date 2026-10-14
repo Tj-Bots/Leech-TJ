@@ -49,6 +49,7 @@ from bot.helper.telegram_helper.message_utils import (
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.button_build import ButtonMaker, page_style
+from bot.helper.mirror_utils.hyper_utils import download_clients
 from bot.helper.ext_utils.bot_utils import setInterval, sync_to_async, new_thread
 from bot.helper.ext_utils.db_handler import DbManger
 from bot.helper.ext_utils.task_manager import start_from_queued
@@ -66,6 +67,7 @@ default_values = {
     "HYPER_THREADS": 0,
     "HYPER_CHUNK": 0,
     "HYPER_PIPELINE": 0,
+    "HYPER_CONNECTIONS": 0,
     "DEFAULT_UPLOAD": "gd",
     "DOWNLOAD_DIR": "/usr/src/app/downloads/",
     "LEECH_SPLIT_SIZE": MAX_SPLIT_SIZE,
@@ -88,6 +90,7 @@ HYPER_VARS = [
     "HYPER_THREADS",
     "HYPER_CHUNK",
     "HYPER_PIPELINE",
+    "HYPER_CONNECTIONS",
 ]
 bool_vars = [
     "AS_DOCUMENT",
@@ -324,6 +327,8 @@ async def load_config():
     HYPER_CHUNK = int(HYPER_CHUNK) if HYPER_CHUNK.isdigit() else 0
     HYPER_PIPELINE = environ.get("HYPER_PIPELINE", "")
     HYPER_PIPELINE = int(HYPER_PIPELINE) if HYPER_PIPELINE.isdigit() else 0
+    HYPER_CONNECTIONS = environ.get("HYPER_CONNECTIONS", "")
+    HYPER_CONNECTIONS = int(HYPER_CONNECTIONS) if HYPER_CONNECTIONS.isdigit() else 0
     TMDB_ACCESS_TOKEN = environ.get("TMDB_ACCESS_TOKEN", "").strip()
     DISABLE_FF_MODE = environ.get("DISABLE_FF_MODE", "False").lower() == "true"
     RICH_MESSAGES = environ.get("RICH_MESSAGES", "False").lower() == "true"
@@ -814,6 +819,7 @@ async def load_config():
             "HYPER_THREADS": HYPER_THREADS,
             "HYPER_CHUNK": HYPER_CHUNK,
             "HYPER_PIPELINE": HYPER_PIPELINE,
+            "HYPER_CONNECTIONS": HYPER_CONNECTIONS,
             "TMDB_ACCESS_TOKEN": TMDB_ACCESS_TOKEN,
             "DISABLE_FF_MODE": DISABLE_FF_MODE,
             "RICH_MESSAGES": RICH_MESSAGES,
@@ -875,6 +881,8 @@ async def get_buttons(key=None, edit_type=None, edit_mode=None, mess=None):
 <blockquote>╭<b> Threads :</b> <code>{config_dict["HYPER_THREADS"] or "Auto"}</code>
 ┊<b> Chunk Size :</b> <code>{f"{chunk // 1024} KB" if chunk else "256 KB"}</code>
 ┊<b> Pipeline :</b> <code>{config_dict["HYPER_PIPELINE"] or 32}</code>
+┊<b> Connections :</b> <code>{config_dict["HYPER_CONNECTIONS"] or "Auto (User 8 / Bot 4)"}</code> per client
+┊<b> Download Connections :</b> <code>{len(download_clients())}</code>
 ╰<b> Dump Chat :</b> <code>{config_dict["LEECH_LOG_ID"] or "Not Set"}</code></blockquote>
 
 <blockquote>➲ <b>NOTE:</b> <i>Add all helper bots/users to LEECH_LOG_ID chat. Changes in tokens/sessions need restart.</i></blockquote>"""

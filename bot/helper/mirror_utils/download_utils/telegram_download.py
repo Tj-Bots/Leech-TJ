@@ -122,7 +122,7 @@ class TelegramDownloadHelper:
             return None
         self.__hyper = hyper
         hpath = ospath.abspath(path) + ("/" if path.endswith("/") else "")
-        LOGGER.info(f"Hyper Download with {hyper.num_clients} client(s): {self.name}")
+        LOGGER.info(f"Hyper Download with {hyper.num_clients} connection(s): {self.name}")
         try:
             download = await hyper.download_media(message, hpath, dump_chat)
             if download is None and not self.__is_cancelled:
