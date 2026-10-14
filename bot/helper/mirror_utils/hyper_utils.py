@@ -1093,7 +1093,9 @@ class HypertgDownload(HypertgTransfer):
             self._cdn_info.clear()
             await self._close_all()
 
-    async def download_media(self, message, file_name="downloads/", dump_chat=None):
+    async def download_media(
+        self, message, file_name="downloads/", dump_chat=None, on_copied=None
+    ):
         try:
             if dump_chat and dump_chat == message.chat.id:
                 dump_chat = None
@@ -1110,6 +1112,8 @@ class HypertgDownload(HypertgTransfer):
                         f"HypertgDL copy fail: {e} (from={message.chat.id} to={dump_chat})"
                     )
                     raise RuntimeError(f"Cannot copy to dump chat: {e}") from e
+            if on_copied is not None:
+                await on_copied()
             self.dump_chat = dump_chat or message.chat.id
             self.message = self.message or message
             self.media = self._media_of(self.message)

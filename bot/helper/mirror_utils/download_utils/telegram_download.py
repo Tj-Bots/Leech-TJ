@@ -55,6 +55,7 @@ class TelegramDownloadHelper:
         self.__id = ""
         self.__is_cancelled = False
         self.__hyper = None
+        self.__links_deleted = False
 
     @property
     def speed(self):
@@ -113,6 +114,12 @@ class TelegramDownloadHelper:
         async with global_lock:
             GLOBAL_GID.remove(self.__id)
 
+    async def __delete_links(self):
+        # only after the file was copied to the dump chat (DELETE_LINKS)
+        if not self.__links_deleted:
+            self.__links_deleted = True
+            await delete_links(self.__listener.message)
+
     async def __user_download(self, message, path):
         """The bot copies the file to the dump chat, the user session
         downloads it from there, then the copy is deleted."""
@@ -133,6 +140,7 @@ class TelegramDownloadHelper:
                 message_id=message.id,
                 disable_notification=True,
             )
+            await self.__delete_links()
             await ensure_peer(user, dump_chat)
             umsg = await user.get_messages(dump_chat, copied.id)
             if not umsg or not umsg.media:
@@ -185,7 +193,9 @@ class TelegramDownloadHelper:
         hpath = ospath.abspath(path) + ("/" if path.endswith("/") else "")
         LOGGER.info(f"Hyper Download with {hyper.num_clients} client(s): {self.name}")
         try:
-            download = await hyper.download_media(message, hpath, dump_chat)
+            download = await hyper.download_media(
+                message, hpath, dump_chat, on_copied=self.__delete_links
+            )
             if download is None and not self.__is_cancelled:
                 raise RuntimeError("Hyper returned nothing")
             return download or False
@@ -208,6 +218,7 @@ class TelegramDownloadHelper:
             download = await self.__hyper_download(message, path)
             if download is None:
                 download = await self.__user_download(message, path)
+            await self.__delete_links()
             if download is not None:
                 if self.__is_cancelled or not download:
                     await self.__onDownloadError("Cancelled by user!")
@@ -304,8 +315,10 @@ class TelegramDownloadHelper:
                 await self.__onDownloadStart(name, size, gid, from_queue)
                 await self.__download(message, path)
             else:
+                await self.__delete_links()
                 await self.__onDownloadError("File already being downloaded!")
         else:
+            await self.__delete_links()
             await self.__onDownloadError("No valid media type in the replied message")
 
     async def cancel_download(self):

@@ -534,7 +534,7 @@ async def _mirror_leech(
             return
 
     if file_ is not None:
-        await delete_links(message)
+        # links are deleted by the helper after the file was copied to the dump chat
         await TelegramDownloadHelper(listener).add_download(
             reply_to, f"{path}/", name, session, decrypter
         )
