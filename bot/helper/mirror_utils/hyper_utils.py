@@ -59,15 +59,29 @@ async def ensure_peer(client, chat_id):
         return
     try:
         await client.resolve_peer(chat_id)
+        _known_peers.add(key)
+        return
     except Exception:
+        pass
+    try:
+        async for dialog in client.get_dialogs():
+            if dialog.chat.id == chat_id:
+                _known_peers.add(key)
+                return
+    except Exception as e:
+        LOGGER.warning(f"Hyper: peer warmup failed for {chat_id}: {e}")
+    # a user account that is not in the dump chat yet: the bot invites it
+    if client is not bot and not getattr(getattr(client, "me", None), "is_bot", True):
         try:
-            async for dialog in client.get_dialogs():
-                if dialog.chat.id == chat_id:
-                    break
+            link = await bot.export_chat_invite_link(chat_id)
+            await client.join_chat(link)
+            await client.resolve_peer(chat_id)
+            LOGGER.info(f"Hyper: user session joined dump chat {chat_id}")
+            _known_peers.add(key)
         except Exception as e:
-            LOGGER.warning(f"Hyper: peer warmup failed for {chat_id}: {e}")
-            return
-    _known_peers.add(key)
+            LOGGER.warning(
+                f"Hyper: add the user session to dump chat {chat_id} (bot needs invite rights): {e}"
+            )
 
 
 class _Budget:
@@ -1033,6 +1047,7 @@ class HypertgDownload(HypertgTransfer):
             for i in range(n_parts)
         ]
         assigns = [cidx[i % n_use] for i in range(n_parts)]
+        self.active_parts = n_parts
 
         unique_clients = set(assigns)
         fid_map = {}

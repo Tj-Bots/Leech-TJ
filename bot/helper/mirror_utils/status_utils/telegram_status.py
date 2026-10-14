@@ -54,4 +54,6 @@ class TelegramStatus:
         return self.__obj
 
     def eng(self):
+        if conns := getattr(self.__obj, "hyper_conns", 0):
+            return f"Hyper ⚡ ({conns} connections)"
         return EngineStatus().STATUS_TG

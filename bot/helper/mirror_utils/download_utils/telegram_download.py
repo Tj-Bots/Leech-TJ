@@ -58,6 +58,12 @@ class TelegramDownloadHelper:
         return self.processed_bytes / (time() - self.__start_time)
 
     @property
+    def hyper_conns(self):
+        if self.__hyper is None:
+            return 0
+        return getattr(self.__hyper, "active_parts", 0) or self.__hyper.num_clients
+
+    @property
     def processed_bytes(self):
         if self.__hyper is not None:
             return self.__hyper.processed_bytes
@@ -111,18 +117,20 @@ class TelegramDownloadHelper:
         ):
             return None
         dump_chat = await get_dump_chat()
-        if self.__client is not bot:
-            # only the user session can open this chat: it copies the file
-            # to the dump chat, then every client downloads from there
-            if dump_chat is None:
-                return None
-        elif dump_chat is None and message.chat.type not in (
-            ChatType.SUPERGROUP,
-            ChatType.CHANNEL,
+        if dump_chat is None and (
+            self.__client is not bot
+            or message.chat.type not in (ChatType.SUPERGROUP, ChatType.CHANNEL)
         ):
+            LOGGER.warning(
+                "Hyper skipped: set LEECH_LOG_ID (dump chat) so the file can be "
+                "copied there and downloaded by all clients"
+            )
             return None
         hyper = HypertgDownload(self.__listener)
         if not hyper.clients:
+            LOGGER.warning(
+                "Hyper skipped: no clients, add USER_SESSION_STRING or helpers"
+            )
             return None
         self.__hyper = hyper
         hpath = ospath.abspath(path) + ("/" if path.endswith("/") else "")
