@@ -16,9 +16,12 @@ from bot import (
     user,
     IS_PREMIUM_USER,
     config_dict,
+    helper_bots,
+    helper_users,
 )
 from bot.helper.mirror_utils.hyper_utils import (
     HypertgDownload,
+    ensure_peer,
     get_dump_chat,
     transfer_mode,
 )
@@ -56,6 +59,12 @@ class TelegramDownloadHelper:
     @property
     def speed(self):
         return self.processed_bytes / (time() - self.__start_time)
+
+    @property
+    def engine_note(self):
+        if self.__hyper is not None:
+            return "Hyper"
+        return "User" if self.__client is user else ""
 
     @property
     def processed_bytes(self):
@@ -104,9 +113,61 @@ class TelegramDownloadHelper:
         async with global_lock:
             GLOBAL_GID.remove(self.__id)
 
+    async def __user_download(self, message, path):
+        """The bot copies the file to the dump chat, the user session
+        downloads it from there, then the copy is deleted."""
+        if (
+            not user
+            or self.__client is not bot
+            or transfer_mode(self.__listener.user_dict) == "bot"
+        ):
+            return None
+        dump_chat = await get_dump_chat()
+        if dump_chat is None:
+            return None
+        copied = None
+        try:
+            copied = await bot.copy_message(
+                chat_id=dump_chat,
+                from_chat_id=message.chat.id,
+                message_id=message.id,
+                disable_notification=True,
+            )
+            await ensure_peer(user, dump_chat)
+            umsg = await user.get_messages(dump_chat, copied.id)
+            if not umsg or not umsg.media:
+                raise RuntimeError("user session can't see the file in the dump chat")
+        except Exception as e:
+            LOGGER.warning(f"User session download skipped, using bot: {e}")
+            if copied is not None:
+                try:
+                    await bot.delete_messages(dump_chat, copied.id)
+                except Exception:
+                    pass
+            return None
+        LOGGER.info(f"Download by User session: {self.name}")
+        self.__client = user
+        try:
+            return await user.download_media(
+                message=umsg, file_name=path, progress=self.__onDownloadProgress
+            ) or (False if self.__is_cancelled else None)
+        except Exception as e:
+            if self.__is_cancelled:
+                return False
+            LOGGER.error(f"User session download failed, using bot: {e}")
+            self.__processed_bytes = 0
+            return None
+        finally:
+            self.__client = bot
+            try:
+                await bot.delete_messages(dump_chat, copied.id)
+            except Exception:
+                pass
+
     async def __hyper_download(self, message, path):
         if (
             not config_dict["USE_HYPER"]
+            or not (helper_bots or helper_users)  # Hyper = extra clients only
             or self.__client is not bot
             or transfer_mode(self.__listener.user_dict) != "hyper"
         ):
@@ -145,6 +206,8 @@ class TelegramDownloadHelper:
     async def __download(self, message, path):
         try:
             download = await self.__hyper_download(message, path)
+            if download is None:
+                download = await self.__user_download(message, path)
             if download is not None:
                 if self.__is_cancelled or not download:
                     await self.__onDownloadError("Cancelled by user!")

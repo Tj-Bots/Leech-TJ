@@ -54,4 +54,6 @@ class TelegramStatus:
         return self.__obj
 
     def eng(self):
+        if note := getattr(self.__obj, "engine_note", ""):
+            return f"{EngineStatus().STATUS_TG} ({note})"
         return EngineStatus().STATUS_TG

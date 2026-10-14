@@ -455,9 +455,12 @@ def get_readable_message(user_id=None):
 
     if not rich:
         msg += BotTheme("FOOTER")
-    page_text = f"Page {page_no}/{pages}" if pages > 1 else "Refresh"
+    # one page: themed refresh button, more pages: just "Page 1/3"
+    page_btn = (
+        f"Page {page_no}/{pages}" if pages > 1 else BotTheme("REFRESH", Page="Refresh")
+    )
     buttons = ButtonMaker()
-    buttons.ibutton(BotTheme("REFRESH", Page=page_text), "status ref")
+    buttons.ibutton(page_btn, "status ref")
     if tasks > STATUS_LIMIT and not user_id:
         if config_dict["BOT_MAX_TASKS"]:
             msg += BotTheme(
@@ -468,9 +471,11 @@ def get_readable_message(user_id=None):
             )
         else:
             msg += BotTheme("TASKS", Tasks=tasks)
+        if rich:
+            msg += "<hr/>"
         buttons = ButtonMaker()
         buttons.ibutton(BotTheme("PREVIOUS"), "status pre")
-        buttons.ibutton(BotTheme("REFRESH", Page=page_text), "status ref")
+        buttons.ibutton(page_btn, "status ref")
         buttons.ibutton(BotTheme("NEXT"), "status nex")
     button = buttons.build_menu(3)
     msg += BotTheme("Cpu", cpu=cpu_percent())
