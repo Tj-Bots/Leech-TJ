@@ -499,7 +499,7 @@ async def update_all_messages(force=False):
             if STATUS_HOLD.get(status_reply_dict[key][0].id, 0) > time():
                 continue
             if status_reply_dict[key] and msg != status_reply_dict[key][0].text:
-                rmsg = await editMessage(status_reply_dict[key][0], msg, buttons, "IMAGES")
+                rmsg = await editMessage(status_reply_dict[key][0], msg, buttons)
                 if isinstance(rmsg, str) and rmsg.startswith("Telegram says: [400"):
                     del status_reply_dict[key]
                     continue
@@ -518,7 +518,8 @@ async def sendStatusMessage(msg, user_id=None):
             message = status_reply_dict[chat_id][0]
             await deleteMessage(message)
             del status_reply_dict[chat_id]
-        if message := await sendMessage(msg, progress, buttons, photo="IMAGES"):
+        # status never has a picture, pictures are for the finish message
+        if message := await sendMessage(msg, progress, buttons):
             if hasattr(message, "caption"):
                 message.caption = progress
             else:
