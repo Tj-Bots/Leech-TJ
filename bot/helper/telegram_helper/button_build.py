@@ -31,6 +31,7 @@ SUCCESS_KEYS = (
     "resume",
     "start rss",
     "save message",
+    "continue",
 )
 PRIMARY_KEYS = ("◀️", "⌫", "back", "bᴀᴄᴋ", "♻️", "view in", "page ")
 

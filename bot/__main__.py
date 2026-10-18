@@ -72,6 +72,7 @@ from .modules import (
     torrent_select,
     ytdlp,
     rss,
+    video_tools,
     shell,
     eval,
     users_settings,

@@ -139,6 +139,7 @@ async def _mirror_leech(
         "-ca": "",
         "-cv": "",
         "-ea": False,
+        "-vt": False,
     }
 
     args = arg_parser(input_list[1:], arg_base)
@@ -519,6 +520,15 @@ async def _mirror_leech(
     listener.convert_audio = args["-ca"]
     listener.convert_video = args["-cv"]
     listener.extract_audio = args["-ea"]
+    if args["-vt"]:
+        from bot.modules.video_tools import video_tools_menu
+
+        vt_sel = await video_tools_menu(message, message.from_user.id)
+        if vt_sel is None:
+            await sendMessage(message, "<i>Task cancelled from Video Tools.</i>")
+            await delete_links(message)
+            return
+        listener.video_tools = vt_sel
     if args["-ff"] and config_dict["DISABLE_FF_MODE"]:
         await sendMessage(message, "<i>FFmpeg Cmds are disabled by the Owner!</i>")
         await delete_links(message)

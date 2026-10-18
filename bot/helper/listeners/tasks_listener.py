@@ -35,6 +35,7 @@ from bot import (
     bot,
     GLOBAL_EXTENSION_FILTER,
 )
+from bot.helper.ext_utils.video_tools import run_video_tools
 from bot.helper.ext_utils.bot_utils import (
     extra_btns,
     RichText,
@@ -159,6 +160,7 @@ class MirrorLeechListener:
         self.convert_audio = ""
         self.convert_video = ""
         self.extract_audio = False
+        self.video_tools = {}
         self.isCover = False
         self.sameDir = sameDir
         self.rcFlags = rcFlags
@@ -444,6 +446,21 @@ class MirrorLeechListener:
             else:
                 dl_path = cv_path
             name = ospath.basename(cv_path)
+
+        if any(self.video_tools.values()):
+            vt_path = up_path or dl_path
+            async with download_dict_lock:
+                download_dict[self.uid] = FFmpegStatus(name, size, gid, self)
+            await update_all_messages()
+            vt_path = await run_video_tools(self, vt_path, self.video_tools)
+            if vt_path is None or self.suproc == "cancelled":
+                return
+            self.suproc = None
+            if up_path:
+                up_path = vt_path
+            else:
+                dl_path = vt_path
+            name = ospath.basename(vt_path)
 
         if self.ffmpeg_cmds:
             ff_path = up_path or dl_path

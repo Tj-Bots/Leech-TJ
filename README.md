@@ -97,7 +97,7 @@ Even with only `USER_SESSION_STRING`, downloads use many requests in parallel.
 | `/cancel` `/cancelall` | Stop tasks |
 | `/help` | Everything else |
 
-**Useful args:** `-up ddl` upload to your DDL hosts · `-up name` use an Upload Path · `-ff name` run an FFmpeg Cmd · `-cv mp4` / `-ca mp3` convert · `-ea` extract audio · `-n` new name · `-z` zip · `-e` extract · `-i 5` multi links · `-b` bulk · `-s` select files.
+**Useful args:** `-up ddl` upload to your DDL hosts · `-up name` use an Upload Path · `-ff name` run an FFmpeg Cmd · `-cv mp4` / `-ca mp3` convert · `-ea` extract audio · `-vt` Video Tools menu · `-n` new name · `-z` zip · `-e` extract · `-i 5` multi links · `-b` bulk · `-s` select files.
 
 Send any command without a link (`/l`, `/m`, `/ytdl`...) to get a button menu that explains every arg with examples you can copy.
 
@@ -127,6 +127,7 @@ New Python packages need a rebuild: `docker compose up -d --build`.
 | `HYPER_THREADS`, `HYPER_CHUNK`, `HYPER_PIPELINE` | Hyper tuning, leave empty for auto |
 | `TMDB_ACCESS_TOKEN` | Auto Thumbnail / `/cover` posters |
 | `DISABLE_FF_MODE` | Hide FFmpeg Cmds from users |
+| `VT_CUSTOM_CMDS` | Extra Video Tools buttons, `name: ffmpeg args` per line |
 | `RICH_MESSAGES` | Rich status and finish messages with buttons inside the text |
 | `DEFAULT_UPLOAD` | `gd`, `rc` or `ddl` |
 | `UPSTREAM_REPO`, `UPSTREAM_BRANCH` | Where `/restart` updates from |

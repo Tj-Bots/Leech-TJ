@@ -249,6 +249,7 @@ default_desp = {'AS_DOCUMENT': 'Default type of Telegram file upload. Default is
                 'USER_TD_SA': 'Add Global SA mail for User to give Permissions to Bot for UserTD Upload. Like wzmlx@googlegroups.com. Str',
                 'COVER_DUMP': "Save /cover results also in LEECH_LOG_ID (dump chat). When False the video goes only to the user's PM. Default is False.",
                 'MEDIA_STORE': "Default for Media Store: every leeched file gets a Store Link, anyone who opens it gets the file from the bot in PM. Users can change it for themselves in User Settings. Default is False.",
+                'VT_CUSTOM_CMDS': "Extra tools for the Video Tools menu (-vt), one per line as <code>name: ffmpeg args</code>, same format as FFmpeg Cmds in User Settings. Example: <code>compress: -i mltb.video -c:v libx265 -crf 28 -c:a copy mltb.mkv</code>. Every name becomes a button.",
                 'RICH_MESSAGES': "Send the status message as a Telegram Rich Message: Cancel / Select buttons inside every task and lines between tasks, instead of /cancel commands. Needs the wzgram library. Default is False.",
                 'DISABLE_FF_MODE': "Disable FFmpeg Cmds (-ff) for all users. When True the option is hidden from User Settings. Default is False.",
                 'TMDB_ACCESS_TOKEN': "TMDB API Key or Read Access Token, used for Auto Thumbnail (movie/series poster) in User Settings. Get it from https://www.themoviedb.org/settings/api",
@@ -455,6 +456,15 @@ Then reply to it with <code>/cmd -b</code>
 ➲ <code>/cmd link -cv mkv - webm flv</code> all videos to mkv except webm and flv</blockquote>
 <i>Videos change format without re-encoding when possible, so it's fast. Original files are replaced.</i>""",
     ),
+    "video_tools": (
+        "Video Tools",
+        """㊂ <b>Video Tools</b> » <code>-vt</code>
+
+<blockquote>Opens a menu before the task starts. Pick tools, then Continue:
+➲ Rename · Video + Video · Video + Audio · Video + Subtitle
+➲ Extract · Remove Stream · Trim · Screenshots · Convert To</blockquote>
+<i>Everything is copied, nothing is re-encoded, so it's fast. The owner can add more tools.</i>""",
+    ),
     "extract_audio": (
         "Extract Audio",
         """㊂ <b>Extract Audio</b> » <code>-ea</code>
@@ -549,6 +559,7 @@ _EXAMPLES = {
     "convert": "/cmd link -ca mp3 -cv mp4",
     "ffmpeg": "/cmd link -ff tomp3",
     "extract_audio": "/cmd link -ea mp3",
+    "video_tools": "/cmd link -vt",
     "rclone_dl": "/cmd rcl",
     "tg": "/cmd https://t.me/channel/123",
     "yt_opt": "/cmd link -opt playliststart:^5|playlistend:^10",
@@ -607,19 +618,19 @@ You choose the quality with buttons.</blockquote>
 
 _MENUS = {
     "leech": ["name", "zip", "dump", "multi", "samedir", "bulk", "join", "select",
-              "seed", "auth", "headers", "screenshots", "thumb", "convert", "extract_audio", "ffmpeg",
+              "seed", "auth", "headers", "screenshots", "thumb", "convert", "extract_audio", "video_tools", "ffmpeg",
               "rclone_dl", "tg"],
     "mirror": ["name", "zip", "upload", "multi", "samedir", "bulk", "join", "select",
                "seed", "auth", "headers", "rcf", "drive", "category", "convert",
-               "extract_audio", "ffmpeg", "rclone_dl", "tg"],
+               "extract_audio", "video_tools", "ffmpeg", "rclone_dl", "tg"],
     "qbleech": ["name", "zip", "dump", "select", "seed", "multi", "samedir", "bulk",
-                "screenshots", "thumb", "convert", "extract_audio", "ffmpeg"],
+                "screenshots", "thumb", "convert", "extract_audio", "video_tools", "ffmpeg"],
     "qbmirror": ["name", "zip", "upload", "select", "seed", "multi", "samedir", "bulk",
-                 "rcf", "drive", "category", "convert", "extract_audio", "ffmpeg"],
+                 "rcf", "drive", "category", "convert", "extract_audio", "video_tools", "ffmpeg"],
     "ytleech": ["yt_name", "yt_select", "yt_opt", "yt_zip", "dump", "multi", "samedir",
-                "bulk", "screenshots", "thumb", "convert", "extract_audio", "ffmpeg"],
+                "bulk", "screenshots", "thumb", "convert", "extract_audio", "video_tools", "ffmpeg"],
     "ytmirror": ["yt_name", "yt_select", "yt_opt", "yt_zip", "upload", "multi",
-                 "samedir", "bulk", "rcf", "drive", "category", "convert", "extract_audio", "ffmpeg"],
+                 "samedir", "bulk", "rcf", "drive", "category", "convert", "extract_audio", "video_tools", "ffmpeg"],
     "clone": ["clone_links", "clone_up", "multi", "rcf", "drive", "category"],
 }
 
