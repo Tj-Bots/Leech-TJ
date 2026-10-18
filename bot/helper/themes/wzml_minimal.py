@@ -142,17 +142,17 @@ class WZMLStyle:
 
     # async def onUploadComplete(): ---> tasks_listener.py
     NAME = "<blockquote>╭ <b>Name:</b> <code>{Name}</code>\n"
-    SIZE = "┊ <b>Size:</b> {Size}"
-    ELAPSE = " | <b>Elapsed:</b> {Time}\n"
+    SIZE = "┊ <b>Size: </b>{Size}\n"
+    ELAPSE = "┊ <b>Elapsed: </b>{Time}\n"
     MODE = "┊ <b>Mode: </b>{Mode}\n"
 
     # ----- LEECH -------
     L_TOTAL_FILES = "┊ <b>Total Files: </b>{Files}\n"
     L_CORRUPTED_FILES = "┊ <b>Corrupted Files: </b>{Corrupt}\n"
-    L_CC = "╰ <b>By: </b>{Tag}</blockquote>\n"
+    L_CC = "╰ <b>By: </b>{Tag}</blockquote>\n\n"
     PM_BOT_MSG = "➲ <b><i>File(s) have been Sent above</i></b>"
-    L_BOT_MSG = "➲ <b><i>Sent to Bot PM</i></b>\n"
-    L_LL_MSG = "➲ <b><i>Files:</i></b>\n"
+    L_BOT_MSG = "➲ <b><i>File(s) have been Sent to Bot PM (Private)</i></b>"
+    L_LL_MSG = "➲ <b><i>File(s) have been Sent. Access via Links...</i></b>\n"
     N_BOT_MSG = "➲ <i><b>Files:</b></i>"
 
     # ----- MIRROR -------
