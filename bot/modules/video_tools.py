@@ -111,7 +111,7 @@ def _menu(state):
     if page != "main":
         buttons.ibutton("◀️ Back", f"vtool {uid} back", "footer")
         title = {"extract": "Extract", "remove": "Remove Stream", "convert": "Convert To", "ss": "Screenshots"}[page]
-        text = f"㊂ <b><u>Video Tools : {title}</u></b>\n\n<i>Choose one or more, then Back.</i>"
+        text = f"㊂ <b><u>Video Tools : {title}</u></b>\n\n<i>Choose one, it takes you back to the menu.</i>"
         return text, buttons.build_menu(2)
 
     _btn(buttons, uid, "rename", "Rename", bool(sel.get("rename")), "header")
@@ -127,7 +127,7 @@ def _menu(state):
         _btn(buttons, uid, "custom", name, name in sel.get("custom", []), arg=str(no))
     chosen = _selected_text(sel)
     if chosen:
-        buttons.ibutton("Reset", f"vtool {uid} reset", "l_body", style=PLAIN)
+        buttons.ibutton("Reset", f"vtool {uid} reset", "l_body")
         buttons.ibutton("Close", f"vtool {uid} close", "footer")
         buttons.ibutton("Continue ▶", f"vtool {uid} done", "footer")
     else:
@@ -240,10 +240,13 @@ async def vtool_callback(_, query):
     elif action in ("extract", "remove"):
         items = sel.setdefault(action, [])
         items.remove(arg) if arg in items else items.append(arg)
+        state["page"] = "main"
     elif action == "convert":
         sel["convert"] = None if sel.get("convert") == arg else arg
+        state["page"] = "main"
     elif action == "ss":
         sel["ss"] = None if sel.get("ss") == int(arg) else int(arg)
+        state["page"] = "main"
     elif action == "custom":
         names = list(custom_tools())
         if arg.isdigit() and int(arg) < len(names):
