@@ -189,17 +189,28 @@ async def trim_videos(listener, path, start, end):
 
 
 async def rename_output(path, new_name):
+    """New name for the video, the extension stays when none is given.
+    A folder with one video: the video gets the name (and the folder too)."""
     if await aiopath.isfile(path):
         ext = ospath.splitext(path)[1]
         if not ospath.splitext(new_name)[1]:
             new_name += ext
-    new_path = ospath.join(ospath.dirname(path.rstrip("/")), new_name)
+        new_path = ospath.join(ospath.dirname(path), new_name)
+        await aiorename(path, new_path)
+        return new_path
+    videos = await _videos(path)
+    if len(videos) == 1:
+        video = videos[0]
+        ext = ospath.splitext(video)[1]
+        vname = new_name if ospath.splitext(new_name)[1] else new_name + ext
+        await aiorename(video, ospath.join(ospath.dirname(video), vname))
+    new_path = ospath.join(ospath.dirname(path.rstrip("/")), ospath.splitext(new_name)[0])
     await aiorename(path, new_path)
     return new_path
 
 
 async def run_video_tools(listener, path, sel):
-    """Order: merge, remove, trim, extract, convert, owner tools, screenshots, rename.
+    """Order: merge, remove, trim, extract, convert, owner tools, rename, screenshots.
     Returns the new path, or None when cancelled."""
     steps = [
         ("merge_video", lambda p: merge_videos(listener, p)),
@@ -228,13 +239,13 @@ async def run_video_tools(listener, path, sel):
             path = await run_ffmpeg_cmds(listener, path, cmds)
             if path is None or listener.suproc == "cancelled":
                 return None
-    if count := sel.get("ss"):
-        path = await make_sample_and_screenshots(listener, path, 0, count)
-        if path is None or listener.suproc == "cancelled":
-            return None
     if new_name := sel.get("rename"):
         try:
             path = await rename_output(path, new_name)
         except Exception as e:
             LOGGER.error(f"Video Tools rename failed: {e}")
+    if count := sel.get("ss"):
+        path = await make_sample_and_screenshots(listener, path, 0, count)
+        if path is None or listener.suproc == "cancelled":
+            return None
     return path

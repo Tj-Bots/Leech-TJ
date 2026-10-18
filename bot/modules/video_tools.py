@@ -11,6 +11,13 @@ from bot import bot
 from bot.helper.ext_utils.bot_utils import new_task
 from bot.helper.ext_utils.video_tools import custom_tools
 from bot.helper.telegram_helper.button_build import ButtonMaker, page_style
+
+try:
+    from pyrogram.enums import ButtonStyle
+
+    PLAIN = ButtonStyle.DEFAULT
+except ImportError:
+    PLAIN = None
 from bot.helper.telegram_helper.message_utils import (
     deleteMessage,
     editMessage,
@@ -63,7 +70,10 @@ def _selected_text(sel):
 
 def _btn(buttons, uid, key, label, sel_on, position=None, arg=""):
     data = f"vtool {uid} {key} {arg}".strip()
-    buttons.ibutton(f"{'✓ ' if sel_on else ''}{label}", data, position, style=page_style(sel_on))
+    # selected = green, the rest plain (no auto red for words like "remove")
+    buttons.ibutton(
+        f"{'✓ ' if sel_on else ''}{label}", data, position, style=page_style(sel_on) or PLAIN
+    )
 
 
 def _menu(state):
@@ -108,26 +118,30 @@ def _menu(state):
     _btn(buttons, uid, "merge_video", "Video + Video", bool(sel.get("merge_video")))
     _btn(buttons, uid, "merge_audio", "Video + Audio", bool(sel.get("merge_audio")))
     _btn(buttons, uid, "merge_subs", "Video + Subtitle", bool(sel.get("merge_subs")))
-    _btn(buttons, uid, "page", "Extract ▸", bool(sel.get("extract")), arg="extract")
-    _btn(buttons, uid, "page", "Remove Stream ▸", bool(sel.get("remove")), arg="remove")
+    _btn(buttons, uid, "page", "Extract", bool(sel.get("extract")), arg="extract")
+    _btn(buttons, uid, "page", "Remove Stream", bool(sel.get("remove")), arg="remove")
     _btn(buttons, uid, "trim", "Trim", bool(sel.get("trim")))
-    _btn(buttons, uid, "page", "Screenshots ▸", bool(sel.get("ss")), arg="ss")
-    _btn(buttons, uid, "page", "Convert To ▸", bool(sel.get("convert")), arg="convert")
+    _btn(buttons, uid, "page", "Screenshots", bool(sel.get("ss")), arg="ss")
+    _btn(buttons, uid, "page", "Convert To", bool(sel.get("convert")), arg="convert")
     for no, name in enumerate(custom_tools()):
         _btn(buttons, uid, "custom", name, name in sel.get("custom", []), arg=str(no))
     chosen = _selected_text(sel)
     if chosen:
-        buttons.ibutton("Reset", f"vtool {uid} reset", "l_body")
+        buttons.ibutton("Reset", f"vtool {uid} reset", "l_body", style=PLAIN)
         buttons.ibutton("Close", f"vtool {uid} close", "footer")
         buttons.ibutton("Continue ▶", f"vtool {uid} done", "footer")
     else:
         buttons.ibutton("Close", f"vtool {uid} close", "footer")
-    lines = "\n".join(f"┊ {c}" for c in chosen) if chosen else "┊ None"
+    if chosen:
+        lines = "╭ <b>Selected:</b>\n" + "\n".join(f"┊ {c}" for c in chosen)
+    else:
+        lines = "╭ <b>Selected:</b> None"
     text = (
-        f"㊂ <b><u>Video Tools</u></b>\n\n<blockquote>╭ <b>Selected:</b>\n{lines}\n"
-        f"╰ <b>Timeout:</b> {left}s</blockquote>\n\n<i>Everything is copied, nothing is re-encoded.</i>"
+        f"㊂ <b><u>Video Tools</u></b>\n\n<blockquote>{lines}\n"
+        f"╰ <b>Closes in:</b> {left}s</blockquote>\n\n"
+        f"<i>Pick a tool. Nothing is re-encoded, so it's fast.</i>"
     )
-    return text, buttons.build_menu(2, lb_cols=1)
+    return text, buttons.build_menu(2, lb_cols=1, f_cols=2)
 
 
 async def _refresh(state):

@@ -219,7 +219,18 @@ async def status_pages(_, query):
             await start_selection(query.message, dl)
         return
     if data[1] == "ov":
-        return await query.answer(tasks_overview(), show_alert=True)
+        # the status message shows the overview until Back (no auto refresh meanwhile)
+        await query.answer()
+        hold_status(query.message.id, 120)
+        buttons = ButtonMaker()
+        buttons.ibutton("◀️ Back", "status ovback")
+        await editMessage(query.message, tasks_overview(), buttons.build_menu(1))
+        return
+    if data[1] == "ovback":
+        await query.answer()
+        release_status(query.message.id)
+        await update_all_messages(True)
+        return
     if data[1] == "ref":
         await update_all_messages(True)
     elif data[1] in ["nex", "pre"]:

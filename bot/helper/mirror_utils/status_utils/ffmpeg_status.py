@@ -5,8 +5,12 @@ from bot.helper.mirror_utils.status_utils.metadata_status import MetadataStatus
 
 
 class FFmpegStatus(MetadataStatus):
+    def __init__(self, *args, status=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__status = status or MirrorStatus.STATUS_FFMPEG
+
     def status(self):
-        return MirrorStatus.STATUS_FFMPEG
+        return self.__status
 
     async def cancel_download(self):
         listener = self._MetadataStatus__listener

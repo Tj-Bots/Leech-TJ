@@ -37,6 +37,7 @@ from bot import (
 )
 from bot.helper.ext_utils.video_tools import run_video_tools
 from bot.helper.ext_utils.bot_utils import (
+    MirrorStatus,
     extra_btns,
     RichText,
     rich_enabled,
@@ -433,7 +434,9 @@ class MirrorLeechListener:
         if self.convert_audio or self.convert_video or self.extract_audio:
             cv_path = up_path or dl_path
             async with download_dict_lock:
-                download_dict[self.uid] = FFmpegStatus(name, size, gid, self)
+                download_dict[self.uid] = FFmpegStatus(
+                    name, size, gid, self, status=MirrorStatus.STATUS_CONVERT
+                )
             await update_all_messages()
             cv_path = await convert_media(
                 self, cv_path, self.convert_audio, self.convert_video, self.extract_audio
@@ -450,7 +453,9 @@ class MirrorLeechListener:
         if any(self.video_tools.values()):
             vt_path = up_path or dl_path
             async with download_dict_lock:
-                download_dict[self.uid] = FFmpegStatus(name, size, gid, self)
+                download_dict[self.uid] = FFmpegStatus(
+                    name, size, gid, self, status=MirrorStatus.STATUS_VTOOLS
+                )
             await update_all_messages()
             vt_path = await run_video_tools(self, vt_path, self.video_tools)
             if vt_path is None or self.suproc == "cancelled":
@@ -482,7 +487,9 @@ class MirrorLeechListener:
         if self.isLeech and (sample_secs or ss_count) and (not self.seed or self.newDir):
             ex_path = up_path or dl_path
             async with download_dict_lock:
-                download_dict[self.uid] = FFmpegStatus(name, size, gid, self)
+                download_dict[self.uid] = FFmpegStatus(
+                    name, size, gid, self, status=MirrorStatus.STATUS_SAMVID
+                )
             ex_path = await make_sample_and_screenshots(
                 self, ex_path, sample_secs, ss_count
             )
@@ -771,52 +778,56 @@ class MirrorLeechListener:
                         photo=self.random_pic,
                     )
                 use_store = media_store_enabled(user_id)
-                # rich: Store / Share as buttons inside the text and a line before the files
+                # all files in one collapsed quote, rich: a line before it and
+                # Store / Share as buttons inside the text
                 rich = rich_enabled()
-                fstart = "<hr/>" if rich else "\n"
+                fstart = ""
                 fmsg = fstart
 
                 pic_url = self.pic_url()
 
                 def _out(text):
-                    # rich messages can't carry a photo, the picture goes in as a block
+                    text += ("<hr/>" if rich else "\n") + (
+                        f"<blockquote expandable>{fmsg.rstrip()}</blockquote>"
+                    )
                     if not rich:
                         return text
+                    # rich messages can't carry a photo, the picture goes in as a block
                     return RichText(f'<img src="{pic_url}"/>' + to_rich_html(text))
 
                 for index, (link, name) in enumerate(files.items(), start=1):
                     slink = store_link(bot_name, link) if use_store and link else ""
                     share = f"https://t.me/share/url?url={slink}"
                     if not link:
-                        fmsg += f"<blockquote>\u200e{index}. {name}</blockquote>\n"
+                        fmsg += f"\u200e{index}. {name}\n"
                     elif rich and slink:
                         fmsg += (
-                            f"<blockquote>\u200e{index}. <a href='{link}'>{name}</a>\n"
+                            f"\u200e{index}. <a href='{link}'>{name}</a>\n"
                             f'╰ <tg-button type="url" style="primary" url="{slink}">Store Link</tg-button> '
-                            f'<tg-button type="url" style="success" url="{share}">Share Link</tg-button></blockquote>\n'
+                            f'<tg-button type="url" style="success" url="{share}">Share Link</tg-button>\n'
                         )
                     elif slink:
                         fmsg += (
-                            f"<blockquote>\u200e{index}. <a href='{link}'>{name}</a>\n"
+                            f"\u200e{index}. <a href='{link}'>{name}</a>\n"
                             f"╰ <b>Get Media :</b> <a href='{slink}'>Store Link</a> | "
-                            f"<a href='{share}'>Share Link</a></blockquote>\n"
+                            f"<a href='{share}'>Share Link</a>\n"
                         )
                     else:
-                        fmsg += f"<blockquote>\u200e{index}. <a href='{link}'>{name}</a></blockquote>\n"
+                        fmsg += f"\u200e{index}. <a href='{link}'>{name}</a>\n"
                     if len(msg.encode() + fmsg.encode()) > (4000 if rich else 1000):
 
                         if config_dict["SAFE_MODE"]:
                             if self.isSuperGroup:
                                 await sendMessage(
                                     self.botpmmsg,
-                                    _out(msg + BotTheme("L_LL_MSG") + fmsg),
+                                    _out(msg + BotTheme("L_LL_MSG")),
                                     btns,
                                     photo=self.random_pic,
                                 )
                             else:
                                 await sendMessage(
                                     self.message,
-                                    _out(message + fmsg),
+                                    _out(message),
                                     buttons.build_menu(2),
                                     photo=self.random_pic,
                                 )
@@ -830,7 +841,7 @@ class MirrorLeechListener:
                                 buttons.ibutton(BotTheme("SAVE_MSG"), "save", "footer")
                             await sendMessage(
                                 self.message,
-                                _out(message + fmsg),
+                                _out(message),
                                 buttons.build_menu(2),
                                 photo=self.random_pic,
                             )
@@ -842,14 +853,14 @@ class MirrorLeechListener:
                         if self.isSuperGroup:
                             await sendMessage(
                                 self.botpmmsg,
-                                _out(msg + BotTheme("L_LL_MSG") + fmsg),
+                                _out(msg + BotTheme("L_LL_MSG")),
                                 btns,
                                 photo=self.random_pic,
                             )
                         else:
                             await sendMessage(
                                 self.message,
-                                _out(message + fmsg),
+                                _out(message),
                                 buttons.build_menu(2),
                                 photo=self.random_pic,
                             )
@@ -859,7 +870,7 @@ class MirrorLeechListener:
                             buttons.ibutton(BotTheme("SAVE_MSG"), "save", "footer")
                         await sendMessage(
                             self.message,
-                            _out(message + fmsg),
+                            _out(message),
                             buttons.build_menu(2),
                             photo=self.random_pic,
                         )

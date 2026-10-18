@@ -90,6 +90,9 @@ class MirrorStatus:
     STATUS_SEEDING = "Seed"
     STATUS_METADATA = "Metadata"
     STATUS_FFMPEG = "FFmpeg"
+    STATUS_CONVERT = "Convert"
+    STATUS_VTOOLS = "VideoTools"
+    STATUS_SAMVID = "SamVideo"
     STATUS_COVER = "Cover"
 
 
@@ -260,30 +263,56 @@ multi_tags = {}  # Cancel Multi: tag -> user_id
 
 
 def tasks_overview():
-    """Short overview of all tasks for the ☲ button (alert, max 200 chars)."""
-    counts = {}
-    dl_speed = up_speed = 0
+    """Overview page of all tasks for the ☲ button."""
+    M = MirrorStatus
+    keys = {
+        M.STATUS_DOWNLOADING: "Download",
+        M.STATUS_UPLOADING: "Upload",
+        M.STATUS_SEEDING: "Seed",
+        M.STATUS_ARCHIVING: "Archive",
+        M.STATUS_EXTRACTING: "Extract",
+        M.STATUS_SPLITTING: "Split",
+        M.STATUS_QUEUEDL: "QueueDL",
+        M.STATUS_QUEUEUP: "QueueUP",
+        M.STATUS_CLONING: "Clone",
+        M.STATUS_CHECKING: "CheckUp",
+        M.STATUS_PAUSED: "Paused",
+        M.STATUS_SAMVID: "SamVideo",
+        M.STATUS_CONVERT: "Convert",
+        M.STATUS_FFMPEG: "FFmpeg",
+        M.STATUS_VTOOLS: "Video Tools",
+    }
+    count = dict.fromkeys(keys.values(), 0)
+    dl_speed = up_speed = seed_speed = 0
     for dl in list(download_dict.values()):
         status = dl.status()
-        counts[status] = counts.get(status, 0) + 1
+        name = keys.get(status)
+        if name:
+            count[name] += 1
         try:
-            spd = speed_string_to_bytes(
-                dl.upload_speed() if status == MirrorStatus.STATUS_SEEDING else dl.speed()
-            )
+            if status == M.STATUS_SEEDING:
+                seed_speed += speed_string_to_bytes(dl.upload_speed())
+            elif status == M.STATUS_DOWNLOADING:
+                dl_speed += speed_string_to_bytes(dl.speed())
+            elif status == M.STATUS_UPLOADING:
+                up_speed += speed_string_to_bytes(dl.speed())
         except Exception:
-            spd = 0
-        if status == MirrorStatus.STATUS_DOWNLOADING:
-            dl_speed += spd
-        elif status in (MirrorStatus.STATUS_UPLOADING, MirrorStatus.STATUS_SEEDING):
-            up_speed += spd
-    if not counts:
-        return "No active tasks!"
-    lines = [f"Tasks: {sum(counts.values())}"]
-    lines.append(" | ".join(f"{k}: {v}" for k, v in sorted(counts.items())))
-    lines.append(
-        f"DL: {get_readable_file_size(dl_speed)}/s | UL: {get_readable_file_size(up_speed)}/s"
-    )
-    return "\n".join(lines)[:200]
+            pass
+    c = count
+    return f"""㊂ <b><u>Tasks Overview :</u></b>
+
+<blockquote>╭ <b>Download:</b> {c["Download"]} | <b>Upload:</b> {c["Upload"]}
+┊ <b>Seed:</b> {c["Seed"]} | <b>Archive:</b> {c["Archive"]}
+┊ <b>Extract:</b> {c["Extract"]} | <b>Split:</b> {c["Split"]}
+┊ <b>QueueDL:</b> {c["QueueDL"]} | <b>QueueUP:</b> {c["QueueUP"]}
+┊ <b>Clone:</b> {c["Clone"]} | <b>CheckUp:</b> {c["CheckUp"]}
+┊ <b>Paused:</b> {c["Paused"]} | <b>SamVideo:</b> {c["SamVideo"]}
+┊ <b>Convert:</b> {c["Convert"]} | <b>FFmpeg:</b> {c["FFmpeg"]}
+╰ <b>Video Tools:</b> {c["Video Tools"]}</blockquote>
+
+<blockquote>╭ <b>Total Download Speed:</b> {get_readable_file_size(dl_speed)}/s
+┊ <b>Total Upload Speed:</b> {get_readable_file_size(up_speed)}/s
+╰ <b>Total Seeding Speed:</b> {get_readable_file_size(seed_speed)}/s</blockquote>"""
 
 
 def speed_string_to_bytes(spd):
@@ -392,6 +421,9 @@ def get_readable_message(user_id=None):
             MirrorStatus.STATUS_SEEDING,
             MirrorStatus.STATUS_METADATA,
             MirrorStatus.STATUS_FFMPEG,
+            MirrorStatus.STATUS_CONVERT,
+            MirrorStatus.STATUS_VTOOLS,
+            MirrorStatus.STATUS_SAMVID,
             MirrorStatus.STATUS_COVER,
         ]:
             msg += BotTheme(
