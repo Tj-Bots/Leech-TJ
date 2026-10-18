@@ -39,10 +39,6 @@ from bot.helper.ext_utils.video_tools import run_video_tools
 from bot.helper.ext_utils.bot_utils import (
     MirrorStatus,
     extra_btns,
-    RichText,
-    rich_enabled,
-    rich_or_plain,
-    to_rich_html,
     sync_to_async,
     get_readable_file_size,
     get_readable_time,
@@ -105,9 +101,6 @@ from bot.helper.ext_utils.db_handler import DbManger
 from bot.helper.themes import BotTheme
 
 
-DEFAULT_PIC = "https://i.ibb.co/7dknBjYh/3c096a38b3bf.jpg"
-
-
 class MirrorLeechListener:
     def __init__(
         self,
@@ -166,7 +159,7 @@ class MirrorLeechListener:
         self.sameDir = sameDir
         self.rcFlags = rcFlags
         self.upPath = upPath
-        self.random_pic = "IMAGES" if config_dict["IMAGES"] else DEFAULT_PIC
+        self.random_pic = "IMAGES" if config_dict["IMAGES"] else None
         self.join = join
         self.drive_id = drive_id
         self.index_link = index_link
@@ -250,7 +243,7 @@ class MirrorLeechListener:
         if self.isPM and self.isSuperGroup:
             self.botpmmsg = await sendCustomMsg(
                 self.message.from_user.id,
-                rich_or_plain(BotTheme("PM_START", msg_link=self.source_url)),
+                BotTheme("PM_START", msg_link=self.source_url),
             )
         if (
             self.isSuperGroup
@@ -703,11 +696,6 @@ class MirrorLeechListener:
             await update_all_messages()
             await RCTransfer.upload(up_path, size)
 
-    def pic_url(self):
-        if self.random_pic == "IMAGES" and config_dict["IMAGES"]:
-            return choice(config_dict["IMAGES"])
-        return DEFAULT_PIC
-
     async def onUploadComplete(
         self, link, size, files, folders, mime_type, name, rclonePath="", private=False
     ):
@@ -778,34 +766,18 @@ class MirrorLeechListener:
                         photo=self.random_pic,
                     )
                 use_store = media_store_enabled(user_id)
-                # all files in one collapsed quote, rich: a line before it and
-                # Store / Share as buttons inside the text
-                rich = rich_enabled()
+                # all files in one collapsed quote (rich is only for the status)
                 fstart = ""
                 fmsg = fstart
 
-                pic_url = self.pic_url()
-
                 def _out(text):
-                    text += ("<hr/>" if rich else "\n") + (
-                        f"<blockquote expandable>{fmsg.rstrip()}</blockquote>"
-                    )
-                    if not rich:
-                        return text
-                    # rich messages can't carry a photo, the picture goes in as a block
-                    return RichText(f'<img src="{pic_url}"/>' + to_rich_html(text))
+                    return f"{text}\n<blockquote expandable>{fmsg.rstrip()}</blockquote>"
 
                 for index, (link, name) in enumerate(files.items(), start=1):
                     slink = store_link(bot_name, link) if use_store and link else ""
                     share = f"https://t.me/share/url?url={slink}"
                     if not link:
                         fmsg += f"\u200e{index}. {name}\n"
-                    elif rich and slink:
-                        fmsg += (
-                            f"\u200e{index}. <a href='{link}'>{name}</a>\n"
-                            f'╰ <tg-button type="url" style="primary" url="{slink}">Store Link</tg-button> '
-                            f'<tg-button type="url" style="success" url="{share}">Share Link</tg-button>\n'
-                        )
                     elif slink:
                         fmsg += (
                             f"\u200e{index}. <a href='{link}'>{name}</a>\n"
@@ -814,7 +786,7 @@ class MirrorLeechListener:
                         )
                     else:
                         fmsg += f"\u200e{index}. <a href='{link}'>{name}</a>\n"
-                    if len(msg.encode() + fmsg.encode()) > (4000 if rich else 1000):
+                    if len(msg.encode() + fmsg.encode()) > (4000 if not self.random_pic else 1000):
 
                         if config_dict["SAFE_MODE"]:
                             if self.isSuperGroup:
@@ -1066,7 +1038,7 @@ class MirrorLeechListener:
 ┊ <b>Due To:</b> {escape(error)}
 ┊ <b>Mode:</b> {self.upload_details['mode']}
 ╰ <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""
-        await sendMessage(self.message, rich_or_plain(msg), button)
+        await sendMessage(self.message, msg, button)
         if count == 0:
             await self.clean()
         else:
@@ -1108,7 +1080,7 @@ class MirrorLeechListener:
 ┊ <b>Due To:</b> {escape(error)}
 ┊ <b>Mode:</b> {self.upload_details['mode']}
 ╰ <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""
-        await sendMessage(self.message, rich_or_plain(msg))
+        await sendMessage(self.message, msg)
         if count == 0:
             await self.clean()
         else:

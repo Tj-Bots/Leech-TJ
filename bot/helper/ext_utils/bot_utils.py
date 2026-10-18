@@ -261,6 +261,13 @@ class EngineStatus:
 
 multi_tags = {}  # Cancel Multi: tag -> user_id
 
+try:
+    from pyrogram.enums import ButtonStyle
+
+    BLUE = ButtonStyle.PRIMARY
+except ImportError:
+    BLUE = None
+
 
 def tasks_overview():
     """Overview page of all tasks for the ☲ button."""
@@ -525,13 +532,11 @@ def get_readable_message(user_id=None):
 
     if not rich:
         msg += BotTheme("FOOTER")
-    # one page: themed refresh button, more pages: just "Page 1/3"
-    page_btn = (
-        f"Page {page_no}/{pages}" if pages > 1 else BotTheme("REFRESH", Page="Refresh")
-    )
+    # one page: just ♻️, more pages: "Page 1/3"
+    page_btn = f"Page {page_no}/{pages}" if pages > 1 else "♻️"
     buttons = ButtonMaker()
-    buttons.ibutton("☲", "status ov")
-    buttons.ibutton(page_btn, "status ref")
+    buttons.ibutton("☲", "status ov", style=BLUE)
+    buttons.ibutton(page_btn, "status ref", style=BLUE)
     if tasks > STATUS_LIMIT and not user_id:
         if config_dict["BOT_MAX_TASKS"]:
             msg += BotTheme(
@@ -545,9 +550,9 @@ def get_readable_message(user_id=None):
         if rich:
             msg += "<hr/>"
         buttons = ButtonMaker()
-        buttons.ibutton("☲", "status ov")
+        buttons.ibutton("☲", "status ov", style=BLUE)
         buttons.ibutton(BotTheme("PREVIOUS"), "status pre")
-        buttons.ibutton(page_btn, "status ref")
+        buttons.ibutton(page_btn, "status ref", style=BLUE)
         buttons.ibutton(BotTheme("NEXT"), "status nex")
     button = buttons.build_menu(4)
     msg += BotTheme("Cpu", cpu=cpu_percent())
