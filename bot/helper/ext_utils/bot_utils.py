@@ -259,6 +259,44 @@ class EngineStatus:
 multi_tags = {}  # Cancel Multi: tag -> user_id
 
 
+def tasks_overview():
+    """Short overview of all tasks for the ☲ button (alert, max 200 chars)."""
+    counts = {}
+    dl_speed = up_speed = 0
+    for dl in list(download_dict.values()):
+        status = dl.status()
+        counts[status] = counts.get(status, 0) + 1
+        try:
+            spd = speed_string_to_bytes(
+                dl.upload_speed() if status == MirrorStatus.STATUS_SEEDING else dl.speed()
+            )
+        except Exception:
+            spd = 0
+        if status == MirrorStatus.STATUS_DOWNLOADING:
+            dl_speed += spd
+        elif status in (MirrorStatus.STATUS_UPLOADING, MirrorStatus.STATUS_SEEDING):
+            up_speed += spd
+    if not counts:
+        return "No active tasks!"
+    lines = [f"Tasks: {sum(counts.values())}"]
+    lines.append(" | ".join(f"{k}: {v}" for k, v in sorted(counts.items())))
+    lines.append(
+        f"DL: {get_readable_file_size(dl_speed)}/s | UL: {get_readable_file_size(up_speed)}/s"
+    )
+    return "\n".join(lines)[:200]
+
+
+def speed_string_to_bytes(spd):
+    spd = str(spd).upper()
+    for unit, mult in (("K", 1024), ("M", 1048576), ("G", 1073741824), ("T", 1099511627776)):
+        if unit in spd:
+            return float(spd.split(unit)[0]) * mult
+    try:
+        return float(spd.split("B")[0])
+    except ValueError:
+        return 0
+
+
 def status_text(download):
     """Status name, with the place in the queue for queued tasks."""
     status = download.status()
@@ -460,6 +498,7 @@ def get_readable_message(user_id=None):
         f"Page {page_no}/{pages}" if pages > 1 else BotTheme("REFRESH", Page="Refresh")
     )
     buttons = ButtonMaker()
+    buttons.ibutton("☲", "status ov")
     buttons.ibutton(page_btn, "status ref")
     if tasks > STATUS_LIMIT and not user_id:
         if config_dict["BOT_MAX_TASKS"]:
@@ -474,10 +513,11 @@ def get_readable_message(user_id=None):
         if rich:
             msg += "<hr/>"
         buttons = ButtonMaker()
+        buttons.ibutton("☲", "status ov")
         buttons.ibutton(BotTheme("PREVIOUS"), "status pre")
         buttons.ibutton(page_btn, "status ref")
         buttons.ibutton(BotTheme("NEXT"), "status nex")
-    button = buttons.build_menu(3)
+    button = buttons.build_menu(4)
     msg += BotTheme("Cpu", cpu=cpu_percent())
     msg += BotTheme(
         "FREE",

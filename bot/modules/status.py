@@ -43,6 +43,7 @@ from bot.helper.ext_utils.bot_utils import (
     setInterval,
     new_task,
     getDownloadByGid,
+    tasks_overview,
     RichText,
 )
 from bot.helper.themes import BotTheme
@@ -217,6 +218,8 @@ async def status_pages(_, query):
             await query.answer()
             await start_selection(query.message, dl)
         return
+    if data[1] == "ov":
+        return await query.answer(tasks_overview(), show_alert=True)
     if data[1] == "ref":
         await update_all_messages(True)
     elif data[1] in ["nex", "pre"]:
