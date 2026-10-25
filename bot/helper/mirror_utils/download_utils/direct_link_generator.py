@@ -5,13 +5,14 @@ from json import loads
 from os import path
 from uuid import uuid4
 from hashlib import sha256
-from time import sleep
-from re import findall, match, search
+from time import sleep, time
+from functools import lru_cache
+from re import findall, match, search, sub as re_sub
 
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from lxml.etree import HTML
-from requests import Session, session as req_session, post
+from requests import Session, session as req_session, post, get
 from urllib.parse import parse_qs, quote, unquote, urlparse, urljoin
 from cloudscraper import create_scraper
 from lk21 import Bypass
@@ -1252,12 +1253,46 @@ def terabox(url):
     return details
 
 
+@lru_cache(1)
+def _gofile_salt(_slot):
+    # gofile signs API calls with a salt from its website script (from WZML-X)
+    try:
+        js = req_session().get("https://gofile.io/js/wt.obf.js", timeout=15).text
+        js = re_sub(r"\\x([0-9a-f]{2})", lambda m: chr(int(m[1], 16)), js)
+        if salt := search(r"'([0-9a-f]{14})'", js[js.index("generateWT") :]):
+            return salt[1]
+    except Exception:
+        pass
+    return "12af056dacea0b"
+
+
 def gofile(url, auth):
     try:
-        _password = sha256(auth[1].encode("utf-8")).hexdigest() if auth else ""
-        _id = url.split("/")[-1]
+        if "::" in url:
+            _password = url.split("::")[-1]
+            url = url.split("::")[-2]
+        else:
+            _password = auth[1] if auth else ""
+        _password = sha256(_password.encode("utf-8")).hexdigest() if _password else ""
+        _id = url.rstrip("/").split("/")[-1]
     except Exception as e:
         raise DirectDownloadLinkException(f"ERROR: {e.__class__.__name__}")
+
+    def __add_content_item(node, folderPath, details):
+        if not folderPath:
+            folderPath = details["title"]
+        item = {
+            "path": path.join(folderPath),
+            "filename": node["name"],
+            "url": node["link"],
+        }
+        if "size" in node:
+            size = node["size"]
+            if isinstance(size, str) and size.isdigit():
+                size = float(size)
+            details["total_size"] += size
+        details["contents"].append(item)
+        return folderPath
 
     def __get_token(session):
         headers = {
@@ -1266,23 +1301,23 @@ def gofile(url, auth):
             "Accept": "*/*",
             "Connection": "keep-alive",
         }
-        __url = "https://api.gofile.io/accounts"
-        try:
-            __res = session.post(__url, headers=headers).json()
-            if __res["status"] != "ok":
-                raise DirectDownloadLinkException("ERROR: Failed to get token.")
-            return __res["data"]["token"]
-        except Exception as e:
-            raise e
+        __res = session.post("https://api.gofile.io/accounts", headers=headers).json()
+        if __res["status"] != "ok":
+            raise DirectDownloadLinkException("ERROR: Failed to get token.")
+        return __res["data"]["token"]
 
     def __fetch_links(session, _id, folderPath=""):
-        _url = f"https://api.gofile.io/contents/{_id}?wt=4fd6sg89d7s6&cache=true"
+        _url = f"https://api.gofile.io/contents/{_id}?cache=true"
+        time_slot = int(time()) // 14400
+        raw = f"{user_agent}::en-US::{token}::{time_slot}::{_gofile_salt(time_slot)}"
         headers = {
             "User-Agent": user_agent,
             "Accept-Encoding": "gzip, deflate, br",
             "Accept": "*/*",
             "Connection": "keep-alive",
             "Authorization": "Bearer" + " " + token,
+            "X-Website-Token": sha256(raw.encode()).hexdigest(),
+            "X-BL": "en-US",
         }
         if _password:
             _url += f"&password={_password}"
@@ -1304,34 +1339,19 @@ def gofile(url, auth):
             raise DirectDownloadLinkException("ERROR: This folder is not public")
 
         data = _json["data"]
-
         if not details["title"]:
             details["title"] = data["name"] if data["type"] == "folder" else _id
-
-        contents = data["children"]
-        for content in contents.values():
+        if "children" not in data:
+            __add_content_item(data, folderPath, details)
+            return
+        for content in data["children"].values():
             if content["type"] == "folder":
                 if not content["public"]:
                     continue
-                if not folderPath:
-                    newFolderPath = path.join(details["title"], content["name"])
-                else:
-                    newFolderPath = path.join(folderPath, content["name"])
-                __fetch_links(session, content["id"], newFolderPath)
+                base = folderPath if folderPath else details["title"]
+                __fetch_links(session, content["id"], path.join(base, content["name"]))
             else:
-                if not folderPath:
-                    folderPath = details["title"]
-                item = {
-                    "path": path.join(folderPath),
-                    "filename": content["name"],
-                    "url": content["link"],
-                }
-                if "size" in content:
-                    size = content["size"]
-                    if isinstance(size, str) and size.isdigit():
-                        size = float(size)
-                    details["total_size"] += size
-                details["contents"].append(item)
+                folderPath = __add_content_item(content, folderPath, details)
 
     details = {"contents": [], "title": "", "total_size": 0}
     with Session() as session:
