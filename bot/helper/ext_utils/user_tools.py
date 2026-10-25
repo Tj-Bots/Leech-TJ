@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import re
 from os import walk, path as ospath
 
 from aiofiles.os import remove as aioremove, path as aiopath
@@ -476,6 +477,18 @@ def store_link(bot_name, file_link):
     if not chat:
         return None
     return f"https://t.me/{bot_name}?start={encode_store(chat, msg_id)}"
+
+
+def parse_size(value):
+    """-sp: '1.5GB', '2000MB', '2G' or bytes -> bytes (0 when invalid)."""
+    m = re.match(r"^\s*([\d.]+)\s*([kmgt]?)i?b?\s*$", str(value or ""), re.I)
+    if not m:
+        return 0
+    mult = {"": 1, "k": 1024, "m": 1024**2, "g": 1024**3, "t": 1024**4}[m[2].lower()]
+    try:
+        return int(float(m[1]) * mult)
+    except ValueError:
+        return 0
 
 
 def parse_convert(value):

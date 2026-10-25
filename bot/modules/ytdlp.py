@@ -9,8 +9,9 @@ from yt_dlp import YoutubeDL
 from functools import partial
 from time import time
 
-from bot import DOWNLOAD_DIR, bot, categories_dict, config_dict, user_data, LOGGER
+from bot import DOWNLOAD_DIR, bot, categories_dict, config_dict, user_data, LOGGER, MAX_SPLIT_SIZE
 from bot.helper.ext_utils.user_tools import (
+    parse_size,
     resolve_ffmpeg_cmds,
     resolve_upload_path,
     user_cookie,
@@ -319,6 +320,7 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[], multi_tag
         "-cv": "",
         "-ea": False,
         "-vt": False,
+        "-sp": "",
     }
 
     args = arg_parser(input_list[1:], arg_base)
@@ -573,6 +575,12 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[], multi_tag
     )
     if args["link"] and multi <= 1 and not bulk and not isBulk:
         listener.retry = (message.text, lambda c, m: _ytdl(c, m, isLeech, None, []))
+    if args["-sp"]:
+        if not (sp := parse_size(args["-sp"])):
+            await sendMessage(message, "<i>Wrong split size! Use like <code>-sp 1.5GB</code></i>")
+            await delete_links(message)
+            return
+        listener.split_size = min(sp, MAX_SPLIT_SIZE)
     listener.convert_audio = args["-ca"]
     listener.convert_video = args["-cv"]
     listener.extract_audio = args["-ea"]

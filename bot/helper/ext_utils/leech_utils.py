@@ -258,7 +258,11 @@ async def split_file(
             await mkdir(dirpath)
     user_id = listener.message.from_user.id
     user_dict = user_data.get(user_id, {})
-    leech_split_size = user_dict.get("split_size") or config_dict["LEECH_SPLIT_SIZE"]
+    leech_split_size = (
+        getattr(listener, "split_size", 0)
+        or user_dict.get("split_size")
+        or config_dict["LEECH_SPLIT_SIZE"]
+    )
     parts = -(-size // leech_split_size)
     if (
         user_dict.get("equal_splits")

@@ -458,6 +458,15 @@ Then reply to it with <code>/cmd -b</code>
 ➲ <code>/cmd link -cv mkv - webm flv</code> all videos to mkv except webm and flv</blockquote>
 <i>Videos change format without re-encoding when possible, so it's fast. Original files are replaced.</i>""",
     ),
+    "split": (
+        "Split Size",
+        """㊂ <b>Split Size</b> » <code>-sp</code>
+
+<blockquote>Split size only for this task, your setting in /us stays.
+➲ <code>/cmd link -sp 1.5GB</code>
+➲ <code>/cmd link -sp 500MB</code></blockquote>
+<i>Max is 2GB, or 4GB with a premium user session.</i>""",
+    ),
     "video_tools": (
         "Video Tools",
         """㊂ <b>Video Tools</b> » <code>-vt</code>
@@ -562,6 +571,7 @@ _EXAMPLES = {
     "ffmpeg": "/cmd link -ff tomp3",
     "extract_audio": "/cmd link -ea mp3",
     "video_tools": "/cmd link -vt",
+    "split": "/cmd link -sp 1.5GB",
     "rclone_dl": "/cmd rcl",
     "tg": "/cmd https://t.me/channel/123",
     "yt_opt": "/cmd link -opt playliststart:^5|playlistend:^10",
@@ -620,17 +630,17 @@ You choose the quality with buttons.</blockquote>
 
 _MENUS = {
     "leech": ["name", "zip", "dump", "multi", "samedir", "bulk", "join", "select",
-              "seed", "auth", "headers", "screenshots", "thumb", "convert", "extract_audio", "video_tools", "ffmpeg",
+              "seed", "auth", "headers", "screenshots", "thumb", "split", "convert", "extract_audio", "video_tools", "ffmpeg",
               "rclone_dl", "tg"],
     "mirror": ["name", "zip", "upload", "multi", "samedir", "bulk", "join", "select",
                "seed", "auth", "headers", "rcf", "drive", "category", "convert",
                "extract_audio", "video_tools", "ffmpeg", "rclone_dl", "tg"],
     "qbleech": ["name", "zip", "dump", "select", "seed", "multi", "samedir", "bulk",
-                "screenshots", "thumb", "convert", "extract_audio", "video_tools", "ffmpeg"],
+                "screenshots", "thumb", "split", "convert", "extract_audio", "video_tools", "ffmpeg"],
     "qbmirror": ["name", "zip", "upload", "select", "seed", "multi", "samedir", "bulk",
                  "rcf", "drive", "category", "convert", "extract_audio", "video_tools", "ffmpeg"],
     "ytleech": ["yt_name", "yt_select", "yt_opt", "yt_zip", "dump", "multi", "samedir",
-                "bulk", "screenshots", "thumb", "convert", "extract_audio", "video_tools", "ffmpeg"],
+                "bulk", "screenshots", "thumb", "split", "convert", "extract_audio", "video_tools", "ffmpeg"],
     "ytmirror": ["yt_name", "yt_select", "yt_opt", "yt_zip", "upload", "multi",
                  "samedir", "bulk", "rcf", "drive", "category", "convert", "extract_audio", "video_tools", "ffmpeg"],
     "clone": ["clone_links", "clone_up", "multi", "rcf", "drive", "category"],

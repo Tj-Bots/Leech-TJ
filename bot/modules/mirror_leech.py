@@ -10,6 +10,7 @@ from aiofiles import open as aiopen
 from aiofiles.os import path as aiopath
 
 from bot import (
+    MAX_SPLIT_SIZE,
     bot,
     DOWNLOAD_DIR,
     LOGGER,
@@ -19,6 +20,7 @@ from bot import (
     user_data,
 )
 from bot.helper.ext_utils.user_tools import (
+    parse_size,
     resolve_ffmpeg_cmds,
     resolve_upload_path,
     user_rc_path,
@@ -140,6 +142,7 @@ async def _mirror_leech(
         "-cv": "",
         "-ea": False,
         "-vt": False,
+        "-sp": "",
     }
 
     args = arg_parser(input_list[1:], arg_base)
@@ -543,6 +546,12 @@ async def _mirror_leech(
             message.text,
             lambda c, m: _mirror_leech(c, m, isQbit, isLeech, None, [], isCover),
         )
+    if args["-sp"]:
+        if not (sp := parse_size(args["-sp"])):
+            await sendMessage(message, "<i>Wrong split size! Use like <code>-sp 1.5GB</code></i>")
+            await delete_links(message)
+            return
+        listener.split_size = min(sp, MAX_SPLIT_SIZE)
     listener.convert_audio = args["-ca"]
     listener.convert_video = args["-cv"]
     listener.extract_audio = args["-ea"]

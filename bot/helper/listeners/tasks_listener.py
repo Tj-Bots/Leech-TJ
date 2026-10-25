@@ -159,6 +159,7 @@ class MirrorLeechListener:
         self.extract_audio = False
         self.video_tools = {}
         self.retry = None  # (command text, starter) for the Retry button
+        self.split_size = 0  # -sp: split size only for this task
         self.isCover = False
         self.sameDir = sameDir
         self.rcFlags = rcFlags
@@ -539,7 +540,7 @@ class MirrorLeechListener:
             async with download_dict_lock:
                 download_dict[self.uid] = ZipStatus(name, size, gid, self)
             LEECH_SPLIT_SIZE = (
-                user_dict.get("split_size", False) or config_dict["LEECH_SPLIT_SIZE"]
+                self.split_size or user_dict.get("split_size", False) or config_dict["LEECH_SPLIT_SIZE"]
             )
             cmd = [
                 "7z",
@@ -592,7 +593,8 @@ class MirrorLeechListener:
             if not self.compress:
                 checked = False
                 LEECH_SPLIT_SIZE = (
-                    user_dict.get("split_size", False)
+                    self.split_size
+                    or user_dict.get("split_size", False)
                     or config_dict["LEECH_SPLIT_SIZE"]
                 )
                 for dirpath, _, files in await sync_to_async(
