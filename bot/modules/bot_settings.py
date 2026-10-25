@@ -94,6 +94,7 @@ bool_vars = [
     "USE_HYPER",
     "DISABLE_FF_MODE",
     "RICH_MESSAGES",
+    "PM_ACCESS",
     "MEDIA_STORE",
     "COVER_DUMP",
     "BOT_PM",
@@ -327,6 +328,7 @@ async def load_config():
     TMDB_ACCESS_TOKEN = environ.get("TMDB_ACCESS_TOKEN", "").strip()
     DISABLE_FF_MODE = environ.get("DISABLE_FF_MODE", "False").lower() == "true"
     RICH_MESSAGES = environ.get("RICH_MESSAGES", "False").lower() == "true"
+    PM_ACCESS = environ.get("PM_ACCESS", "False").lower() == "true"
     VT_CUSTOM_CMDS = environ.get("VT_CUSTOM_CMDS", "").replace("\\n", "\n")
     MEDIA_STORE = environ.get("MEDIA_STORE", "False").lower() == "true"
     COVER_DUMP = environ.get("COVER_DUMP", "False").lower() == "true"
@@ -818,6 +820,7 @@ async def load_config():
             "TMDB_ACCESS_TOKEN": TMDB_ACCESS_TOKEN,
             "DISABLE_FF_MODE": DISABLE_FF_MODE,
             "RICH_MESSAGES": RICH_MESSAGES,
+            "PM_ACCESS": PM_ACCESS,
             "VT_CUSTOM_CMDS": VT_CUSTOM_CMDS,
             "MEDIA_STORE": MEDIA_STORE,
             "COVER_DUMP": COVER_DUMP,

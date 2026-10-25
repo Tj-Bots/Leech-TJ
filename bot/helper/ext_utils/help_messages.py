@@ -250,6 +250,7 @@ default_desp = {'AS_DOCUMENT': 'Default type of Telegram file upload. Default is
                 'COVER_DUMP': "Save /cover results also in LEECH_LOG_ID (dump chat). When False the video goes only to the user's PM. Default is False.",
                 'MEDIA_STORE': "Default for Media Store: every leeched file gets a Store Link, anyone who opens it gets the file from the bot in PM. Users can change it for themselves in User Settings. Default is False.",
                 'VT_CUSTOM_CMDS': "Extra tools for the Video Tools menu (-vt), one per line as <code>name: ffmpeg args</code>, same format as FFmpeg Cmds in User Settings. Example: <code>compress: -i mltb.video -c:v libx265 -crf 28 -c:a copy mltb.mkv</code>. Every name becomes a button.",
+                'PM_ACCESS': "Let everyone use the bot in private chat, it works like in authorized groups. Blacklisted users stay blocked. Default is False.",
                 'RICH_MESSAGES': "Send the status message as a Telegram Rich Message: Cancel / Select buttons inside every task and lines between tasks, instead of /cancel commands. Needs the wzgram library. Default is False.",
                 'DISABLE_FF_MODE': "Disable FFmpeg Cmds (-ff) for all users. When True the option is hidden from User Settings. Default is False.",
                 'TMDB_ACCESS_TOKEN': "TMDB API Key or Read Access Token, used for Auto Thumbnail (movie/series poster) in User Settings. Get it from https://www.themoviedb.org/settings/api",

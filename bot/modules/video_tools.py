@@ -139,7 +139,7 @@ def _menu(state):
     text = (
         f"㊂ <b><u>Video Tools</u></b>\n\n<blockquote>{lines}\n"
         f"╰ <b>Closes in:</b> {left}s</blockquote>\n\n"
-        f"<i>Pick a tool. Nothing is re-encoded, so it's fast.</i>"
+        f"<i>Pick one tool, Rename can be added to it. Nothing is re-encoded.</i>"
     )
     return text, buttons.build_menu(2, lb_cols=1, f_cols=2)
 
@@ -198,7 +198,7 @@ def _on_text(state):
             state["sel"]["rename"] = value.replace("/", "_")
         elif state["wait"] == "trim":
             start, _, end = value.partition("-")
-            state["sel"]["trim"] = (start.strip(), end.strip())
+            _pick(state["sel"], "trim", (start.strip(), end.strip()))
         state["wait"] = None
         await deleteMessage(message)
         await _refresh(state)
@@ -236,24 +236,33 @@ async def vtool_callback(_, query):
         sel.pop(arg, None)
         state["wait"] = None
     elif action in ("merge_video", "merge_audio", "merge_subs"):
-        sel[action] = not sel.get(action)
+        _pick(sel, action, True)
     elif action in ("extract", "remove"):
-        items = sel.setdefault(action, [])
-        items.remove(arg) if arg in items else items.append(arg)
+        _pick(sel, action, [arg])
         state["page"] = "main"
     elif action == "convert":
-        sel["convert"] = None if sel.get("convert") == arg else arg
+        _pick(sel, "convert", arg)
         state["page"] = "main"
     elif action == "ss":
-        sel["ss"] = None if sel.get("ss") == int(arg) else int(arg)
+        _pick(sel, "ss", int(arg))
         state["page"] = "main"
     elif action == "custom":
         names = list(custom_tools())
         if arg.isdigit() and int(arg) < len(names):
-            items = sel.setdefault("custom", [])
-            name = names[int(arg)]
-            items.remove(name) if name in items else items.append(name)
+            _pick(sel, "custom", [names[int(arg)]])
     await _refresh(state)
+
+
+def _pick(sel, key, value):
+    """One tool at a time (plus Rename): picking a tool replaces the other one,
+    picking the same again removes it."""
+    if sel.get(key) == value:
+        sel.pop(key, None)
+        return
+    for k in list(sel):
+        if k != "rename":
+            sel.pop(k)
+    sel[key] = value
 
 
 bot.add_handler(CallbackQueryHandler(vtool_callback, filters=regex(r"^vtool")))

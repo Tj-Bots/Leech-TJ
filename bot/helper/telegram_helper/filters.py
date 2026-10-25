@@ -2,7 +2,7 @@
 from pyrogram.filters import create
 from pyrogram.enums import ChatType
 
-from bot import user_data, OWNER_ID
+from bot import user_data, OWNER_ID, config_dict
 from bot.helper.telegram_helper.message_utils import chat_info
 
 
@@ -28,6 +28,9 @@ class CustomFilters:
                 )
             )
         ):
+            return True
+        # PM_ACCESS: everyone can use the bot in private chat
+        if config_dict.get("PM_ACCESS") and message.chat.type == ChatType.PRIVATE:
             return True
 
         auth_chat = False
@@ -71,6 +74,7 @@ class CustomFilters:
                 )
             )
             or (chat_id in user_data and user_data[chat_id].get("is_auth", False))
+            or (config_dict.get("PM_ACCESS") and message.chat.type == ChatType.PRIVATE)
         ):
             isExists = True
         elif message.chat.type == ChatType.PRIVATE:

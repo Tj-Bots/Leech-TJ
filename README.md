@@ -128,6 +128,7 @@ New Python packages need a rebuild: `docker compose up -d --build`.
 | `TMDB_ACCESS_TOKEN` | Auto Thumbnail / `/cover` posters |
 | `DISABLE_FF_MODE` | Hide FFmpeg Cmds from users |
 | `VT_CUSTOM_CMDS` | Extra Video Tools buttons, `name: ffmpeg args` per line |
+| `PM_ACCESS` | Everyone can use the bot in private chat |
 | `RICH_MESSAGES` | Rich status and finish messages with buttons inside the text |
 | `DEFAULT_UPLOAD` | `gd`, `rc` or `ddl` |
 | `UPSTREAM_REPO`, `UPSTREAM_BRANCH` | Where `/restart` updates from |
