@@ -44,7 +44,7 @@ from bot.helper.mirror_utils.hyper_utils import (
     transfer_mode,
 )
 from bot.helper.ext_utils.user_tools import get_grid_thumb
-from bot.helper.ext_utils.tmdb_utils import get_auto_cover, get_auto_thumbnail
+from bot.helper.ext_utils.tmdb_utils import get_auto_cover, get_auto_thumbnail, user_lang
 from pyrogram import Client as _PyroClient
 from inspect import signature as _signature
 
@@ -673,11 +673,15 @@ class TgUploader:
             ):
                 if cover_only:
                     # /cover: TMDB poster goes only to the cover, thumb stays normal
-                    auto_tmp = await get_auto_thumbnail(file, False)
+                    auto_tmp = await get_auto_thumbnail(
+                        file, False, user_lang(self.__listener.message.from_user)
+                    )
                     cover = get_auto_cover(auto_tmp)
                 else:
                     thumb = await get_auto_thumbnail(
-                        file, force_document or self.__as_doc or not is_video
+                        file,
+                        force_document or self.__as_doc or not is_video,
+                        user_lang(self.__listener.message.from_user),
                     )
                     cover = get_auto_cover(thumb)
 

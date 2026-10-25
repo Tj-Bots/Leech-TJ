@@ -95,18 +95,23 @@ def clean_poster_title(raw_title):
     return _final_clean(title), None
 
 
-def _pick_image(images, as_doc):
+def _pick_image(images, as_doc, lang="en"):
+    """The user's language first, then English, then images without text."""
     backdrops = images.get("backdrops", [])
     posters = images.get("posters", [])
-    en_backdrops = [i for i in backdrops if i.get("iso_639_1") == "en"]
-    no_lang_backdrops = [i for i in backdrops if i.get("iso_639_1") is None]
-    en_posters = [i for i in posters if i.get("iso_639_1") == "en"]
-    no_lang_posters = [i for i in posters if i.get("iso_639_1") is None]
 
+    def by(items, code):
+        return [i for i in items if i.get("iso_639_1") == code]
+
+    langs = [lang, "en"] if lang != "en" else ["en"]
     if as_doc:
-        order = [en_posters, no_lang_posters, posters, en_backdrops, no_lang_backdrops]
+        order = [by(posters, c) for c in langs] + [
+            by(posters, None), posters, *(by(backdrops, c) for c in langs), by(backdrops, None)
+        ]
     else:
-        order = [en_backdrops, no_lang_backdrops, backdrops, en_posters, posters]
+        order = [by(backdrops, c) for c in langs] + [
+            by(backdrops, None), backdrops, *(by(posters, c) for c in langs), posters
+        ]
 
     for group in order:
         if group:
@@ -118,7 +123,13 @@ def _tmdb_token():
     return str(config_dict.get("TMDB_ACCESS_TOKEN") or "").strip()
 
 
-async def get_tmdb_poster_link(title, year=None, as_doc=False):
+def user_lang(user):
+    """Two letter language of a telegram user, English when unknown."""
+    code = str(getattr(user, "language_code", "") or "en").lower()
+    return code.split("-")[0][:2] or "en"
+
+
+async def get_tmdb_poster_link(title, year=None, as_doc=False, lang="en"):
     token = _tmdb_token()
     if not token:
         return None
@@ -127,7 +138,7 @@ async def get_tmdb_poster_link(title, year=None, as_doc=False):
     params = {
         "query": title,
         "include_adult": "false",
-        "language": "en-US",
+        "language": lang,
         "page": "1",
     }
     if len(token) < 50:
@@ -171,7 +182,7 @@ async def get_tmdb_poster_link(title, year=None, as_doc=False):
                             break
                 media_type = first.get("media_type", "movie")
 
-                img_params = {"include_image_language": "en,null"}
+                img_params = {"include_image_language": f"{lang},en,null"}
                 if len(token) < 50:
                     img_params["api_key"] = token
                 img_resp = await _get(
@@ -181,7 +192,7 @@ async def get_tmdb_poster_link(title, year=None, as_doc=False):
                     headers,
                 )
                 if img_resp.status == 200:
-                    path = _pick_image(img_resp.data, as_doc)
+                    path = _pick_image(img_resp.data, as_doc, lang)
                     if path:
                         return f"{TMDB_IMAGE_URL}{path}"
 
@@ -206,7 +217,7 @@ def get_auto_cover(thumb):
     return None
 
 
-async def get_auto_thumbnail(filename, as_doc=False):
+async def get_auto_thumbnail(filename, as_doc=False, lang="en"):
     """Poster/backdrop from TMDB as a telegram ready jpg (max 320px, under
     200KB) plus the original image as auto_cover.jpg. None if not found."""
     if not _tmdb_token():
@@ -214,10 +225,10 @@ async def get_auto_thumbnail(filename, as_doc=False):
     title, year = clean_poster_title(filename.removeprefix("SAMPLE."))
     if len(title) < 2:
         return None
-    key = (title, year, as_doc)
+    key = (title, year, as_doc, lang)
     poster_url = _poster_cache.get(key)
     if not poster_url:
-        poster_url = await get_tmdb_poster_link(title, year, as_doc)
+        poster_url = await get_tmdb_poster_link(title, year, as_doc, lang)
         if not poster_url:
             return None
         if len(_poster_cache) > 200:

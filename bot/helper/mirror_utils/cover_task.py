@@ -11,7 +11,7 @@ from bot.helper.mirror_utils.hyper_utils import get_dump_chat
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.message_utils import check_botpm
 from bot.helper.ext_utils.bot_utils import new_task
-from bot.helper.ext_utils.tmdb_utils import get_auto_cover, get_auto_thumbnail
+from bot.helper.ext_utils.tmdb_utils import get_auto_cover, get_auto_thumbnail, user_lang
 from bot.helper.listeners.tasks_listener import MirrorLeechListener
 from bot.helper.mirror_utils.status_utils.cover_status import CoverStatus
 from bot.helper.mirror_utils.upload_utils.pyrogramEngine import COVER_KWARG
@@ -96,7 +96,9 @@ async def cover_task(client, message):
         if await aiopath.exists(custom):
             cover = custom
         else:
-            auto_thumb = await get_auto_thumbnail(name, False)
+            auto_thumb = await get_auto_thumbnail(
+                name, False, user_lang(message.from_user)
+            )
             cover = get_auto_cover(auto_thumb)
             if not cover:
                 raise Exception("No poster found on TMDB for this video")
