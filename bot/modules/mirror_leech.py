@@ -20,6 +20,7 @@ from bot import (
     user_data,
 )
 from bot.helper.ext_utils.user_tools import (
+    default_upload,
     parse_size,
     resolve_ffmpeg_cmds,
     resolve_upload_path,
@@ -426,11 +427,11 @@ async def _mirror_leech(
             await deleteMessage(process_msg)
 
     if not isLeech:
-        if config_dict["DEFAULT_UPLOAD"] == "rc" and not up or up == "rc":
+        if default_upload(message.from_user.id) == "rc" and not up or up == "rc":
             up = user_rc_path(message.from_user.id)
-        elif config_dict["DEFAULT_UPLOAD"] == "ddl" and not up or up == "ddl":
+        elif default_upload(message.from_user.id) == "ddl" and not up or up == "ddl":
             up = "ddl"
-        if not up and config_dict["DEFAULT_UPLOAD"] == "gd":
+        if not up and default_upload(message.from_user.id) == "gd":
             up = "gd"
             user_tds = await fetch_user_tds(message.from_user.id)
             if not drive_id and gd_cat:

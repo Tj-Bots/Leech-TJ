@@ -173,6 +173,16 @@ async def get_grid_thumb(video_file, duration, layout):
     return output
 
 
+UPLOAD_NAMES = {"gd": "GDrive", "rc": "RClone", "ddl": "DDL"}
+
+
+def default_upload(user_id):
+    """The user's own upload destination (gd / rc / ddl), else the bot's."""
+    if (up := user_data.get(user_id, {}).get("default_upload")) in UPLOAD_NAMES:
+        return up
+    return config_dict["DEFAULT_UPLOAD"]
+
+
 def stop_dup_enabled(user_id):
     user_dict = user_data.get(user_id, {})
     if "stop_duplicate" in user_dict:

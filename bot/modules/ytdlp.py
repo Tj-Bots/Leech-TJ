@@ -11,6 +11,7 @@ from time import time
 
 from bot import DOWNLOAD_DIR, bot, categories_dict, config_dict, user_data, LOGGER, MAX_SPLIT_SIZE
 from bot.helper.ext_utils.user_tools import (
+    default_upload,
     parse_size,
     resolve_ffmpeg_cmds,
     resolve_upload_path,
@@ -474,11 +475,11 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[], multi_tag
         return
 
     if not isLeech:
-        if config_dict["DEFAULT_UPLOAD"] == "rc" and not up or up == "rc":
+        if default_upload(user_id) == "rc" and not up or up == "rc":
             up = user_rc_path(message.from_user.id)
-        elif config_dict["DEFAULT_UPLOAD"] == "ddl" and not up or up == "ddl":
+        elif default_upload(user_id) == "ddl" and not up or up == "ddl":
             up = "ddl"
-        if not up and config_dict["DEFAULT_UPLOAD"] == "gd":
+        if not up and default_upload(user_id) == "gd":
             up = "gd"
             user_tds = await fetch_user_tds(message.from_user.id)
             if not drive_id and gd_cat:

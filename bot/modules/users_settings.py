@@ -33,6 +33,7 @@ from bot.helper.ext_utils.user_tools import (
     show_user_setting,
     media_store_enabled,
     stop_dup_enabled,
+    UPLOAD_NAMES,
     user_cookie,
     user_rc_path,
 )
@@ -459,6 +460,12 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             f"{'✅️' if stop_dup else ''} Stop Duplicate",
             f"userset {user_id} stop_duplicate",
         )
+        own_up = user_dict.get("default_upload")
+        buttons.ibutton(
+            f"Upload To: {UPLOAD_NAMES.get(own_up, 'Default')}",
+            f"userset {user_id} dupload",
+            "header",
+        )
 
         text = BotTheme(
             "MIRROR",
@@ -475,6 +482,11 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             RCFLAGS=escape(user_dict.get("rclone_flags") or "Not Exists"),
             UPATHS=len(user_dict.get("upload_paths") or {}),
             STOPDUP="Enabled" if stop_dup else "Disabled",
+            DUPLOAD=(
+                UPLOAD_NAMES[own_up]
+                if own_up in UPLOAD_NAMES
+                else f"Default ({UPLOAD_NAMES.get(config_dict['DEFAULT_UPLOAD'], 'GDrive')})"
+            ),
         )
 
         buttons.ibutton("◀️", f"userset {user_id} back", "footer")
@@ -1155,6 +1167,16 @@ async def edit_user_settings(client, query):
         await query.answer()
         update_user_ldata(user_id, "media_store", not media_store_enabled(user_id))
         await update_user_settings(query, "leech")
+        if DATABASE_URL:
+            await DbManger().update_user_data(user_id)
+    elif data[2] == "dupload":
+        handler_dict[user_id] = False
+        order = [None, "gd", "rc", "ddl"]
+        current = user_dict.get("default_upload")
+        new = order[(order.index(current) + 1) % len(order)] if current in order else "gd"
+        await query.answer(f"Upload To: {UPLOAD_NAMES.get(new, 'Default')}")
+        update_user_ldata(user_id, "default_upload", new)
+        await update_user_settings(query, "mirror")
         if DATABASE_URL:
             await DbManger().update_user_data(user_id)
     elif data[2] == "stop_duplicate":

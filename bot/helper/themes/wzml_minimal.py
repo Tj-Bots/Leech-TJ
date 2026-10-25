@@ -289,6 +289,7 @@ class WZMLStyle:
 ┊<b> RClone Path :</b> <code>{RCPATH}</code>
 ┊<b> RClone Flags :</b> <code>{RCFLAGS}</code>
 ┊<b> Upload Paths :</b> <i>{UPATHS}</i>
+┊<b> Upload To :</b> <i>{DUPLOAD}</i>
 ┊<b> Mirror Prefix :</b> <code>{MPREFIX}</code>
 ┊<b> Mirror Suffix :</b> <code>{MSUFFIX}</code>
 ┊<b> Mirror Remname :</b> <code>{MREMNAME}</code>
