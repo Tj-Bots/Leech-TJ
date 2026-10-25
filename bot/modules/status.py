@@ -12,6 +12,7 @@ from pyrogram.enums import ChatType
 from bot import (
     bot_cache,
     status_reply_dict_lock,
+    status_reply_dict,
     download_dict,
     download_dict_lock,
     botStartTime,
@@ -180,6 +181,13 @@ async def _close_confirm(query):
     await update_all_messages(True)
 
 
+def _is_live_status(message):
+    return any(
+        data and data[0].id == message.id and data[0].chat.id == message.chat.id
+        for data in list(status_reply_dict.values())
+    )
+
+
 def _can_manage(user_id, dl):
     return (
         OWNER_ID == user_id
@@ -192,6 +200,14 @@ def _can_manage(user_id, dl):
 async def status_pages(_, query):
     data = query.data.split()
     user_id = query.from_user.id
+    if data[1] not in ("cno", "cyes") and not _is_live_status(query.message):
+        # a status message that is no longer updated
+        await query.answer(
+            "This is an old status message, it will be deleted in 3s", show_alert=True
+        )
+        await sleep(3)
+        await deleteMessage(query.message)
+        return
     if data[1] == "cno":
         if len(data) > 2 and int(data[2]) != user_id:
             return await query.answer("This is not for you!", show_alert=True)

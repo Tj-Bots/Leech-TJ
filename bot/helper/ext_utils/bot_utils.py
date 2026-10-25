@@ -91,7 +91,7 @@ class MirrorStatus:
     STATUS_METADATA = "Metadata"
     STATUS_FFMPEG = "FFmpeg"
     STATUS_CONVERT = "Convert"
-    STATUS_VTOOLS = "VideoTools"
+    STATUS_VTOOLS = "Video Tools"
     STATUS_SAMVID = "SamVideo"
     STATUS_COVER = "Cover"
 
