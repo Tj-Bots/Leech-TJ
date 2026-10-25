@@ -1106,6 +1106,7 @@ async def set_commands(client):
                 BotCommands.StatsCommand[0],
                 f"or /{BotCommands.StatsCommand[1]} Check Bot & System stats",
             ),
+            BotCommand(BotCommands.HistoryCommand, "Your last 10 finished tasks"),
             BotCommand(
                 BotCommands.BtSelectCommand,
                 "Select files to download only torrents/magnet qbit/aria2c",

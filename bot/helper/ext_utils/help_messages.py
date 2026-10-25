@@ -73,6 +73,7 @@ f'''⌬ <b><i>Usᴇʀs Cᴏᴍᴍᴀɴᴅs!</i></b>
 
 <b>Bot Stats:</b>
 ╭ /{BotCommands.StatusCommand[0]} or /{BotCommands.StatusCommand[1]}: Shows a status page of all active tasks. Add <code>me</code> or a user id to see only those tasks.
+┊ /{BotCommands.HistoryCommand}: Your last 10 finished tasks with their links.
 ┊ /{BotCommands.StatsCommand[0]} or /{BotCommands.StatsCommand[1]}: Show Server detailed stats.
 ╰ /{BotCommands.PingCommand[0]} or /{BotCommands.PingCommand[1]}: Check how long it takes to Ping the Bot.
 

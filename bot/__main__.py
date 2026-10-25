@@ -73,6 +73,7 @@ from .modules import (
     ytdlp,
     rss,
     video_tools,
+    history,
     shell,
     eval,
     users_settings,

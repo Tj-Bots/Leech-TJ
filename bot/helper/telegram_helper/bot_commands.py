@@ -66,6 +66,7 @@ class _BotCommands:
         self.PingCommand = [f"ping{CMD_SUFFIX}", f"p{CMD_SUFFIX}"]
         self.RestartCommand = [f"restart{CMD_SUFFIX}", f"r{CMD_SUFFIX}", "restartall"]
         self.StatsCommand = [f"stats{CMD_SUFFIX}", f"st{CMD_SUFFIX}"]
+        self.HistoryCommand = f"history{CMD_SUFFIX}"
         self.HelpCommand = f"help{CMD_SUFFIX}"
         self.LogCommand = f"log{CMD_SUFFIX}"
         self.ShellCommand = f"shell{CMD_SUFFIX}"

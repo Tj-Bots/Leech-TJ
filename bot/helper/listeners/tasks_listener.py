@@ -40,6 +40,7 @@ from bot.helper.ext_utils.video_tools import run_video_tools
 from bot.helper.ext_utils.bot_utils import (
     MirrorStatus,
     retry_tasks,
+    update_user_ldata,
     extra_btns,
     sync_to_async,
     get_readable_file_size,
@@ -711,6 +712,7 @@ class MirrorLeechListener:
         user_id = self.message.from_user.id
         name, _ = await format_filename(name, user_id, isMirror=not self.isLeech)
         user_dict = user_data.get(user_id, {})
+        await self.add_history(name, size, link, files)
         msg = BotTheme(
             "NAME",
             Name=(
@@ -1026,6 +1028,26 @@ class MirrorLeechListener:
 
         await start_from_queued()
         await delete_links(self.message)
+
+    async def add_history(self, name, size, link, files):
+        """Last 10 finished tasks of the user for /history."""
+        user_id = self.message.from_user.id
+        if isinstance(link, dict):
+            link = next(iter(link.values()), "")
+        if not link and isinstance(files, dict):
+            link = next((k for k in files if k), "")
+        entry = {
+            "name": name,
+            "size": size,
+            "mode": self.upload_details.get("mode", ""),
+            "link": link if isinstance(link, str) else "",
+            "time": int(time()),
+        }
+        history = list(user_data.get(user_id, {}).get("history") or [])
+        history.insert(0, entry)
+        update_user_ldata(user_id, "history", history[:10])
+        if DATABASE_URL:
+            await DbManger().update_user_data(user_id)
 
     def retry_button(self, error, button=None):
         """Retry button on a failed task (not when the user cancelled it)."""
