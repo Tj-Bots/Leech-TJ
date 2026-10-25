@@ -151,6 +151,7 @@ class WZMLStyle:
     L_CC = "┖ <b>𝐁𝐲: </b>{Tag}\n\n"
     PM_BOT_MSG = "➲ <b><i>𝐅𝐢𝐥𝐞(𝐬) 𝐡𝐚𝐯𝐞 𝐛𝐞𝐞𝐧 𝐒𝐞𝐧𝐭 𝐚𝐛𝐨𝐯𝐞</i></b>"
     L_BOT_MSG = "➲ <b><i>𝐅𝐢𝐥𝐞(𝐬) 𝐡𝐚𝐯𝐞 𝐛𝐞𝐞𝐧 𝐒𝐞𝐧𝐭 𝐭𝐨 𝐁𝐨𝐭 𝐏𝐌 (𝐏𝐫𝐢𝐯𝐚𝐭𝐞)</i></b>"
+    N_BOT_MSG = "➲ <i><b>𝐅𝐢𝐥𝐞𝐬:</b></i>"
     L_LL_MSG = "➲ <b><i>𝐅𝐢𝐥𝐞(𝐬) 𝐡𝐚𝐯𝐞 𝐛𝐞𝐞𝐧 𝐒𝐞𝐧𝐭. 𝐀𝐜𝐜𝐞𝐬𝐬 𝐯𝐢𝐚 𝐋𝐢𝐧𝐤𝐬...</i></b>\n"
 
     # ----- MIRROR -------
@@ -271,9 +272,12 @@ class WZMLStyle:
     UNIVERSAL = """㊂ <b><u>𝐔𝐧𝐢𝐯𝐞𝐫𝐬𝐚𝐥 𝐒𝐞𝐭𝐭𝐢𝐧𝐠𝐬 : {NAME}</u></b>
 
 ┎<b> 𝐘𝐓-𝐃𝐋𝐏 𝐎𝐩𝐭𝐢𝐨𝐧𝐬 :</b> <b><code>{YT}</code></b>
+┠<b> 𝐘𝐓-𝐃𝐋𝐏 𝐂𝐨𝐨𝐤𝐢𝐞𝐬 :</b> <code>{COOKIES}</code>
+┠<b> 𝐅𝐅𝐦𝐩𝐞𝐠 𝐂𝐦𝐝𝐬 :</b> <code>{FFCMDS}</code>
 ┠<b> 𝐃𝐚𝐢𝐥𝐲 𝐓𝐚𝐬𝐤𝐬 :</b> <code>{DT}</code> 𝐩𝐞𝐫 𝐝𝐚𝐲
 ┠<b> 𝐋𝐚𝐬𝐭 𝐁𝐨𝐭 𝐔𝐬𝐞𝐝 :</b> <code>{LAST_USED}</code>
 ┠<b> 𝐔𝐬𝐞𝐫 𝐒𝐞𝐬𝐬𝐢𝐨𝐧 :</b> <code>{USESS}</code>
+┠<b> 𝐌𝐞𝐠𝐚 𝐋𝐨𝐠𝐢𝐧 :</b> <code>{MEGA}</code>
 ┠<b> 𝐌𝐞𝐝𝐢𝐚𝐈𝐧𝐟𝐨 𝐌𝐨𝐝𝐞 :</b> <code>{MEDIAINFO}</code>
 ┠<b> 𝐒𝐚𝐯𝐞 𝐌𝐨𝐝𝐞 :</b> <code>{SAVE_MODE}</code>
 ┖<b> 𝐔𝐬𝐞𝐫 𝐁𝐨𝐭 𝐏𝐌 :</b> <code>{BOT_PM}</code>"""
@@ -281,25 +285,37 @@ class WZMLStyle:
     MIRROR = """㊂ <b><u>𝐌𝐢𝐫𝐫𝐨𝐫/𝐂𝐥𝐨𝐧𝐞 𝐒𝐞𝐭𝐭𝐢𝐧𝐠𝐬 : {NAME}</u></b>
 
 ┎<b> 𝐑𝐂𝐥𝐨𝐧𝐞 𝐂𝐨𝐧𝐟𝐢𝐠 :</b> <i>{RCLONE}</i>
+┠<b> 𝐑𝐂𝐥𝐨𝐧𝐞 𝐏𝐚𝐭𝐡 :</b> <code>{RCPATH}</code>
+┠<b> 𝐑𝐂𝐥𝐨𝐧𝐞 𝐅𝐥𝐚𝐠𝐬 :</b> <code>{RCFLAGS}</code>
+┠<b> 𝐔𝐩𝐥𝐨𝐚𝐝 𝐏𝐚𝐭𝐡𝐬 :</b> <i>{UPATHS}</i>
 ┠<b> 𝐌𝐢𝐫𝐫𝐨𝐫 𝐏𝐫𝐞𝐟𝐢𝐱 :</b> <code>{MPREFIX}</code>
 ┠<b> 𝐌𝐢𝐫𝐫𝐨𝐫 𝐒𝐮𝐟𝐟𝐢𝐱 :</b> <code>{MSUFFIX}</code>
 ┠<b> 𝐌𝐢𝐫𝐫𝐨𝐫 𝐑𝐞𝐦𝐧𝐚𝐦𝐞 :</b> <code>{MREMNAME}</code>
 ┠<b> 𝐃𝐃𝐋 𝐒𝐞𝐫𝐯𝐞𝐫(𝐬) :</b> <i>{DDL_SERVER}</i>
 ┠<b> 𝐔𝐬𝐞𝐫 𝐓𝐃 𝐌𝐨𝐝𝐞 :</b> <i>{TMODE}</i>
 ┠<b> 𝐓𝐨𝐭𝐚𝐥 𝐔𝐬𝐞𝐫 𝐓𝐃(𝐬) :</b> <i>{USERTD}</i>
+┠<b> 𝐒𝐭𝐨𝐩 𝐃𝐮𝐩𝐥𝐢𝐜𝐚𝐭𝐞 :</b> <i>{STOPDUP}</i>
 ┖<b> 𝐃𝐚𝐢𝐥𝐲 𝐌𝐢𝐫𝐫𝐨𝐫 :</b> <code>{DM}</code> 𝐩𝐞𝐫 𝐝𝐚𝐲"""
 
     LEECH = """㊂ <b><u>𝐋𝐞𝐞𝐜𝐡 𝐒𝐞𝐭𝐭𝐢𝐧𝐠𝐬 𝐟𝐨𝐫 {NAME}</u></b>
 
-┎<b> 𝐃𝐚𝐢𝐥𝐲 𝐋𝐞𝐞𝐜𝐡 : </b><code>{DL}</code> 𝐩𝐞𝐫 𝐝𝐚𝐲
+┎<b> 𝐃𝐚𝐢𝐥𝐲 𝐋𝐞𝐞𝐜𝐡 :</b> <code>{DL}</code> 𝐩𝐞𝐫 𝐝𝐚𝐲
 ┠<b> 𝐋𝐞𝐞𝐜𝐡 𝐓𝐲𝐩𝐞 :</b> <i>{LTYPE}</i>
+┠<b> 𝐓𝐫𝐚𝐧𝐬𝐟𝐞𝐫 𝐌𝐨𝐝𝐞 :</b> <i>{TMODE}</i>
 ┠<b> 𝐂𝐮𝐬𝐭𝐨𝐦 𝐓𝐡𝐮𝐦𝐛𝐧𝐚𝐢𝐥 :</b> <i>{THUMB}</i>
+┠<b> 𝐀𝐮𝐭𝐨 𝐓𝐡𝐮𝐦𝐛𝐧𝐚𝐢𝐥 :</b> <i>{ATHUMB}</i>
+┠<b> 𝐓𝐡𝐮𝐦𝐛 𝐋𝐚𝐲𝐨𝐮𝐭 :</b> <i>{TLAYOUT}</i>
+┠<b> 𝐒𝐚𝐦𝐩𝐥𝐞 𝐕𝐢𝐝𝐞𝐨 :</b> <i>{SAMPLE}</i>
+┠<b> 𝐒𝐜𝐫𝐞𝐞𝐧𝐬𝐡𝐨𝐭𝐬 :</b> <i>{SSHOTS}</i>
 ┠<b> 𝐋𝐞𝐞𝐜𝐡 𝐒𝐩𝐥𝐢𝐭 𝐒𝐢𝐳𝐞 :</b> <code>{SPLIT_SIZE}</code>
 ┠<b> 𝐄𝐪𝐮𝐚𝐥 𝐒𝐩𝐥𝐢𝐭𝐬 :</b> <i>{EQUAL_SPLIT}</i>
 ┠<b> 𝐌𝐞𝐝𝐢𝐚 𝐆𝐫𝐨𝐮𝐩 :</b> <i>{MEDIA_GROUP}</i>
 ┠<b> 𝐋𝐞𝐞𝐜𝐡 𝐂𝐚𝐩𝐭𝐢𝐨𝐧 :</b> <code>{LCAPTION}</code>
+┠<b> 𝐂𝐚𝐩𝐭𝐢𝐨𝐧 𝐅𝐨𝐧𝐭 :</b> <i>{CFONT}</i>
 ┠<b> 𝐋𝐞𝐞𝐜𝐡 𝐏𝐫𝐞𝐟𝐢𝐱 :</b> <code>{LPREFIX}</code>
 ┠<b> 𝐋𝐞𝐞𝐜𝐡 𝐒𝐮𝐟𝐟𝐢𝐱 :</b> <code>{LSUFFIX}</code>
 ┠<b> 𝐋𝐞𝐞𝐜𝐡 𝐃𝐮𝐦𝐩𝐬 :</b> <code>{LDUMP}</code>
+┠<b> 𝐌𝐞𝐝𝐢𝐚 𝐒𝐭𝐨𝐫𝐞 :</b> <i>{MSTORE}</i>
 ┠<b> 𝐋𝐞𝐞𝐜𝐡 𝐑𝐞𝐦𝐧𝐚𝐦𝐞 :</b> <code>{LREMNAME}</code>
-┖<B> 𝐋𝐞𝐞𝐜𝐡 𝐌𝐞𝐭𝐚𝐝𝐚𝐭𝐚 :</b> <code>{LMETA}</code>"""
+┠<b> 𝐄𝐱𝐜𝐥𝐮𝐝𝐞𝐝 𝐄𝐱𝐭 :</b> <code>{EXCLUDED}</code>
+┖<b> 𝐋𝐞𝐞𝐜𝐡 𝐌𝐞𝐭𝐚𝐝𝐚𝐭𝐚 :</b> <code>{LMETA}</code>"""

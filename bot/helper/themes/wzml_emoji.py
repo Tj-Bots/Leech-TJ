@@ -147,6 +147,7 @@ class WZMLStyle:
     L_CC =                  '┖🙋 <b>By: </b>{Tag}\n\n'
     PM_BOT_MSG =            '➲ <b><i>File(s) have been Sent above</i></b>'
     L_BOT_MSG =             '➲ <b><i>File(s) have been Sent to Bot PM (Private)</i></b>'
+    N_BOT_MSG = "➲ 📁 <i><b>Files:</b></i>"
     L_LL_MSG =              '➲ <b><i>File(s) have been Sent. Access via Links...</i></b>\n'
     
     # ----- MIRROR -------
@@ -266,9 +267,12 @@ class WZMLStyle:
 
     UNIVERSAL = '''㊂ ✔️<b><u>Universal Settings : {NAME}</u></b>
 ┎📺 <b> YT-DLP Options :</b> <b><code>{YT}</code></b>
+┠🍪 <b> YT-DLP Cookies :</b> <code>{COOKIES}</code>
+┠🎞 <b> FFmpeg Cmds :</b> <code>{FFCMDS}</code>
 ┠🚧 <b> Daily Tasks :</b> <code>{DT}</code> per day
 ┠🟢 <b> Last Bot Used :</b> <code>{LAST_USED}</code>
 ┠📜 <b> User Session :</b> <code>{USESS}</code>
+┠Ⓜ️ <b> Mega Login :</b> <code>{MEGA}</code>
 ┠📄 <b> MediaInfo Mode :</b> <code>{MEDIAINFO}</code>
 ┠📩 <b> Save Mode :</b> <code>{SAVE_MODE}</code>
 ┖🕵️ <b> User Bot PM :</b> <code>{BOT_PM}</code>
@@ -277,27 +281,39 @@ class WZMLStyle:
 
     MIRROR = '''㊂ ✔️<b><u>Mirror/Clone Settings : {NAME}</u></b>
 ┎🎀 <b> RClone Config :</b> <i>{RCLONE}</i>
+┠🗂 <b> RClone Path :</b> <code>{RCPATH}</code>
+┠🚩 <b> RClone Flags :</b> <code>{RCFLAGS}</code>
+┠📍 <b> Upload Paths :</b> <i>{UPATHS}</i>
 ┠Ⓟ <b> Mirror Prefix :</b> <code>{MPREFIX}</code>
 ┠Ⓢ <b> Mirror Suffix :</b> <code>{MSUFFIX}</code>
 ┠🌈 <b> Mirror Remname :</b> <code>{MREMNAME}</code>
 ┠🧿 <b> DDL Server(s) :</b> <i>{DDL_SERVER}</i>
 ┠📮 <b> User TD Mode :</b> <i>{TMODE}</i>
 ┠📝 <b> Total User TD(s) :</b> <i>{USERTD}</i>
+┠🚫 <b> Stop Duplicate :</b> <i>{STOPDUP}</i>
 ┖☁️ <b> Daily Mirror :</b> <code>{DM}</code> per day
 
 <b><a href="https://t.me/Tj_Bots">❤️ Powered By 𝗧𝗝 𝗕𝗼𝘁𝘀 ❤️</a></b>'''
     LEECH = '''㊂ ✔️<b><u>Leech Settings for {NAME}</u></b>
-┎📂 <b> Daily Leech : </b><code>{DL}</code> per day
+┎📂 <b> Daily Leech :</b> <code>{DL}</code> per day
 ┠⚙️ <b> Leech Type :</b> <i>{LTYPE}</i>
+┠⚡ <b> Transfer Mode :</b> <i>{TMODE}</i>
 ┠🖼️ <b> Custom Thumbnail :</b> <i>{THUMB}</i>
+┠🎬 <b> Auto Thumbnail :</b> <i>{ATHUMB}</i>
+┠🔲 <b> Thumb Layout :</b> <i>{TLAYOUT}</i>
+┠🎞 <b> Sample Video :</b> <i>{SAMPLE}</i>
+┠📸 <b> Screenshots :</b> <i>{SSHOTS}</i>
 ┠♈ <b> Leech Split Size :</b> <code>{SPLIT_SIZE}</code>
 ┠♐ <b> Equal Splits :</b> <i>{EQUAL_SPLIT}</i>
 ┠♒ <b> Media Group :</b> <i>{MEDIA_GROUP}</i>
 ┠📄 <b> Leech Caption :</b> <code>{LCAPTION}</code>
+┠🔤 <b> Caption Font :</b> <i>{CFONT}</i>
 ┠Ⓟ <b> Leech Prefix :</b> <code>{LPREFIX}</code>
 ┠Ⓢ <b> Leech Suffix :</b> <code>{LSUFFIX}</code>
 ┠📦 <b> Leech Dumps :</b> <code>{LDUMP}</code>
-┠📄 <b> Metadata Text :</b> <code>{LMETA}</code>
-┖🌈 <b> Leech Remname :</b> <code>{LREMNAME}</code>
+┠🗃 <b> Media Store :</b> <i>{MSTORE}</i>
+┠🌈 <b> Leech Remname :</b> <code>{LREMNAME}</code>
+┠🚯 <b> Excluded Ext :</b> <code>{EXCLUDED}</code>
+┖🏷 <b> Leech Metadata :</b> <code>{LMETA}</code>
 
 <b><a href="https://t.me/Tj_Bots">❤️ Powered By 𝗧𝗝 𝗕𝗼𝘁𝘀 ❤️</a></b>'''
