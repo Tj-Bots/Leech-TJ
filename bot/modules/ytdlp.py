@@ -571,6 +571,8 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[], multi_tag
         source_url=link,
         leech_utils={"screenshots": sshots, "thumb": thumb},
     )
+    if args["link"] and multi <= 1 and not bulk and not isBulk:
+        listener.retry = (message.text, lambda c, m: _ytdl(c, m, isLeech, None, []))
     listener.convert_audio = args["-ca"]
     listener.convert_video = args["-cv"]
     listener.extract_audio = args["-ea"]

@@ -210,6 +210,27 @@ async def _mirror_leech(
             sameDir = {"total": multi, "tasks": set(), "name": folder_name}
         sameDir["tasks"].add(message.id)
 
+    # Telegram range: https://t.me/c/123/10-25 -> every message, same args
+    if not isBulk and (
+        rng := re_match(
+            r"^(https?://(?:t\.me|telegram\.me|telegram\.dog)/(?:c/)?\S+?)/(\d+)-(\d+)$",
+            link,
+        )
+    ):
+        first, last = sorted((int(rng[2]), int(rng[3])))
+        count = min(last - first + 1, 100)
+        rest = " ".join(t for t in input_list[1:] if t.strip() and t.strip() != link)
+        bulk = [f"{rng[1]}/{no} {rest}".strip() for no in range(first, first + count)]
+        nextmsg = await sendMessage(
+            message, f"{input_list[0]} {bulk[0]} -i {len(bulk)}"
+        )
+        nextmsg = await client.get_messages(
+            chat_id=message.chat.id, message_ids=nextmsg.id
+        )
+        nextmsg.from_user = message.from_user
+        _mirror_leech(client, nextmsg, isQbit, isLeech, sameDir, bulk, isCover)
+        return
+
     if isBulk:
         try:
             bulk = await extract_bulk_links(message, bulk_start, bulk_end)
@@ -516,6 +537,11 @@ async def _mirror_leech(
         listener.isCover = True
         listener.upload_details["mode"] = listener.upload_details["mode"].replace(
             "#Leech", "#Cover", 1
+        )
+    if args["link"] and multi <= 1 and not bulk and not isBulk:
+        listener.retry = (
+            message.text,
+            lambda c, m: _mirror_leech(c, m, isQbit, isLeech, None, [], isCover),
         )
     listener.convert_audio = args["-ca"]
     listener.convert_video = args["-cv"]

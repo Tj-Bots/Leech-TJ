@@ -19,6 +19,7 @@ from bot.helper.ext_utils.bot_utils import (
     MirrorStatus,
     new_task,
     multi_tags,
+    retry_tasks,
 )
 from bot.helper.telegram_helper import button_build
 
@@ -148,6 +149,27 @@ async def cancel_all_update(_, query):
             await sendMessage(reply_to or message, f"No matching tasks for {status}!")
 
 
+async def retry_task(client, query):
+    token = query.data.split()[1]
+    data = retry_tasks.get(token)
+    if data is None:
+        await query.answer("Retry is not available anymore!", show_alert=True)
+        return await editReplyMarkup(query.message, None)
+    user_id, text, starter = data
+    if query.from_user.id != user_id and not _is_sudo(query.from_user.id):
+        return await query.answer("This is not for you!", show_alert=True)
+    retry_tasks.pop(token, None)
+    await query.answer("Retrying...")
+    await editReplyMarkup(query.message, None)
+    # the command is sent again (the first message may be deleted already)
+    nextmsg = await sendMessage(query.message, text)
+    if isinstance(nextmsg, str):
+        return
+    nextmsg = await client.get_messages(chat_id=nextmsg.chat.id, message_ids=nextmsg.id)
+    nextmsg.from_user = query.from_user if query.from_user.id == user_id else await client.get_users(user_id)
+    starter(client, nextmsg)
+
+
 async def cancel_multi(_, query):
     tag = query.data.split()[1]
     owner = multi_tags.get(tag)
@@ -179,3 +201,4 @@ bot.add_handler(
 )
 bot.add_handler(CallbackQueryHandler(cancel_all_update, filters=regex(r"^canall")))
 bot.add_handler(CallbackQueryHandler(cancel_multi, filters=regex(r"^cmulti")))
+bot.add_handler(CallbackQueryHandler(retry_task, filters=regex(r"^retry")))

@@ -260,6 +260,7 @@ class EngineStatus:
 
 
 multi_tags = {}  # Cancel Multi: tag -> user_id
+retry_tasks = {}  # Retry button: token -> (user_id, command text, starter)
 
 try:
     from pyrogram.enums import ButtonStyle

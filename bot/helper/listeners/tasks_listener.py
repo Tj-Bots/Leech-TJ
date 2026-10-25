@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from secrets import token_hex
 from random import choice
 from time import time
 from copy import deepcopy
@@ -38,6 +39,7 @@ from bot import (
 from bot.helper.ext_utils.video_tools import run_video_tools
 from bot.helper.ext_utils.bot_utils import (
     MirrorStatus,
+    retry_tasks,
     extra_btns,
     sync_to_async,
     get_readable_file_size,
@@ -155,6 +157,7 @@ class MirrorLeechListener:
         self.convert_video = ""
         self.extract_audio = False
         self.video_tools = {}
+        self.retry = None  # (command text, starter) for the Retry button
         self.isCover = False
         self.sameDir = sameDir
         self.rcFlags = rcFlags
@@ -1024,6 +1027,17 @@ class MirrorLeechListener:
         await start_from_queued()
         await delete_links(self.message)
 
+    def retry_button(self, error, button=None):
+        """Retry button on a failed task (not when the user cancelled it)."""
+        err = str(error).lower()
+        if button is not None or not self.retry or "cancel" in err or "by user" in err:
+            return button
+        token = token_hex(4)
+        retry_tasks[token] = (self.message.from_user.id, *self.retry)
+        btn = ButtonMaker()
+        btn.ibutton("🔄 Retry", f"retry {token}")
+        return btn.build_menu(1)
+
     async def onDownloadError(self, error, button=None):
         async with download_dict_lock:
             if self.uid in download_dict.keys():
@@ -1038,7 +1052,7 @@ class MirrorLeechListener:
 ┊ <b>Due To:</b> {escape(error)}
 ┊ <b>Mode:</b> {self.upload_details['mode']}
 ╰ <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""
-        await sendMessage(self.message, msg, button)
+        await sendMessage(self.message, msg, self.retry_button(error, button))
         if count == 0:
             await self.clean()
         else:
@@ -1080,7 +1094,7 @@ class MirrorLeechListener:
 ┊ <b>Due To:</b> {escape(error)}
 ┊ <b>Mode:</b> {self.upload_details['mode']}
 ╰ <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""
-        await sendMessage(self.message, msg)
+        await sendMessage(self.message, msg, self.retry_button(error))
         if count == 0:
             await self.clean()
         else:
