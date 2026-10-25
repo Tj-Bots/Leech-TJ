@@ -13,6 +13,7 @@ from bot import (
     LOGGER,
     user_data,
     download_dict,
+    bot_loop,
 )
 from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
 from bot.helper.ext_utils.fs_utils import get_base_name, check_storage_threshold
@@ -86,14 +87,33 @@ async def is_queued(uid):
     return added_to_queue, event
 
 
+async def _queue_notice(uid, kind):
+    """Tag the user when the queued task starts, gone after 3 seconds."""
+    from asyncio import sleep
+
+    from bot.helper.telegram_helper.message_utils import deleteMessage, sendMessage
+
+    task = download_dict.get(uid)
+    if task is None or not getattr(task, "message", None):
+        return
+    user = task.message.from_user
+    tag = f"@{user.username}" if user.username else user.mention(style="html")
+    msg = await sendMessage(task.message, f"<i>{tag}, your task left the queue and started {kind}!</i>")
+    if not isinstance(msg, str):
+        await sleep(3)
+        await deleteMessage(msg)
+
+
 def start_dl_from_queued(uid):
     queued_dl[uid].set()
     del queued_dl[uid]
+    bot_loop.create_task(_queue_notice(uid, "downloading"))
 
 
 def start_up_from_queued(uid):
     queued_up[uid].set()
     del queued_up[uid]
+    bot_loop.create_task(_queue_notice(uid, "uploading"))
 
 
 async def start_from_queued():
