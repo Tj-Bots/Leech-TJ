@@ -466,7 +466,7 @@ EQUAL_SPLITS = EQUAL_SPLITS.lower() == "true"
 MEDIA_GROUP = environ.get("MEDIA_GROUP", "")
 MEDIA_GROUP = MEDIA_GROUP.lower() == "true"
 
-BASE_URL_PORT = environ.get("BASE_URL_PORT", "")
+BASE_URL_PORT = environ.get("BASE_URL_PORT", "") or environ.get("PORT", "")  # PORT: Heroku
 BASE_URL_PORT = 80 if len(BASE_URL_PORT) == 0 else int(BASE_URL_PORT)
 
 BASE_URL = environ.get("BASE_URL", "").rstrip("/")
