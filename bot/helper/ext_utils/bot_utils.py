@@ -1107,6 +1107,8 @@ async def set_commands(client):
                 f"or /{BotCommands.StatsCommand[1]} Check Bot & System stats",
             ),
             BotCommand(BotCommands.HistoryCommand, "Your last 10 finished tasks"),
+            BotCommand(BotCommands.AuthListCommand, "List the authorized users"),
+            BotCommand(BotCommands.SudoListCommand, "List the sudo users"),
             BotCommand(
                 BotCommands.BtSelectCommand,
                 "Select files to download only torrents/magnet qbit/aria2c",

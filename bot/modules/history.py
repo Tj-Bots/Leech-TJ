@@ -31,9 +31,12 @@ async def history(_, message):
         if link := task.get("link"):
             name = f"<a href='{link}'>{name}</a>"
         ago = get_readable_time(time() - task.get("time", time()))
+        # \u200e keeps every line left-to-right, also with a Hebrew name
         lines.append(
-            f"<b>{no}.</b> {name}\n┊ <b>Size:</b> {get_readable_file_size(task.get('size', 0))}"
-            f" | <b>Mode:</b> {task.get('mode', '')}\n╰ <b>Done:</b> {ago} ago"
+            f"\u200e<b>{no}.</b> {name}\n"
+            f"\u200e┊ <b>Size:</b> {get_readable_file_size(task.get('size', 0))}"
+            f" | <b>Mode:</b> {task.get('mode', '')}\n"
+            f"\u200e╰ <b>Done:</b> {ago} ago"
         )
     text = f"㊂ <b><u>History of {escape(user.first_name or str(user.id))} :</u></b>\n\n"
     text += "<blockquote expandable>" + "\n\n".join(lines) + "</blockquote>"

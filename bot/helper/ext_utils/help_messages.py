@@ -89,6 +89,8 @@ f'''⌬ <b><i>Oᴡɴᴇʀ ᴏʀ Sᴜᴅᴏs Cᴏᴍᴍᴀɴᴅs!</i></b>
 <b>Authentication:</b>
 ╭ /{BotCommands.AuthorizeCommand[0]} or /{BotCommands.AuthorizeCommand[1]}: Authorize a chat or a user to use the bot (Only Owner & Sudo).
 ┊ /{BotCommands.UnAuthorizeCommand[0]} or /{BotCommands.UnAuthorizeCommand[1]}: Unauthorize a chat or a user to use the bot (Only Owner & Sudo).
+┊ /{BotCommands.AuthListCommand}: List the authorized users and chats (Only Owner & Sudo).
+┊ /{BotCommands.SudoListCommand}: List the sudo users (Only Owner & Sudo).
 ┊ /{BotCommands.AddSudoCommand}: Add sudo user (Only Owner).
 ┊ /{BotCommands.RmSudoCommand}: Remove sudo users (Only Owner).
 ┊ /{BotCommands.AddBlackListCommand[0]} or /{BotCommands.AddBlackListCommand[1]}: Add User in BlackListed, so that user can't use the Bot anymore.

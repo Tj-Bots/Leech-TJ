@@ -2,8 +2,11 @@
 from pyrogram.handlers import MessageHandler
 from pyrogram.filters import command, regex
 
-from bot import user_data, DATABASE_URL, bot, LOGGER
-from bot.helper.telegram_helper.message_utils import sendMessage
+from html import escape
+
+from bot import user_data, DATABASE_URL, bot, LOGGER, OWNER_ID
+from bot.helper.telegram_helper.message_utils import sendMessage, user_info
+from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.ext_utils.db_handler import DbManger
@@ -179,6 +182,52 @@ bot.add_handler(
     MessageHandler(
         unauthorize,
         filters=command(BotCommands.UnAuthorizeCommand) & CustomFilters.sudo,
+    )
+)
+async def _list_users(message, flag, title):
+    ids = [uid for uid, data in user_data.items() if data.get(flag)]
+    users = [uid for uid in ids if uid > 0]
+    chats = [uid for uid in ids if uid < 0]
+    lines = []
+    if flag == "is_sudo":
+        users = [OWNER_ID] + [u for u in users if u != OWNER_ID]
+    for no, uid in enumerate(users, start=1):
+        info = await user_info(uid)
+        name = escape(getattr(info, "first_name", "") or "Unknown")
+        tag = f" @{info.username}" if getattr(info, "username", None) else ""
+        owner = " 👑" if uid == OWNER_ID else ""
+        lines.append(f"\u200e{no}. <b>{name}</b>{tag}{owner} | <code>{uid}</code>")
+    text = f"㊂ <b><u>{title} :</u></b>\n\n"
+    text += (
+        "<blockquote expandable>" + "\n".join(lines) + "</blockquote>"
+        if lines
+        else "<i>None</i>"
+    )
+    if chats:
+        text += "\n\n<b>Chats:</b>\n<blockquote>" + "\n".join(
+            f"\u200e<code>{c}</code>" for c in chats
+        ) + "</blockquote>"
+    buttons = ButtonMaker()
+    buttons.ibutton("Cʟᴏsᴇ", f"wzmlx {message.from_user.id} close")
+    await sendMessage(message, text, buttons.build_menu(1))
+
+
+async def auth_list(_, message):
+    await _list_users(message, "is_auth", "Authorized Users")
+
+
+async def sudo_list(_, message):
+    await _list_users(message, "is_sudo", "Sudo Users")
+
+
+bot.add_handler(
+    MessageHandler(
+        auth_list, filters=command(BotCommands.AuthListCommand) & CustomFilters.sudo
+    )
+)
+bot.add_handler(
+    MessageHandler(
+        sudo_list, filters=command(BotCommands.SudoListCommand) & CustomFilters.sudo
     )
 )
 bot.add_handler(
