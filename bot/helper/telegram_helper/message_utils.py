@@ -4,7 +4,7 @@ from asyncio import sleep
 from aiofiles.os import remove as aioremove
 from random import choice as rchoice
 from time import time
-from re import match as re_match
+from re import match as re_match, sub as re_sub
 from cryptography.fernet import InvalidToken
 
 from pyrogram import Client
@@ -52,6 +52,19 @@ from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.ext_utils.exceptions import TgLinkException
 
 
+LRM = "\u200e"
+
+
+def ltr(text):
+    """Every line of a message starts left-to-right, so a Hebrew file name
+    can't flip the whole line. Safe to call twice, commands are left alone."""
+    if not isinstance(text, str) or isinstance(text, RichText) or not text:
+        return text
+    return re_sub(
+        rf"(^|\n)(?!{LRM})(?!(?:<[^>]+>)*/)", rf"\1{LRM}", text
+    )
+
+
 async def sendRich(message, text, buttons=None):
     from pyrogram.types import InputRichMessage, ReplyParameters
 
@@ -79,6 +92,7 @@ async def sendRich(message, text, buttons=None):
 async def sendMessage(message, text, buttons=None, photo=None, **kwargs):
     if isinstance(text, RichText):
         return await sendRich(message, text, buttons)
+    text = ltr(text)
     try:
         if photo:
             try:
@@ -130,6 +144,7 @@ async def sendMessage(message, text, buttons=None, photo=None, **kwargs):
 
 
 async def sendCustomMsg(chat_id, text, buttons=None, photo=None, debug=False):
+    text = ltr(text)
     if isinstance(text, RichText):
         from pyrogram.types import InputRichMessage
 
@@ -249,6 +264,7 @@ async def sendMultiMessage(chat_ids, text, buttons=None, photo=None):
 
 
 async def editMessage(message, text, buttons=None, photo=None):
+    text = ltr(text)
     try:
         if isinstance(text, RichText):
             from pyrogram.types import InputRichMessage
@@ -297,6 +313,7 @@ async def editReplyMarkup(message, reply_markup):
 
 
 async def sendFile(message, file, caption=None, buttons=None):
+    caption = ltr(caption)
     try:
         return await message.reply_document(
             document=file,

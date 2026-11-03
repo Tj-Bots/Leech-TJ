@@ -26,6 +26,7 @@ from bot import (
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.message_utils import (
+    ltr,
     sendMessage,
     editMessage,
     deleteMessage,
@@ -152,7 +153,7 @@ async def _send_confirm(query, dl, gid):
             else:
                 await bot.send_message(
                     message.chat.id,
-                    text,
+                    ltr(text),
                     reply_markup=buttons,
                     reply_parameters=ReplyParameters(message_id=message.id),
                     ephemeral_message_parameters=eph,

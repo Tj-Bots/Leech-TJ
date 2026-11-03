@@ -16,7 +16,7 @@ from pyrogram.errors import (
 
 from bot import LOGGER, bot, config_dict, user_data
 from bot.helper.telegram_helper.filters import CustomFilters
-from bot.helper.telegram_helper.message_utils import sendMessage, editMessage
+from bot.helper.telegram_helper.message_utils import ltr, sendMessage, editMessage
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.button_build import ButtonMaker
 
@@ -193,7 +193,7 @@ async def mdl_callback(_, query):
         if mdl.get("poster"):
             try:  # Invoke Raw Functions
                 await message.reply_to_message.reply_photo(
-                    mdl["poster"], caption=cap, reply_markup=buttons.build_menu(1)
+                    mdl["poster"], caption=ltr(cap), reply_markup=buttons.build_menu(1)
                 )
             except (MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty):
                 poster = mdl["poster"].replace("f.jpg?v=1", "c.jpg?v=1")
