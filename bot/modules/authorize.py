@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
-from pyrogram.handlers import MessageHandler
+from pyrogram.handlers import CallbackQueryHandler, MessageHandler
 from pyrogram.filters import command, regex
 
 from html import escape
 
-from bot import user_data, DATABASE_URL, bot, LOGGER, OWNER_ID
-from bot.helper.telegram_helper.message_utils import sendMessage, user_info
+from bot import user_data, DATABASE_URL, bot, OWNER_ID
+from bot.helper.telegram_helper.message_utils import (
+    deleteMessage,
+    editMessage,
+    sendMessage,
+    user_info,
+)
 from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.ext_utils.db_handler import DbManger
-from bot.helper.ext_utils.bot_utils import update_user_ldata
+from bot.helper.ext_utils.bot_utils import new_task, update_user_ldata
 
 
 async def authorize(client, message):
@@ -184,7 +189,7 @@ bot.add_handler(
         filters=command(BotCommands.UnAuthorizeCommand) & CustomFilters.sudo,
     )
 )
-async def _list_users(message, flag, title):
+async def _users_text(flag, title):
     ids = [uid for uid, data in user_data.items() if data.get(flag)]
     users = [uid for uid in ids if uid > 0]
     chats = [uid for uid in ids if uid < 0]
@@ -207,9 +212,69 @@ async def _list_users(message, flag, title):
         text += "\n\n<b>Chats:</b>\n<blockquote>" + "\n".join(
             f"\u200e<code>{c}</code>" for c in chats
         ) + "</blockquote>"
+    return text
+
+
+USER_VIEWS = {
+    "sudo": ("is_sudo", "Sudo Users"),
+    "auth": ("is_auth", "Authorized Users"),
+    "black": ("is_blacklist", "Blacklisted Users"),
+}
+
+
+def users_home(uid):
+    """/users overview with a button per list."""
+    count = lambda flag, sign=0: sum(  # noqa: E731
+        1
+        for k, d in user_data.items()
+        if d.get(flag) and (sign == 0 or (k > 0) == (sign > 0))
+    )
+    text = f"""㊂ <b><u>Users Overview :</u></b>
+
+<blockquote>╭ <b>Owner:</b> <code>{OWNER_ID}</code>
+┊ <b>Sudo:</b> {count("is_sudo")}
+┊ <b>Authorized:</b> {count("is_auth", 1)} users | {count("is_auth", -1)} chats
+┊ <b>Blacklisted:</b> {count("is_blacklist")}
+╰ <b>Saved Data:</b> {len(user_data)}</blockquote>"""
+    buttons = ButtonMaker()
+    buttons.ibutton("Sudo", f"ulist {uid} sudo")
+    buttons.ibutton("Authorized", f"ulist {uid} auth")
+    buttons.ibutton("Blacklisted", f"ulist {uid} black")
+    buttons.ibutton("All Data", f"ulist {uid} data")
+    buttons.ibutton("Cʟᴏsᴇ", f"ulist {uid} close", "footer")
+    return text, buttons.build_menu(2)
+
+
+@new_task
+async def users_callback(_, query):
+    data = query.data.split()
+    if int(data[1]) != query.from_user.id:
+        return await query.answer("This is not for you!", show_alert=True)
+    await query.answer()
+    action = data[2]
+    if action == "close":
+        return await deleteMessage(query.message)
+    if action == "home":
+        text, button = users_home(query.from_user.id)
+        return await editMessage(query.message, text, button)
+    if action == "data":
+        from bot.modules.users_settings import users_dump
+
+        return await users_dump(query.message, query.from_user.id)
+    if action in USER_VIEWS:
+        flag, title = USER_VIEWS[action]
+        buttons = ButtonMaker()
+        buttons.ibutton("◀️ Back", f"ulist {query.from_user.id} home")
+        buttons.ibutton("Cʟᴏsᴇ", f"ulist {query.from_user.id} close")
+        await editMessage(
+            query.message, await _users_text(flag, title), buttons.build_menu(2)
+        )
+
+
+async def _list_users(message, flag, title):
     buttons = ButtonMaker()
     buttons.ibutton("Cʟᴏsᴇ", f"wzmlx {message.from_user.id} close")
-    await sendMessage(message, text, buttons.build_menu(1))
+    await sendMessage(message, await _users_text(flag, title), buttons.build_menu(1))
 
 
 async def auth_list(_, message):
@@ -258,3 +323,4 @@ bot.add_handler(
         filters=regex(r"^/") & CustomFilters.authorized & CustomFilters.blacklisted,
     )
 )
+bot.add_handler(CallbackQueryHandler(users_callback, filters=regex(r"^ulist")))

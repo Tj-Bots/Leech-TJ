@@ -1561,6 +1561,32 @@ async def edit_user_settings(client, query):
         await deleteMessage(message)
 
 
+HIDDEN_KEYS = (
+    "token", "time", "ddl_servers", "usess", "mega_login", "history", "cookies", "thumb", "rclone",
+)
+
+
+async def users_dump(message, uid):
+    """Every saved user / chat with its settings (sensitive and bulky keys left out)."""
+    msg = f"<u><b>Total Users / Chats Data Saved :</b> {len(user_data)}</u>"
+    buttons = ButtonMaker()
+    buttons.ibutton("❌", f"userset {uid} close")
+    for user, data in user_data.items():
+        msg += f"\n\n<code>{user}</code>:"
+        shown = {k: v for k, v in (data or {}).items() if k not in HIDDEN_KEYS}
+        if shown:
+            for key, value in shown.items():
+                msg += f"\n<b>{key}</b>: <code>{escape(str(value))}</code>"
+        else:
+            msg += "\nNo settings saved."
+    if len(msg.encode()) > 4000:
+        with BytesIO(str.encode(msg)) as ofile:
+            ofile.name = "users_settings.txt"
+            await sendFile(message, ofile)
+    else:
+        await sendMessage(message, msg, buttons.build_menu(1))
+
+
 async def send_users_settings(client, message):
     text = message.text.split(maxsplit=1)
     userid = text[1] if len(text) > 1 else None
@@ -1573,25 +1599,10 @@ async def send_users_settings(client, message):
     ):
         userid = reply_to.from_user.id
     if not userid:
-        msg = f"<u><b>Total Users / Chats Data Saved :</b> {len(user_data)}</u>"
-        buttons = ButtonMaker()
-        buttons.ibutton("❌", f"userset {message.from_user.id} close")
-        button = buttons.build_menu(1)
-        for user, data in user_data.items():
-            msg += f"\n\n<code>{user}</code>:"
-            if data:
-                for key, value in data.items():
-                    if key in ["token", "time", "ddl_servers", "usess", "mega_login"]:
-                        continue
-                    msg += f"\n<b>{key}</b>: <code>{escape(str(value))}</code>"
-            else:
-                msg += "\nUser's Data is Empty!"
-        if len(msg.encode()) > 4000:
-            with BytesIO(str.encode(msg)) as ofile:
-                ofile.name = "users_settings.txt"
-                await sendFile(message, ofile)
-        else:
-            await sendMessage(message, msg, button)
+        from bot.modules.authorize import users_home
+
+        text, button = users_home(message.from_user.id)
+        await sendMessage(message, text, button)
     elif int(userid) in user_data:
         msg = f'{(await user_info(userid)).mention(style="html")} ( <code>{userid}</code> ):'
         if data := user_data[int(userid)]:
