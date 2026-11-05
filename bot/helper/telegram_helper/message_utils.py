@@ -60,8 +60,11 @@ def ltr(text):
     can't flip the whole line. Safe to call twice, commands are left alone."""
     if not isinstance(text, str) or isinstance(text, RichText) or not text:
         return text
+    # only lines with real text: not empty ones, not ones with only tags/spaces
     return re_sub(
-        rf"(^|\n)(?!{LRM})(?!(?:<[^>]+>)*/)", rf"\1{LRM}", text
+        rf"(^|\n)(?!{LRM})(?!(?:<[^>]*>|[ \t\r])*(?:\n|$))(?!(?:<[^>]*>)*/)",
+        rf"\1{LRM}",
+        text,
     )
 
 
