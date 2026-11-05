@@ -56,16 +56,23 @@ LRM = "\u200e"
 
 
 def ltr(text):
-    """Every line of a message starts left-to-right, so a Hebrew file name
-    can't flip the whole line. Safe to call twice, commands are left alone."""
+    """Every line with text starts left-to-right, so a Hebrew file name can't
+    flip the whole line. The mark goes inside a quote (after its opening tag),
+    never in front of it: outside it would show as an empty line. Empty lines
+    and commands are left alone. Safe to call twice."""
     if not isinstance(text, str) or isinstance(text, RichText) or not text:
         return text
-    # only lines with real text: not empty ones, not ones with only tags/spaces
-    return re_sub(
-        rf"(^|\n)(?!{LRM})(?!(?:<[^>]*>|[ \t\r])*(?:\n|$))(?!(?:<[^>]*>)*/)",
-        rf"\1{LRM}",
-        text,
-    )
+    lines = text.split("\n")
+    for no, line in enumerate(lines):
+        if not re_sub(r"<[^>]*>|[ \t\r]|\u200e", "", line):
+            continue  # empty, or only tags / spaces
+        block = re_match(r"<(?:blockquote|pre)\b[^>]*>", line)
+        head = block[0] if block else ""
+        rest = line[len(head) :]
+        if rest.startswith(LRM) or re_match(r"(?:<[^>]*>)*/", rest):
+            continue
+        lines[no] = head + LRM + rest
+    return "\n".join(lines)
 
 
 async def sendRich(message, text, buttons=None):
