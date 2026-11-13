@@ -852,6 +852,8 @@ if BASE_URL:
         f"gunicorn web.wserver:app --bind 0.0.0.0:{BASE_URL_PORT} --worker-class gevent",
         shell=True,
     )
+    if environ.get("PORT"):
+        Popen(["python3", "alive.py"])  # Heroku: keep the web dyno awake
 
 srun(["qbittorrent-nox", "-d", f"--profile={getcwd()}"])
 if not ospath.exists(".netrc"):
