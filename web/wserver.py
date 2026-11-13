@@ -26,7 +26,7 @@ page = """
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Torrent File Selector</title>
-    <link rel="icon" href="https://graph.org/file/1a6ad157f55bc42b548df.png" type="image/jpg">
+    <link rel="icon" href="https://raw.githubusercontent.com/Tj-Bots/Leech-TJ/wzgram/docs/logo.png" type="image/png">
     <script
       src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
       integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="
@@ -227,16 +227,16 @@ function s_validate() {
     <header>
       <div class="brand">
         <img
-          src="https://graph.org/file/1a6ad157f55bc42b548df.png"
+          src="https://raw.githubusercontent.com/Tj-Bots/Leech-TJ/wzgram/docs/logo.png"
           alt="logo"
         />
-        <a href="https://t.me/krn_adhikari">
+        <a href="https://t.me/TJ_Bots">
           <h2 class="name">Bittorrent Selection</h2>
         </a>
       </div>
       <div class="social">
-        <a href="https://www.github.com/weebzone/WZML"><i class="fab fa-github"></i></a>
-        <a href="https://t.me/krn_adhikari"><i class="fab fa-telegram"></i></a>
+        <a href="https://github.com/Tj-Bots/Leech-TJ"><i class="fab fa-github"></i></a>
+        <a href="https://t.me/TJ_Bots"><i class="fab fa-telegram"></i></a>
       </div>
     </header>
     <div id="sticks">
@@ -423,7 +423,7 @@ code_page = """
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Torrent Code Checker</title>
-    <link rel="icon" href="https://graph.org/file/1a6ad157f55bc42b548df.png" type="image/jpg">
+    <link rel="icon" href="https://raw.githubusercontent.com/Tj-Bots/Leech-TJ/wzgram/docs/logo.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -619,16 +619,16 @@ section span{
     <header>
       <div class="brand">
         <img
-          src="https://graph.org/file/1a6ad157f55bc42b548df.png"
+          src="https://raw.githubusercontent.com/Tj-Bots/Leech-TJ/wzgram/docs/logo.png"
           alt="logo"
         />
-        <a href="https://t.me/WZML_X">
+        <a href="https://t.me/TJ_Bots">
           <h2 class="name">Bittorrent Selection</h2>
         </a>
       </div>
       <div class="social">
-        <a href="https://www.github.com/weebzone/WZML-X"><i class="fab fa-github"></i></a>
-        <a href="https://t.me/WZML_X"><i class="fab fa-telegram"></i></a>
+        <a href="https://github.com/Tj-Bots/Leech-TJ"><i class="fab fa-github"></i></a>
+        <a href="https://t.me/TJ_Bots"><i class="fab fa-telegram"></i></a>
       </div>
     </header>
     <section>
@@ -791,60 +791,73 @@ def homepage():
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Leech-TJ</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/Tj-Bots/Leech-TJ/wzgram/docs/logo.png" type="image/png">
     <link
-      href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
     <style>
+        * { box-sizing: border-box; }
         body {
-            background-color: #0D1117;
-            color: white;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 0%, #16203a 0%, #0b0f1a 60%);
+            color: #e8ecf5;
             font-family: "Ubuntu", sans-serif;
         }
-        .header {
-            background-color: black;
+        .card {
+            width: min(92vw, 420px);
+            padding: 28px 22px;
             text-align: center;
-            width: 100%;
-            padding: 1px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
         }
-        .footer {
-            background-color: black;
-            padding: 10px;
-            text-align: center;
-            position: absolute;
-            bottom: 0;
-            width: 100%;
+        .logo {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
         }
-        .content {
-            padding: 20px;
-            text-align: center;
+        h1 {
+            margin: 14px 0 4px;
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+        h1 span { color: #e5384d; }
+        p {
+            margin: 0 0 22px;
+            color: #8d95b3;
+            font-size: 14px;
         }
         .button {
-            background-color: #0001f0;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .image {
+            display: inline-block;
+            padding: 12px 26px;
             border-radius: 12px;
-            max-width: 100%;
+            background: linear-gradient(135deg, #1f6feb, #3b8cff);
+            color: white;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .footer {
+            margin-top: 22px;
+            color: #5b6384;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>WZML-X</h1>
-    </div>
-    <div class="content">
-        <img src="https://graph.org/file/639fe4239b78e5862b302.jpg" class="image">
-        <a href="https://telegram.me/WZML_X" style="text-decoration: none;">
-            <button class="button">Join Updates Channel Now</button>
-        </a>
-    </div>
-    <div class="footer">
-© 2022-23 WZML-X. All Rights Reserved.
+    <div class="card">
+        <img src="https://raw.githubusercontent.com/Tj-Bots/Leech-TJ/wzgram/docs/logo.png" class="logo" alt="TJ">
+        <h1>Leech-<span>TJ</span></h1>
+        <p>Fast Telegram Mirror / Leech bot</p>
+        <a class="button" href="https://t.me/TJ_Bots">Join Updates Channel</a>
+        <div class="footer">&copy; TJ Bots</div>
     </div>
 </body>
 </html>
