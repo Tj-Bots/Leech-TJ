@@ -26,6 +26,7 @@ from bot import (
     IS_PREMIUM_USER,
     MAX_SPLIT_SIZE,
     user,
+    bot_loop,
 )
 from bot.helper.mirror_utils.hyper_utils import TRANSFER_MODES, transfer_mode
 from bot.helper.ext_utils.user_tools import (
@@ -770,7 +771,7 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
                         key, config_dict.get(f"LEECH_FILENAME_{key[1:].upper()}", "")
                     )
                 )
-                == ""
+                in ("", {})
                 else val
             )
             if set_exist != "Not Exists" and key == "ldump":
@@ -994,19 +995,36 @@ async def set_custom(client, message, pre_event, key, direct=False):
         return_key = "mirror"
     elif key == "ldump":
         ldumps = user_dict.get(key, {})
+        failed = []
         for dump_item in value.split("\n"):
-            if dump_item == "":
+            if not (dump_item := dump_item.strip()):
                 continue
-            dump_info = dump_item.rsplit(
-                maxsplit=(1 if dump_item.split()[-1].startswith(("-100", "@")) else 0)
+            # "title -100123..." or "title @channel" or only the id / @channel
+            parts = dump_item.rsplit(maxsplit=1)
+            ref = parts[-1].rstrip("/").rsplit("/", 1)[-1]
+            if ref.startswith("t.me"):
+                ref = ""
+            if ref.lstrip("-").isdigit() and not ref.startswith("-100"):
+                ref = f"-100{ref.lstrip('-')}"
+            chat = await chat_info(ref) if ref else None
+            if not chat:
+                failed.append(dump_item)
+                continue
+            title = parts[0] if len(parts) > 1 else (chat.title or str(chat.id))
+            for old_title in list(ldumps.keys()):
+                if title.casefold() == old_title.casefold():
+                    del ldumps[old_title]
+            ldumps[title] = chat.id
+        if failed:
+            note = await sendMessage(
+                message,
+                "<b>Not saved</b> (add the bot as <b>admin</b> there, and use the chat id like <code>-100123..</code> or <code>@username</code>):\n"
+                + "\n".join(f"<code>{escape(f)}</code>" for f in failed),
             )
-            if dump_info[0] in list(ldumps.keys()):
-                continue
-            for title in list(ldumps.keys()):
-                if dump_info[0].casefold() == title.casefold():
-                    del ldumps[title]
-            if len(dump_info) > 1 and (dump_chat := await chat_info(dump_info[1])):
-                ldumps[dump_info[0]] = dump_chat.id
+            if not isinstance(note, str):
+                bot_loop.call_later(
+                    12, lambda: bot_loop.create_task(deleteMessage(note))
+                )
         value = ldumps
     elif key in EXTRA_TEXT:
         return_key = EXTRA_TEXT[key][0]

@@ -222,6 +222,9 @@ async def chat_info(channel_id):
     except (PeerIdInvalid, ChannelInvalid) as e:
         LOGGER.error(f"{e.NAME}: {e.MESSAGE} for {channel_id}")
         return None
+    except Exception as e:
+        LOGGER.error(f"chat_info {channel_id}: {e}")
+        return None
 
 
 async def sendMultiMessage(chat_ids, text, buttons=None, photo=None):
