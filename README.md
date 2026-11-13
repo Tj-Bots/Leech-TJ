@@ -111,6 +111,8 @@ cp config_sample.env config.env   # fill BOT_TOKEN, OWNER_ID, TELEGRAM_API, TELE
 docker compose up -d --build
 ```
 
+Service accounts, downloads, user thumbnails, rclone configs and cookies are kept in `./accounts`, `./downloads` and `./data/`, so a rebuild does not delete them. The host ports are `8181` (web) and `8282` (torrent selector), change them with `LEECH_TJ_WEB_PORT` / `LEECH_TJ_TORRENT_PORT`. The bot restarts by itself after a server reboot.
+
 Updating a running bot: set `UPSTREAM_REPO` / `UPSTREAM_BRANCH` and `/restart`.
 New Python packages need a rebuild: `docker compose up -d --build`.
 
