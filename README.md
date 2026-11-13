@@ -111,6 +111,8 @@ cp config_sample.env config.env   # fill BOT_TOKEN, OWNER_ID, TELEGRAM_API, TELE
 docker compose up -d --build
 ```
 
+**Heroku from a notebook:** [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Tj-Bots/Leech-TJ/blob/wzgram/colab/Leech-TJ-Heroku.ipynb) fill the cells and it creates the app, sets the Config Vars and deploys. Secrets are asked with a hidden prompt and never stored in the notebook. Heroku can suspend accounts that run bots, a VPS is safer.
+
 Service accounts, downloads, user thumbnails, rclone configs and cookies are kept in `./accounts`, `./downloads` and `./data/`, so a rebuild does not delete them. The host ports are `8181` (web) and `8282` (torrent selector), change them with `LEECH_TJ_WEB_PORT` / `LEECH_TJ_TORRENT_PORT`. The bot restarts by itself after a server reboot.
 
 Updating a running bot: set `UPSTREAM_REPO` / `UPSTREAM_BRANCH` and `/restart`.
