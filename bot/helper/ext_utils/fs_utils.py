@@ -55,9 +55,11 @@ ARCH_EXT = [
     ".xar",
 ]
 
-FIRST_SPLIT_REGEX = r"(\.|_)part0*1\.rar$|(\.|_)7z\.0*1$|(\.|_)zip\.0*1$|^(?!.*(\.|_)part\d+\.rar$).*\.rar$"
+FIRST_SPLIT_REGEX = r"(\.|_)part0*1\.rar$|(\.|_)(7z|zip|rar)\.0*1$|^(?!.*(\.|_)part\d+\.rar$).*\.rar$"
 
-SPLIT_REGEX = r"\.r\d+$|\.7z\.\d+$|\.z\d+$|\.zip\.\d+$"
+SPLIT_REGEX = r"\.r\d+$|\.(7z|rar|zip)\.\d+$|\.z\d+$"
+
+NUMBERED_SPLIT = r"\.(7z|zip|rar)\.\d+$"
 
 
 def is_first_archive_split(file):
@@ -166,6 +168,8 @@ async def count_files_and_folders(path):
 
 
 def get_base_name(orig_path):
+    if numbered := re_search(NUMBERED_SPLIT, orig_path, flags=I):  # name.rar.001
+        return orig_path[: numbered.start()]
     extension = next((ext for ext in ARCH_EXT if orig_path.lower().endswith(ext)), "")
     if extension != "":
         return re_split(f"{extension}$", orig_path, maxsplit=1, flags=I)[0]
