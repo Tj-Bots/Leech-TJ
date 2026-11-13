@@ -132,6 +132,36 @@ li label{
     padding-left: 0.5rem;
 }
 
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+li.file{
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+li.file input[type="checkbox"]{
+    flex: none;
+    margin: 0.3rem 0 0 0;
+}
+
+li.file label{
+    flex: 1;
+    min-width: 0;
+    padding-left: 0;
+    overflow-wrap: anywhere;
+    user-select: none;
+}
+
+li.file .pct{
+    flex: none;
+    white-space: nowrap;
+    font-style: normal;
+    color: #8d95b3;
+}
+
 li{
     padding-bottom: 0.5rem;
 }

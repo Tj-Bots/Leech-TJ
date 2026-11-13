@@ -151,15 +151,15 @@ def create_list(par, msg):
             msg[0] += "</li>"
             msg[1] += 1
         else:
-            msg[0] += "<li>"
+            msg[0] += '<li class="file">'
             if i.priority == 0:
                 msg[
                     0
-                ] += f'<input type="checkbox" name="filenode_{i.file_id}" data-size="{i.size}"> <label data-size="{i.size}" for="filenode_{i.file_id}">{i.name}</label> / {i.progress}%'
+                ] += f'<input type="checkbox" name="filenode_{i.file_id}" data-size="{i.size}"> <label data-size="{i.size}" for="filenode_{i.file_id}">{i.name}</label><em class="pct">{i.progress}%</em>'
             else:
                 msg[
                     0
-                ] += f'<input type="checkbox" checked name="filenode_{i.file_id}" data-size="{i.size}"> <label data-size="{i.size}" for="filenode_{i.file_id}">{i.name}</label> / {i.progress}%'
+                ] += f'<input type="checkbox" checked name="filenode_{i.file_id}" data-size="{i.size}"> <label data-size="{i.size}" for="filenode_{i.file_id}">{i.name}</label><em class="pct">{i.progress}%</em>'
             msg[0] += f'<input type="hidden" value="off" name="filenode_{i.file_id}">'
             msg[0] += "</li>"
 
