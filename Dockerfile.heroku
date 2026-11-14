@@ -1,0 +1,8 @@
+# Fast build: the packages are already inside the base image.
+# Used by heroku.yml when the base image is published (see the Colab notebook).
+FROM ghcr.io/tj-bots/leech-tj:base
+
+WORKDIR /usr/src/app
+COPY . .
+
+CMD ["bash", "start.sh"]
