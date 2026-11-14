@@ -2,7 +2,7 @@
 class WZMLStyle:
     # ----------------------
     ST_BN1_NAME = "Uᴘᴅᴀᴛᴇs 🗞️"
-    ST_BN1_URL = "https://t.me/Leech_Mirror_il"
+    ST_BN1_URL = "https://t.me/TJ_Bots"
     ST_BN2_NAME = "Gʀᴏᴜᴘ 🧲"
     ST_BN2_URL = "https://t.me/Tj_Leech_Group"
     ST_MSG = """<i>This bot can mirror all your links|files|torrents to Google Drive or any rclone cloud or to telegram or to ddl servers.</i>
