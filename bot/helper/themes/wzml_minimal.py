@@ -2,8 +2,8 @@
 class WZMLStyle:
     # ----------------------
     # async def start(client, message) ---> __main__.py
-    ST_BN1_NAME = "WᴇʙSɪᴛᴇ 🌵"
-    ST_BN1_URL = "https://tj-bots.github.io/Tj-Bots/"
+    ST_BN1_NAME = "Uᴘᴅᴀᴛᴇs 🗞️"
+    ST_BN1_URL = "https://t.me/Leech_Mirror_il"
     ST_BN2_NAME = "Gʀᴏᴜᴘ 🧲"
     ST_BN2_URL = "https://t.me/Tj_Leech_Group"
     ST_MSG = """<i>This bot can mirror all your links|files|torrents to Google Drive or any rclone cloud or to telegram or to ddl servers.</i>

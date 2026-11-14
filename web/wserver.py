@@ -828,7 +828,8 @@ def homepage():
       rel="stylesheet"
     />
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        a, button { outline: none; }
         body {
             margin: 0;
             min-height: 100vh;
