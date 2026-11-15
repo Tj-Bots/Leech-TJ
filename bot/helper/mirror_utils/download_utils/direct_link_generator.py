@@ -710,7 +710,7 @@ def direct_link_generator(link):
 
 def real_debrid(url: str, tor=False):
     """Real-Debrid Link Extractor (VPN Maybe Needed)
-    Based on Real-Debrid v1 API (Heroku/VPS) [Without VPN]"""
+    Based on Real-Debrid v1 API (VPS) [Without VPN]"""
 
     def __unrestrict(url, tor=False):
         cget = create_scraper().request

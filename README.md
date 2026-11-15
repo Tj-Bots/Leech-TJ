@@ -57,13 +57,9 @@ docker compose up -d --build
 
 **Updating:** set `UPSTREAM_REPO` and `UPSTREAM_BRANCH` (`wzgram`) in `/bs` or `config.env`, then send `/restart`. New Python packages need a rebuild: `docker compose up -d --build`.
 
-### Heroku (optional)
+### Not for Heroku
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Tj-Bots/Leech-TJ/blob/wzgram/colab/Leech-TJ-Heroku.ipynb)
-
-Open the notebook, fill the form and run the cells: it creates the app, saves your settings as Config Vars (not in git) and deploys. You can also upload your own `config.env`.
-
-Heroku can suspend accounts that run bots. A VPS is safer.
+**This is not a Heroku repository.** Do not deploy it to Heroku: the app (or the whole account) will be suspended. Use a VPS.
 
 ---
 
