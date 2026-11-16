@@ -427,14 +427,9 @@ def get_readable_message(user_id=None):
                 else escape(f"{download.name()}")
             ),
         )
+        # split, FFmpeg, convert and video tools show progress too (like the Go bot)
         if download.status() not in [
-            MirrorStatus.STATUS_SPLITTING,
             MirrorStatus.STATUS_SEEDING,
-            MirrorStatus.STATUS_METADATA,
-            MirrorStatus.STATUS_FFMPEG,
-            MirrorStatus.STATUS_CONVERT,
-            MirrorStatus.STATUS_VTOOLS,
-            MirrorStatus.STATUS_SAMVID,
             MirrorStatus.STATUS_COVER,
         ]:
             msg += BotTheme(
@@ -534,41 +529,37 @@ def get_readable_message(user_id=None):
         ]:
             up_speed += speed_in_bytes_per_second
 
-    if not rich:
-        msg += BotTheme("FOOTER")
     # one page: just ♻️, more pages: "Page 1/3"
     page_btn = f"Page {page_no}/{pages}" if pages > 1 else "♻️"
     buttons = ButtonMaker()
     buttons.ibutton("☲", "status ov", style=BLUE)
     buttons.ibutton(page_btn, "status ref", style=BLUE)
     if tasks > STATUS_LIMIT and not user_id:
-        if config_dict["BOT_MAX_TASKS"]:
-            msg += BotTheme(
-                "BOT_TASKS",
-                Tasks=tasks,
-                Ttask=config_dict["BOT_MAX_TASKS"],
-                Free=config_dict["BOT_MAX_TASKS"] - tasks,
-            )
-        else:
-            msg += BotTheme("TASKS", Tasks=tasks)
-        if rich:
-            msg += "<hr/>"
         buttons = ButtonMaker()
         buttons.ibutton("☲", "status ov", style=BLUE)
         buttons.ibutton(BotTheme("PREVIOUS"), "status pre")
         buttons.ibutton(page_btn, "status ref", style=BLUE)
         buttons.ibutton(BotTheme("NEXT"), "status nex")
     button = buttons.build_menu(4)
-    msg += BotTheme("Cpu", cpu=cpu_percent())
-    msg += BotTheme(
-        "FREE",
-        free=get_readable_file_size(disk_usage(config_dict["DOWNLOAD_DIR"]).free),
-        free_p=round(100 - disk_usage(config_dict["DOWNLOAD_DIR"]).percent, 1),
+    if rich and msg.endswith("<hr/>"):
+        msg = msg[: -len("<hr/>")]  # a line only between tasks, none above Bot Stats
+    # Bot Stats like the Go bot: the title, then one block
+    msg += BotTheme("FOOTER")
+    usage = disk_usage(config_dict["DOWNLOAD_DIR"])
+    total_tasks = (
+        f"{tasks}/{config_dict['BOT_MAX_TASKS']}" if config_dict["BOT_MAX_TASKS"] else tasks
     )
-    msg += BotTheme("Ram", ram=virtual_memory().percent)
-    msg += BotTheme("uptime", uptime=get_readable_time(time() - botStartTime))
-    msg += BotTheme("DL", DL=get_readable_file_size(dl_speed))
-    msg += BotTheme("UL", UL=get_readable_file_size(up_speed))
+    msg += BotTheme(
+        "STATS_BLOCK",
+        Tasks=total_tasks,
+        ram=virtual_memory().percent,
+        cpu=cpu_percent(),
+        uptime=get_readable_time(time() - botStartTime),
+        free=get_readable_file_size(usage.free),
+        free_p=round(100 - usage.percent, 1),
+        DL=get_readable_file_size(dl_speed),
+        UL=get_readable_file_size(up_speed),
+    )
     if rich:
         return RichText(to_rich_html(msg)), button
     return msg, button

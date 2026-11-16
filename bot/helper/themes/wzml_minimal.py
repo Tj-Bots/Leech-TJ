@@ -182,45 +182,51 @@ class WZMLStyle:
     STATUS_NAME = "<blockquote>╭ <b>Name:</b> <code>{Name}</code>"
 
     #####---------PROGRESSIVE STATUS-------
-    BAR = "\n┊ {Bar}"
-    PROCESSED = "\n┊ <b>Processed:</b> {Processed}"
-    STATUS = '\n┊ <b>Status:</b> <a href="{Url}">{Status}</a>'
+    BAR = "\n┠ {Bar}"
+    PROCESSED = "\n┠ <b>Processed:</b> {Processed}"
+    STATUS = '\n┠ <b>Status:</b> <a href="{Url}">{Status}</a>'
     ETA = " | <b>ETA:</b> {Eta}"
-    SPEED = "\n┊ <b>Speed:</b> {Speed}"
+    SPEED = "\n┠ <b>Speed:</b> {Speed}"
     ELAPSED = " | <b>Elapsed:</b> {Elapsed}"
-    ENGINE = "\n┊ <b>Engine:</b> {Engine}"
-    STA_MODE = "\n┊ <b>Mode:</b> {Mode}"
-    SEEDERS = "\n┊ <b>Seeders:</b> {Seeders} | "
+    ENGINE = "\n┠ <b>Engine:</b> {Engine}"
+    STA_MODE = "\n┠ <b>Mode:</b> {Mode}"
+    SEEDERS = "\n┠ <b>Seeders:</b> {Seeders} | "
     LEECHERS = "<b>Leechers:</b> {Leechers}"
 
     ####--------SEEDING----------
-    SEED_SIZE = "\n┊ <b>Size: </b>{Size}"
-    SEED_SPEED = "\n┊ <b>Speed: </b> {Speed} | "
+    SEED_SIZE = "\n┠ <b>Size: </b>{Size}"
+    SEED_SPEED = "\n┠ <b>Speed: </b> {Speed} | "
     UPLOADED = "<b>Uploaded: </b> {Upload}"
-    RATIO = "\n┊ <b>Ratio: </b> {Ratio} | "
+    RATIO = "\n┠ <b>Ratio: </b> {Ratio} | "
     TIME = "<b>Time: </b> {Time}"
-    SEED_ENGINE = "\n┊ <b>Engine:</b> {Engine}"
+    SEED_ENGINE = "\n┠ <b>Engine:</b> {Engine}"
 
     ####--------NON-PROGRESSIVE + NON SEEDING----------
-    STATUS_SIZE = "\n┊ <b>Size: </b>{Size}"
-    NON_ENGINE = "\n┊ <b>Engine:</b> {Engine}"
+    STATUS_SIZE = "\n┠ <b>Size: </b>{Size}"
+    NON_ENGINE = "\n┠ <b>Engine:</b> {Engine}"
 
     ####--------OVERALL MSG FOOTER----------
-    USER = "\n┊ <b>User:</b> <code>{User}</code> | "
+    USER = "\n┠ <b>User:</b> <code>{User}</code> | "
     ID = "<b>ID:</b> <code>{Id}</code>"
-    BTSEL = "\n┊ <b>Select:</b> {Btsel}"
+    BTSEL = "\n┠ <b>Select:</b> {Btsel}"
     CANCEL = "\n╰ {Cancel}</blockquote>\n\n"
 
     ####------FOOTER--------
     FOOTER = "⌬ <b><i>Bot Stats</i></b>\n"
-    TASKS = "┊ <b>Tasks:</b> {Tasks}\n"
+    TASKS = "┠ <b>Tasks:</b> {Tasks}\n"
     BOT_TASKS = "<blockquote>➲ <b>Tasks:</b> {Tasks}/{Ttask} | <b>AVL:</b> {Free}</blockquote>\n"
     Cpu = "<blockquote>╭ <b>CPU:</b> {cpu}% | "
     FREE = "<b>F:</b> {free} [{free_p}%]"
-    Ram = "\n┊ <b>RAM:</b> {ram}% | "
+    Ram = "\n┠ <b>RAM:</b> {ram}% | "
     uptime = "<b>UPTIME:</b> {uptime}"
     DL = "\n╰ <b>DL:</b> {DL}/s | "
     UL = "<b>UL:</b> {UL}/s</blockquote>"
+    # the Bot Stats block of the status (like the Go bot)
+    STATS_BLOCK = """<blockquote>╭ <b>Active Tasks:</b> {Tasks}
+┠ <b>Ram:</b> {ram}% | <b>Cpu:</b> {cpu}%
+┠ <b>Uptime:</b> {uptime}
+┠ <b>Free:</b> {free} [{free_p}%]
+╰ <b>DL:</b> {DL}/s | <b>Ul:</b> {UL}/s</blockquote>"""
 
     ###--------BUTTONS-------
     PREVIOUS = "⫷"
@@ -252,11 +258,13 @@ class WZMLStyle:
 
     # async def mirror_status(_, message): ----> status.py
     NO_ACTIVE_DL = """<i>No Active Downloads!</i>
-    
+
 ⌬ <b><i>Bot Stats</i></b>
-<blockquote>╭ <b>CPU:</b> {cpu}% | <b>F:</b> {free} [{free_p}%]
-╰ <b>RAM:</b> {ram} | <b>UPTIME:</b> {uptime}</blockquote>
-    """
+<blockquote>╭ <b>Active Tasks:</b> 0
+┠ <b>Ram:</b> {ram}% | <b>Cpu:</b> {cpu}%
+┠ <b>Uptime:</b> {uptime}
+┠ <b>Free:</b> {free} [{free_p}%]
+╰ <b>DL:</b> 0 B/s | <b>Ul:</b> 0 B/s</blockquote>"""
     # ---------------------
 
     # USER Setting --> user_setting.py

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from bot import LOGGER
+from bot.helper.mirror_utils.status_utils.step_progress import StepProgress
 from bot.helper.ext_utils.bot_utils import (
     EngineStatus,
     get_readable_file_size,
@@ -7,7 +8,7 @@ from bot.helper.ext_utils.bot_utils import (
 )
 
 
-class SplitStatus:
+class SplitStatus(StepProgress):
     def __init__(self, name, size, gid, listener):
         self.__name = name
         self.__gid = gid
@@ -15,15 +16,10 @@ class SplitStatus:
         self.__listener = listener
         self.upload_details = listener.upload_details
         self.message = listener.message
+        self._step_init(getattr(listener, "dir", ""), size)
 
     def gid(self):
         return self.__gid
-
-    def progress(self):
-        return "0"
-
-    def speed(self):
-        return "0"
 
     def name(self):
         return self.__name
@@ -31,14 +27,8 @@ class SplitStatus:
     def size(self):
         return get_readable_file_size(self.__size)
 
-    def eta(self):
-        return "0s"
-
     def status(self):
         return MirrorStatus.STATUS_SPLITTING
-
-    def processed_bytes(self):
-        return 0
 
     def download(self):
         return self

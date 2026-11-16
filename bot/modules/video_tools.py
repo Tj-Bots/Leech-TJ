@@ -2,6 +2,7 @@
 """Video Tools menu (-vt). The user picks tools before the task starts."""
 from asyncio import sleep
 from html import escape
+from re import compile as re_compile
 from time import time
 
 from pyrogram.filters import create, regex
@@ -27,10 +28,38 @@ from bot.helper.telegram_helper.message_utils import (
 VT_TIMEOUT = 180
 VT_STATE = {}
 
-EXTRACT = {"audio": "Audio", "subs": "Subtitles", "video": "Video Only"}
+EXTRACT = {"audio": "Audio", "subs": "Subtitles", "video": "Video Only", "all": "Everything"}
 REMOVE = {"subs": "Subtitles", "audio": "Extra Audio", "attach": "Attachments"}
 CONVERT = {"mkv": "MKV", "mp4": "MP4", "mp3": "MP3 (Audio)", "m4a": "M4A (Audio)"}
 SHOTS = [3, 5, 10]
+CHAPTERS = {"remove": "Remove All", "5": "Every 5 Min", "10": "Every 10 Min", "15": "Every 15 Min"}
+ASPLIT = {"10": "10 Min Parts", "30": "30 Min Parts", "60": "60 Min Parts"}
+PROMPTS = {
+    "async": "㊂ <b><u>Video Tools : Audio Sync</u></b>\n\n<blockquote>Send how many seconds to move the audio:\n<code>1.5</code> = audio comes later\n<code>-0.8</code> = audio comes earlier</blockquote>\n<i>No re-encoding.</i>",
+    "ssync": "㊂ <b><u>Video Tools : Subtitle Sync</u></b>\n\n<blockquote>Send how many seconds to move the subtitles:\n<code>2</code> = subtitles come later\n<code>-1.5</code> = subtitles come earlier</blockquote>\n<i>For subtitles inside the video. No re-encoding.</i>",
+    "daudio": "㊂ <b><u>Video Tools : Default Audio</u></b>\n\n<blockquote>Send the audio track that should play first:\na number: <code>2</code> (the second track)\nor a language: <code>heb</code> / <code>eng</code> / <code>jpn</code></blockquote>\n<i>It becomes the first and default track. No re-encoding.</i>",
+    "translate": "㊂ <b><u>Video Tools : Translate Subtitles</u></b>\n\n<blockquote>Send the language code to translate to:\n<code>he</code> Hebrew · <code>en</code> English · <code>ar</code> Arabic · <code>ru</code> Russian · <code>es</code> Spanish</blockquote>\n<i>Subtitle files (.srt) are translated next to the original. A video's first text subtitle is translated and added to it as a new track.</i>",
+}
+LANG_RE = re_compile(r"^[A-Za-z]{2,3}(-[A-Za-z]{2,4})?$")
+
+
+def _parse_prompt(key, value):
+    """The value for a text tool, None when it is not valid."""
+    value = value.strip()
+    if key in ("async", "ssync"):
+        try:
+            f = float(value.rstrip("s").replace(",", "."))
+        except ValueError:
+            return None
+        return f"{f:g}" if f and -3600 <= f <= 3600 else None
+    if key == "daudio":
+        if value.isdigit():
+            return value if 1 <= int(value) <= 50 else None
+        return value.lower() if LANG_RE.match(value) else None
+    if key == "translate":
+        return value.lower() if LANG_RE.match(value) else None
+    return value
+
 LABELS = {
     "rename": "Rename",
     "merge_video": "Video + Video",
@@ -41,6 +70,14 @@ LABELS = {
     "trim": "Trim",
     "ss": "Screenshots",
     "convert": "Convert To",
+    "merge_all": "Video + Audio + Sub",
+    "strip": "Strip Metadata",
+    "async": "Audio Sync",
+    "ssync": "Subtitle Sync",
+    "chapters": "Chapters",
+    "daudio": "Default Audio",
+    "asplit": "Audio Split",
+    "translate": "Translate Subtitles",
 }
 
 
@@ -63,6 +100,14 @@ def _selected_text(sel):
             parts.append(f"{label} → {CONVERT[val]}")
         elif key == "custom":
             parts.extend(val)
+        elif key in ("async", "ssync"):
+            parts.append(f"{label} → {val}s")
+        elif key == "chapters":
+            parts.append(f"{label} → {CHAPTERS[val]}")
+        elif key == "asplit":
+            parts.append(f"{label} → {ASPLIT[val]}")
+        elif key in ("daudio", "translate"):
+            parts.append(f"{label} → {escape(val)}")
         else:
             parts.append(label)
     return parts
@@ -96,7 +141,18 @@ def _menu(state):
             buttons.ibutton("Remove", f"vtool {uid} unset {state['wait']}")
         buttons.ibutton("◀️ Back", f"vtool {uid} back")
         return text, buttons.build_menu(2)
-    if page == "extract":
+    if state["wait"] in PROMPTS:
+        if sel.get(state["wait"]):
+            buttons.ibutton("Remove", f"vtool {uid} unset {state['wait']}")
+        buttons.ibutton("◀️ Back", f"vtool {uid} back")
+        return PROMPTS[state["wait"]], buttons.build_menu(2)
+    if page == "chapters":
+        for k, v in CHAPTERS.items():
+            _btn(buttons, uid, "chapters", v, sel.get("chapters") == k, arg=k)
+    elif page == "asplit":
+        for k, v in ASPLIT.items():
+            _btn(buttons, uid, "asplit", v, sel.get("asplit") == k, arg=k)
+    elif page == "extract":
         for k, v in EXTRACT.items():
             _btn(buttons, uid, "extract", v, k in sel.get("extract", []), arg=k)
     elif page == "remove":
@@ -110,7 +166,8 @@ def _menu(state):
             _btn(buttons, uid, "ss", f"{n} Shots", sel.get("ss") == n, arg=str(n))
     if page != "main":
         buttons.ibutton("◀️ Back", f"vtool {uid} back", "footer")
-        title = {"extract": "Extract", "remove": "Remove Stream", "convert": "Convert To", "ss": "Screenshots"}[page]
+        title = {"extract": "Extract", "remove": "Remove Stream", "convert": "Convert To", "ss": "Screenshots",
+                 "chapters": "Chapters", "asplit": "Audio Split"}[page]
         text = f"㊂ <b><u>Video Tools : {title}</u></b>\n\n<i>Choose one, it takes you back to the menu.</i>"
         return text, buttons.build_menu(2)
 
@@ -123,6 +180,14 @@ def _menu(state):
     _btn(buttons, uid, "trim", "Trim", bool(sel.get("trim")))
     _btn(buttons, uid, "page", "Screenshots", bool(sel.get("ss")), arg="ss")
     _btn(buttons, uid, "page", "Convert To", bool(sel.get("convert")), arg="convert")
+    _btn(buttons, uid, "merge_all", "Video + Audio + Sub", bool(sel.get("merge_all")))
+    _btn(buttons, uid, "strip", "Strip Metadata", bool(sel.get("strip")))
+    _btn(buttons, uid, "async", "Audio Sync", bool(sel.get("async")))
+    _btn(buttons, uid, "ssync", "Subtitle Sync", bool(sel.get("ssync")))
+    _btn(buttons, uid, "page", "Chapters", bool(sel.get("chapters")), arg="chapters")
+    _btn(buttons, uid, "daudio", "Default Audio", bool(sel.get("daudio")))
+    _btn(buttons, uid, "page", "Audio Split", bool(sel.get("asplit")), arg="asplit")
+    _btn(buttons, uid, "translate", "Translate Subtitles", bool(sel.get("translate")))
     for no, name in enumerate(custom_tools()):
         _btn(buttons, uid, "custom", name, name in sel.get("custom", []), arg=str(no))
     chosen = _selected_text(sel)
@@ -199,6 +264,14 @@ def _on_text(state):
         elif state["wait"] == "trim":
             start, _, end = value.partition("-")
             _pick(state["sel"], "trim", (start.strip(), end.strip()))
+        elif state["wait"] in PROMPTS:
+            val = _parse_prompt(state["wait"], value)
+            await deleteMessage(message)
+            if val is None:
+                return  # not valid: the prompt stays
+            sel = state["sel"]
+            sel.pop(state["wait"], None)
+            _pick(sel, state["wait"], val)
         state["wait"] = None
         await deleteMessage(message)
         await _refresh(state)
@@ -230,18 +303,18 @@ async def vtool_callback(_, query):
         state["wait"], state["page"] = None, "main"
     elif action == "page":
         state["page"] = arg
-    elif action in ("rename", "trim"):
+    elif action in ("rename", "trim") or action in PROMPTS:
         state["wait"] = action
     elif action == "unset":
         sel.pop(arg, None)
         state["wait"] = None
-    elif action in ("merge_video", "merge_audio", "merge_subs"):
+    elif action in ("merge_video", "merge_audio", "merge_subs", "merge_all", "strip"):
         _pick(sel, action, True)
     elif action in ("extract", "remove"):
         _pick(sel, action, [arg])
         state["page"] = "main"
-    elif action == "convert":
-        _pick(sel, "convert", arg)
+    elif action in ("convert", "chapters", "asplit"):
+        _pick(sel, action, arg)
         state["page"] = "main"
     elif action == "ss":
         _pick(sel, "ss", int(arg))
