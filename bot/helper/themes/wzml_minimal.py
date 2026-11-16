@@ -179,7 +179,7 @@ class WZMLStyle:
 
     # def get_readable_message(): ---> bot_utilis.py
     ####--------OVERALL MSG HEADER----------
-    STATUS_NAME = "<blockquote>╭ <b>Name:</b> <code>{Name}</code>"
+    STATUS_NAME = "<blockquote>┎ <b>Name:</b> <code>{Name}</code>"
 
     #####---------PROGRESSIVE STATUS-------
     BAR = "\n┠ {Bar}"
@@ -209,7 +209,7 @@ class WZMLStyle:
     USER = "\n┠ <b>User:</b> <code>{User}</code> | "
     ID = "<b>ID:</b> <code>{Id}</code>"
     BTSEL = "\n┠ <b>Select:</b> {Btsel}"
-    CANCEL = "\n╰ {Cancel}</blockquote>\n\n"
+    CANCEL = "\n┖ {Cancel}</blockquote>\n\n"
 
     ####------FOOTER--------
     FOOTER = "⌬ <b><i>Bot Stats</i></b>\n"
@@ -222,11 +222,11 @@ class WZMLStyle:
     DL = "\n╰ <b>DL:</b> {DL}/s | "
     UL = "<b>UL:</b> {UL}/s</blockquote>"
     # the Bot Stats block of the status (like the Go bot)
-    STATS_BLOCK = """<blockquote>╭ <b>Active Tasks:</b> {Tasks}
+    STATS_BLOCK = """<blockquote>┎ <b>Active Tasks:</b> {Tasks}
 ┠ <b>Ram:</b> {ram}% | <b>Cpu:</b> {cpu}%
 ┠ <b>Uptime:</b> {uptime}
 ┠ <b>Free:</b> {free} [{free_p}%]
-╰ <b>DL:</b> {DL}/s | <b>Ul:</b> {UL}/s</blockquote>"""
+┖ <b>DL:</b> {DL}/s | <b>Ul:</b> {UL}/s</blockquote>"""
 
     ###--------BUTTONS-------
     PREVIOUS = "⫷"
@@ -260,11 +260,11 @@ class WZMLStyle:
     NO_ACTIVE_DL = """<i>No Active Downloads!</i>
 
 ⌬ <b><i>Bot Stats</i></b>
-<blockquote>╭ <b>Active Tasks:</b> 0
+<blockquote>┎ <b>Active Tasks:</b> 0
 ┠ <b>Ram:</b> {ram}% | <b>Cpu:</b> {cpu}%
 ┠ <b>Uptime:</b> {uptime}
 ┠ <b>Free:</b> {free} [{free_p}%]
-╰ <b>DL:</b> 0 B/s | <b>Ul:</b> 0 B/s</blockquote>"""
+┖ <b>DL:</b> 0 B/s | <b>Ul:</b> 0 B/s</blockquote>"""
     # ---------------------
 
     # USER Setting --> user_setting.py

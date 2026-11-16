@@ -470,7 +470,7 @@ def get_readable_message(user_id=None):
                 "USER", User=escape(download.message.from_user.first_name or "User")
             )
             msg += BotTheme("ID", Id=download.message.from_user.id)
-            msg += f"\n┊ <b>GID:</b> <code>{download.gid()}</code>"
+            msg += f"\n┠ <b>GID:</b> <code>{download.gid()}</code>"
             actions = [
                 rich_button("Cancel Task", f"status cancel {download.gid()}", "danger")
             ]
@@ -482,7 +482,7 @@ def get_readable_message(user_id=None):
                 actions.append(
                     rich_button("Select Files", f"status sel {download.gid()}", "primary")
                 )
-            msg += f"\n╰ {' '.join(actions)}</blockquote><hr/>"
+            msg += f"\n┖ {' '.join(actions)}</blockquote><hr/>"
             continue
         msg += BotTheme("USER", User=download.message.from_user.mention(style="html"))
         msg += BotTheme("ID", Id=download.message.from_user.id)
