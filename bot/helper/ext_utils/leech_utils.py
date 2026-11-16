@@ -394,6 +394,97 @@ async def split_file(
     return True
 
 
+# ---- AutoRename: {title} {season} {episode} {quality} {chapter} from the file name ----
+from re import IGNORECASE as _I, compile as _rc, escape as _re_escape
+
+_UPLOADERS = ["SubsPlease", "Erai-raws", "HorribleSubs", "EMBER", "ASW", "Judas", "Yameii", "DKB",
+    "Tsundere-Raws", "Anime Time", "Commie", "GJM", "Underwater", "FFF", "Doki", "gg", "Chihiro",
+    "Coalgirls", "UTW", "Mazui", "Hadena", "Horrible", "Mezashite", "Asenshi", "Vivid", "Soldado",
+    "Anime4Life", "Ohys-Raws", "CR", "NanDesuKa", "Plex", "Anime-Koi", "AnimeKaizoku", "ReinForce",
+    "BlurayDesuYo", "Beatrice-Raws", "SCY", "Nep_Blanc", "Anime-Supreme", "HiSub", "NC-Raws",
+    "nekomoe kissaten"]
+_UPLOADER_RE = [_rc(r"^\[" + _re_escape(t) + r"\]\s*", _I) for t in _UPLOADERS]
+_TITLE_RE = [
+    _rc(r"^\[[Ee]p?(?:isode)?[\s.\-]*0*\d+\][\s.\-]*(.+?)[\s.\-]*(?:\[|@|$)", _I),
+    _rc(r"^(.+?)[\s.\-]*[Ss]0*(\d+)[\s.\-]*[Ee]0*(\d+)", _I),
+    _rc(r"^(.+?)[\s.\-]*[Ss]eason[\s.\-]*0*(\d+)[\s.\-]*[Ee]pisode[\s.\-]*0*(\d+)", _I),
+    _rc(r"^\[CH[-\s]?\d+\][\s.\-]*(.+?)[\s.\-]*-", _I),
+    _rc(r"^\[\d+\][\s.\-]*(.+?)[\s.\-]*(?:@|$)", _I),
+    _rc(r"^(.+?)[\s.\-]*(?:Ch(?:apter)?|#)[\s.\-]*\d+", _I),
+    _rc(r"^(.+?)[\s.\-]*\[", _I),
+]
+_EP_RE = [
+    _rc(r"[\s.\-]+-[\s.\-]*0*(\d{1,4})v\d+", _I),
+    _rc(r"\[[Ee]p?(?:isode)?[\s.\-]*0*(\d{1,4})\]", _I),
+    _rc(r"[Ss]0*(\d+)[Ee]0*(\d+)", _I),
+    _rc(r"[Ee]p(?:isode)?[\s.\-]*0*(\d{1,4})", _I),
+    _rc(r"[Ee][\s.\-]*0*(\d{1,4})", _I),
+    _rc(r"[\s.\-]+-[\s.\-]*0*(\d{1,4})", _I),
+    _rc(r"[\s.\-]+0*(\d{1,4})[\s.\-]+\d{3,4}[pP]", _I),
+    _rc(r"\[0*(\d{1,4})\]", _I),
+]
+_YEAR_RE = _rc(r"\s*[(\[]?\s*(199[0-9]|20[0-2][0-9]|2030)\s*[)\]]?\s*", _I)
+_SEASON_RE = _rc(r"[Ss](?:eason[\s.\-]*)?0*(\d+)", _I)
+_QUAL_RE = _rc(r"(\d{3,4}[pP]|4K|2160[pP])", _I)
+_OFFSET_RE = _rc(r"\{(episode|season):([+\-])(\d+)\}")
+
+
+def _name_meta(name):
+    meta = {"title": "Unknown", "season": "01", "episode": "01", "quality": "1080p", "chapter": "001"}
+    clean = name
+    for r in _UPLOADER_RE:
+        clean = r.sub("", clean)
+    clean = clean.strip()
+    for r in _TITLE_RE:
+        if m := r.search(clean):
+            title = _YEAR_RE.sub(" ", m.group(1).replace(".", " ").replace("-", " "))
+            title = _rc(r"[(\[].*?[)\]]").sub(" ", title)  # (1080p) [tags]
+            title = _rc(r"\s+0*\d{1,4}\s*$").sub("", title.strip())  # the episode number at the end
+            meta["title"] = " ".join(title.split()) or "Unknown"
+            if m.lastindex and m.lastindex >= 3:
+                meta["season"] = f"{int(m.group(2)):02d}"
+                meta["episode"] = f"{int(m.group(3)):02d}"
+            break
+    if meta["title"] == "Unknown":  # no pattern: the name itself, without number and tags
+        base = ospath.splitext(clean)[0].replace(".", " ").replace("_", " ")
+        base = _QUAL_RE.sub(" ", _rc(r"[(\[].*?[)\]]").sub(" ", base))
+        base = _rc(r"[\s\-]+0*\d{1,4}\s*$").sub("", base.strip())
+        meta["title"] = " ".join(base.split()) or "Unknown"
+    if m := _SEASON_RE.search(name):
+        meta["season"] = f"{int(m.group(1)):02d}"
+    for r in _EP_RE:
+        if m := r.search(clean):
+            n = int(m.groups()[-1])
+            if 0 < n < 2000:
+                meta["episode"] = f"{n:02d}"
+                break
+    if m := _QUAL_RE.search(name):
+        meta["quality"] = m.group(1)
+    return meta
+
+
+def autorename(name, template):
+    """A new file name from the template, the extension stays."""
+    if "{" not in template:
+        return name
+    meta = _name_meta(name)
+
+    def _shift(m):
+        tag, sign, off = m.group(1), m.group(2), int(m.group(3))
+        orig = int(meta[tag])
+        res = orig + off if sign == "+" else orig - off
+        meta[tag] = f"{res if res > 0 else orig:02d}"
+        return "{" + tag + "}"
+
+    out = _OFFSET_RE.sub(_shift, template)
+    for k, v in meta.items():
+        out = out.replace("{" + k + "}", v)
+    ext = ospath.splitext(name)[1]
+    if ext and not out.endswith(ext):
+        out += ext
+    return out.replace("/", "_")
+
+
 async def format_filename(file_, user_id, dirpath=None, isMirror=False):
     user_dict = user_data.get(user_id, {})
     ftag, ctag = ("m", "MIRROR") if isMirror else ("l", "LEECH")
@@ -420,6 +511,8 @@ async def format_filename(file_, user_id, dirpath=None, isMirror=False):
 
     prefile_ = file_
     file_ = re_sub(r"www\S+", "", file_)
+    if not isMirror and (template := user_dict.get("lautorename")):
+        file_ = autorename(file_, template)  # AutoRename like the Go bot
 
     if remname:
         if not remname.startswith("|"):

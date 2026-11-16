@@ -94,6 +94,10 @@ desp_dict = {
         "Leech Filename Suffix is the End Part attached with the Filename of the Leech Files",
         'Send Leech Filename Suffix. Documentation Here : <a href="https://t.me/WZML_X/77">Click Me</a> \n<b>Timeout:</b> 60 sec',
     ],
+    "lautorename": [
+        "AutoRename builds a new name for the leeched files from a template: {title} {season} {episode} {quality}. Example: <code>{title} S{season}E{episode} {quality}</code> · <code>{episode:+1}</code> shifts the number.",
+        "Send the AutoRename template, e.g. <code>{title} S{season}E{episode} {quality}</code>\n<b>Timeout:</b> 60 sec",
+    ],
     "lremname": [
         "Leech Filename Remname is combination of Regex(s) used for removing or manipulating Filename of the Leech Files",
         'Send Leech Filename Remname. Documentation Here : <a href="https://t.me/WZML_X/77">Click Me</a> \n<b>Timeout:</b> 60 sec',
@@ -218,6 +222,7 @@ fname_dict = {
     "lprefix": "Prefix",
     "lsuffix": "Suffix",
     "lremname": "Remname",
+    "lautorename": "AutoRename Template",
     "lmeta": "Metadata",
     "mprefix": "Prefix",
     "msuffix": "Suffix",
@@ -601,6 +606,10 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
             f"{'✅️' if lremname != 'Not Exists' else ''} Leech Remname",
             f"userset {user_id} lremname",
         )
+        buttons.ibutton(
+            f"{'✅️' if user_dict.get('lautorename') else ''} AutoRename",
+            f"userset {user_id} lautorename",
+        )
 
         tmode = transfer_mode(user_dict)
         buttons.ibutton(
@@ -763,7 +772,7 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
                 buttons.ibutton(
                     "Enable Media Group", f"userset {user_id} mgroup", "header"
                 )
-        elif key in ["lprefix", "lremname", "lsuffix", "lcaption", "ldump", "lmeta"]:
+        elif key in ["lprefix", "lremname", "lsuffix", "lcaption", "ldump", "lmeta", "lautorename"]:
             set_exist = (
                 "Not Exists"
                 if (
@@ -905,6 +914,7 @@ async def user_settings(client, message):
                     "lprefix",
                     "lsuffix",
                     "lremname",
+                    "lautorename",
                     "lcaption",
                     "ldump",
                     "yt_opt",
@@ -1466,6 +1476,7 @@ async def edit_user_settings(client, query):
         "lprefix",
         "lsuffix",
         "lremname",
+        "lautorename",
         "lcaption",
         "ldump",
         "mprefix",
@@ -1487,6 +1498,7 @@ async def edit_user_settings(client, query):
         "dlprefix",
         "dlsuffix",
         "dlremname",
+        "dlautorename",
         "dlcaption",
         "dldump",
         "dlmeta",
