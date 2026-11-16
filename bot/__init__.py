@@ -289,6 +289,7 @@ HYPER_PIPELINE = int(HYPER_PIPELINE) if HYPER_PIPELINE.isdigit() else 0
 helper_bots = {}
 helper_users = {}
 TMDB_ACCESS_TOKEN = environ.get("TMDB_ACCESS_TOKEN", "").strip()
+GDRIVE_WORKER = environ.get("GDRIVE_WORKER", "https://gdrive.tjbot.workers.dev").strip()
 DISABLE_FF_MODE = environ.get("DISABLE_FF_MODE", "False").lower() == "true"
 RICH_MESSAGES = environ.get("RICH_MESSAGES", "False").lower() == "true"
 PM_ACCESS = environ.get("PM_ACCESS", "False").lower() == "true"
@@ -788,6 +789,7 @@ config_dict = {
     "HYPER_CHUNK": HYPER_CHUNK,
     "HYPER_PIPELINE": HYPER_PIPELINE,
     "TMDB_ACCESS_TOKEN": TMDB_ACCESS_TOKEN,
+    "GDRIVE_WORKER": GDRIVE_WORKER,
     "DISABLE_FF_MODE": DISABLE_FF_MODE,
     "RICH_MESSAGES": RICH_MESSAGES,
     "PM_ACCESS": PM_ACCESS,

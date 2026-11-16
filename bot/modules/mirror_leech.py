@@ -47,6 +47,7 @@ from bot.helper.ext_utils.bot_utils import (
 from bot.helper.ext_utils.exceptions import DirectDownloadLinkException
 from bot.helper.ext_utils.task_manager import task_utils
 from bot.helper.mirror_utils.download_utils.aria2_download import add_aria2c_download
+from bot.helper.mirror_utils.download_utils.gd_worker import drive_ready, worker_details, worker_url
 from bot.helper.mirror_utils.download_utils.gd_download import add_gd_download
 from bot.helper.mirror_utils.download_utils.qbit_download import add_qb_torrent
 from bot.helper.mirror_utils.download_utils.mega_download import add_mega_download
@@ -611,6 +612,20 @@ async def _mirror_leech(
             await delete_links(message)
             return
         await add_rclone_download(link, config_path, f"{path}/", name, listener)
+    elif is_gdrive_link(link) and not drive_ready() and worker_url():
+        # no token.pickle: public files and folders through GDRIVE_WORKER
+        await delete_links(message)
+        try:
+            details = await worker_details(link)
+        except Exception as e:
+            await sendMessage(message, f"{tag} Google Drive: {e}")
+            return
+        listener.isGdrive = True
+        listener._MirrorLeechListener__setModeEng()
+        if isinstance(details, dict):
+            await add_direct_download(details, path, listener, name)
+        else:
+            await add_aria2c_download(details, path, listener, name, "", ratio, seed_time)
     elif is_gdrive_link(link):
         await delete_links(message)
         await add_gd_download(link, path, listener, name, org_link)

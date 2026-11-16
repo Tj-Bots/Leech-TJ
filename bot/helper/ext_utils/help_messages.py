@@ -256,6 +256,7 @@ default_desp = {'AS_DOCUMENT': 'Default type of Telegram file upload. Default is
                 'PM_ACCESS': "Let everyone use the bot in private chat, it works like in authorized groups. Blacklisted users stay blocked. Default is False.",
                 'RICH_MESSAGES': "Send the status message as a Telegram Rich Message: Cancel / Select buttons inside every task and lines between tasks, instead of /cancel commands. Needs the wzgram library. Default is False.",
                 'DISABLE_FF_MODE': "Disable FFmpeg Cmds (-ff) for all users. When True the option is hidden from User Settings. Default is False.",
+                'GDRIVE_WORKER': "Worker that downloads PUBLIC Google Drive files and folders when there is no token.pickle (or the token can't open the link). Empty = off.",
                 'TMDB_ACCESS_TOKEN': "TMDB API Key or Read Access Token, used for Auto Thumbnail (movie/series poster) in User Settings. Get it from https://www.themoviedb.org/settings/api",
                 'HELPER_TOKENS': "Extra bot tokens for Hyper download/upload, separated by space. Add all of them as admins in LEECH_LOG_ID chat.\n\n<b>NOTE:</b> Restart required.",
                 'HELPER_STRINGS': "Extra user session strings for Hyper download/upload, separated by space. Premium accounts are the fastest. Add all of them to LEECH_LOG_ID chat.\n\n<b>NOTE:</b> Restart required.",

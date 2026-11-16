@@ -62,6 +62,7 @@ START = 0
 STATE = "view"
 handler_dict = {}
 default_values = {
+    "GDRIVE_WORKER": "https://gdrive.tjbot.workers.dev",
     "AUTO_DELETE_MESSAGE_DURATION": 30,
     "HYPER_THREADS": 0,
     "HYPER_CHUNK": 0,
@@ -326,6 +327,7 @@ async def load_config():
     HYPER_PIPELINE = environ.get("HYPER_PIPELINE", "")
     HYPER_PIPELINE = int(HYPER_PIPELINE) if HYPER_PIPELINE.isdigit() else 0
     TMDB_ACCESS_TOKEN = environ.get("TMDB_ACCESS_TOKEN", "").strip()
+    GDRIVE_WORKER = environ.get("GDRIVE_WORKER", "https://gdrive.tjbot.workers.dev").strip()
     DISABLE_FF_MODE = environ.get("DISABLE_FF_MODE", "False").lower() == "true"
     RICH_MESSAGES = environ.get("RICH_MESSAGES", "False").lower() == "true"
     PM_ACCESS = environ.get("PM_ACCESS", "False").lower() == "true"
@@ -818,6 +820,7 @@ async def load_config():
             "HYPER_CHUNK": HYPER_CHUNK,
             "HYPER_PIPELINE": HYPER_PIPELINE,
             "TMDB_ACCESS_TOKEN": TMDB_ACCESS_TOKEN,
+            "GDRIVE_WORKER": GDRIVE_WORKER,
             "DISABLE_FF_MODE": DISABLE_FF_MODE,
             "RICH_MESSAGES": RICH_MESSAGES,
             "PM_ACCESS": PM_ACCESS,
