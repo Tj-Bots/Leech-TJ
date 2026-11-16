@@ -55,11 +55,13 @@ docker compose up -d --build
 - Ports: `8181` (web) and `8282` (torrent selector). Change them with `LEECH_TJ_WEB_PORT` and `LEECH_TJ_TORRENT_PORT`.
 - The bot starts again by itself after a server reboot.
 
-**Updating:** set `UPSTREAM_REPO` and `UPSTREAM_BRANCH` (`wzgram`) in `/bs` or `config.env`, then send `/restart`. New Python packages need a rebuild: `docker compose up -d --build`.
+> [!NOTE]
+> **Updating:** set `UPSTREAM_REPO` and `UPSTREAM_BRANCH` (`wzgram`) in `/bs` or `config.env`, then send `/restart`. New Python packages need a rebuild: `docker compose up -d --build`.
 
 ### Not for Heroku
 
-**This is not a Heroku repository.** Do not deploy it to Heroku: the app (or the whole account) will be suspended. Use a VPS.
+> [!CAUTION]
+> **This is not a Heroku repository.** Do not deploy it to Heroku: the app (or the whole account) will be suspended. Use a VPS.
 
 ---
 
@@ -83,7 +85,8 @@ docker compose up -d --build
 | `/cancel` `/cancelall` | Stop tasks. Everyone for their own, owner and sudo for all |
 | `/help` | Everything else |
 
-Send any command without a link (`/l`, `/m`, `/ytdl`) to get a button menu that explains every arg, with examples you can copy.
+> [!TIP]
+> Send any command without a link (`/l`, `/m`, `/ytdl`) to get a button menu that explains every arg, with examples you can copy.
 
 ---
 
