@@ -4,7 +4,7 @@ from pyrogram.filters import command, regex
 from html import escape
 from traceback import format_exc
 from base64 import b64encode
-from re import match as re_match
+from re import match as re_match, split as re_split
 from asyncio import sleep, wrap_future
 from aiofiles import open as aiopen
 from aiofiles.os import path as aiopath
@@ -81,6 +81,18 @@ from bot.helper.ext_utils.help_messages import (
 )
 from bot.helper.ext_utils.bulk_links import extract_bulk_links
 from bot.modules.gen_pyro_sess import get_decrypt_key
+
+
+async def is_hls_link(link):
+    """An m3u8 playlist: by its name, or by what the server says it is."""
+    if not isinstance(link, str) or not link.startswith(("http://", "https://")):
+        return False
+    low = link.lower()
+    path = low.split("?", 1)[0].split("#", 1)[0]
+    if path.endswith(".m3u8") or ".m3u8/" in path or "format=m3u8" in low or "type=m3u8" in low:
+        return True
+    ctype = (await get_content_type(link) or "").lower()
+    return "mpegurl" in ctype
 
 
 @new_task
@@ -607,6 +619,25 @@ async def _mirror_leech(
         await add_mega_download(link, f"{path}/", listener, name)
     elif isQbit and "real-debrid" not in link:
         await add_qb_torrent(link, path, listener, ratio, seed_time)
+    elif not is_telegram_link(link) and await is_hls_link(link):
+        # m3u8 (HLS): aria2 would only save the playlist text, yt-dlp downloads the stream
+        from bot.helper.mirror_utils.download_utils.yt_dlp_download import YoutubeDLHelper
+
+        listener.isYtdlp = True
+        listener._MirrorLeechListener__setModeEng()
+        ydl = YoutubeDLHelper(listener)
+        hdrs = {}
+        for h in re_split(r"\|", headers or ""):
+            k, _, v = h.partition(":")
+            if k.strip() and v.strip():
+                hdrs[k.strip()] = v.strip()
+        if ussr or pssw:
+            hdrs["Authorization"] = "Basic " + b64encode(f"{ussr}:{pssw}".encode()).decode("ascii")
+        if hdrs:
+            ydl.opts["http_headers"] = hdrs
+        ydl.opts["merge_output_format"] = "mp4"
+        LOGGER.info(f"HLS link, downloading with YT-DLP: {link}")
+        await ydl.add_download(link, path, name, "bv*+ba/b", False, "")
     elif not is_telegram_link(link):
         if ussr or pssw:
             auth = f"{ussr}:{pssw}"
