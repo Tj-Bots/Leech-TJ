@@ -197,6 +197,9 @@ def _can_manage(user_id, dl):
     )
 
 
+_LAST_PRESS = {}
+
+
 @new_task
 async def status_pages(_, query):
     data = query.data.split()
@@ -235,6 +238,17 @@ async def status_pages(_, query):
             await query.answer()
             await start_selection(query.message, dl)
         return
+    if data[1] in ("ref", "nex", "pre", "ov", "ovback"):
+        # one press per 2 seconds on a status message (like the Go bot): more presses only
+        # made Telegram slow the bot down, then the edits came all at once
+        key = (query.message.chat.id, query.message.id)
+        if (left := 2 - (time() - _LAST_PRESS.get(key, 0))) > 0:
+            return await query.answer(f"Don't spam! Wait {left:.1f}s")
+        _LAST_PRESS[key] = time()
+        if len(_LAST_PRESS) > 500:
+            for k, t in list(_LAST_PRESS.items()):
+                if time() - t > 60:
+                    _LAST_PRESS.pop(k, None)
     if data[1] == "ov":
         # shown until the next status refresh, or Back
         await query.answer()
