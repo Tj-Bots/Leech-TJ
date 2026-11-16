@@ -687,3 +687,55 @@ async def check_botpm(message, button=None):
             "Start Bot Now", f"https://t.me/{bot_name}?start=start", "header"
         )
         return _msg, button
+
+
+# ---- The "join first / start the bot" message updates by itself (like the Go bot) ----
+_GATE_FSUB = "You haven't joined our channel yet!"
+_GATE_PM = "<i>You didn't START the bot in PM (Private)</i>"
+
+
+def is_gate_only(msgs):
+    """True when the task was refused only for force subscribe and/or bot PM."""
+    return bool(msgs) and all(m in (_GATE_FSUB, _GATE_PM) for m in msgs)
+
+
+async def _gate_state(message):
+    from pyrogram.enums import ChatAction
+
+    msgs, button = [], None
+    if ids := config_dict["FSUB_IDS"]:
+        _msg, button = await forcesub(message, ids, button)
+        if _msg:
+            msgs.append(_msg)
+    user_dict = user_data.get(message.from_user.id, {})
+    if config_dict["BOT_PM"] or user_dict.get("bot_pm") or config_dict["SAFE_MODE"]:
+        try:  # "typing" in his PM works only after he started the bot, and sends nothing
+            await message._client.send_chat_action(message.from_user.id, ChatAction.TYPING)
+        except Exception:
+            if button is None:
+                button = ButtonMaker()
+            msgs.append(_GATE_PM)
+            button.ubutton("Start Bot Now", f"https://t.me/{bot_name}?start=start", "header")
+    return msgs, button
+
+
+async def follow_gate(message, sent, tag):
+    """Re-checks the user every few seconds (10 minutes at most): every step he completes
+    leaves the message, and when nothing is left it says so and goes away."""
+    last = None
+    end = time() + 600
+    while time() < end:
+        await sleep(4)
+        msgs, button = await _gate_state(message)
+        if not msgs:
+            await editMessage(sent, f"<b><i>User:</i> {tag}</b>,\n\n✓ <b>All set!</b> Send the command again.")
+            await sleep(60)
+            await deleteMessage(sent)
+            return
+        if msgs != last:
+            last = msgs
+            text = f"<b><i>User:</i> {tag}</b>,\n"
+            for i, m in enumerate(msgs, 1):
+                text += f"\n<b>{i}</b>: {m}\n"
+            await editMessage(sent, text, button.build_menu(2) if button else None)
+    await deleteMessage(sent)

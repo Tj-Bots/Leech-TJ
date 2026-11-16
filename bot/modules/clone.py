@@ -8,6 +8,7 @@ from cloudscraper import create_scraper as cget
 from json import loads, dumps as jdumps
 
 from bot import (
+    bot_loop,
     LOGGER,
     download_dict,
     download_dict_lock,
@@ -18,6 +19,8 @@ from bot import (
 from bot.helper.ext_utils.task_manager import limit_checker, task_utils
 from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
 from bot.helper.telegram_helper.message_utils import (
+    follow_gate,
+    is_gate_only,
     sendMessage,
     editMessage,
     deleteMessage,
@@ -365,7 +368,9 @@ async def clone(client, message):
             final_msg += f"\n<b>{__i}</b>: {__msg}\n"
         if error_button is not None:
             error_button = error_button.build_menu(2)
-        await sendMessage(message, final_msg, error_button)
+        sent = await sendMessage(message, final_msg, error_button)
+        if is_gate_only(error_msg) and not isinstance(sent, str):
+            bot_loop.create_task(follow_gate(message, sent, tag))  # updates by itself
         await delete_links(message)
         return
 

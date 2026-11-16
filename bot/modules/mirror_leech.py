@@ -10,6 +10,7 @@ from aiofiles import open as aiopen
 from aiofiles.os import path as aiopath
 
 from bot import (
+    bot_loop,
     MAX_SPLIT_SIZE,
     bot,
     DOWNLOAD_DIR,
@@ -64,6 +65,8 @@ from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.button_build import ButtonMaker
 from bot.helper.telegram_helper.message_utils import (
+    follow_gate,
+    is_gate_only,
     sendMessage,
     editMessage,
     editReplyMarkup,
@@ -385,7 +388,9 @@ async def _mirror_leech(
             final_msg += f"\n<b>{__i}</b>: {__msg}\n"
         if error_button is not None:
             error_button = error_button.build_menu(2)
-        await sendMessage(message, final_msg, error_button)
+        sent = await sendMessage(message, final_msg, error_button)
+        if is_gate_only(error_msg) and not isinstance(sent, str):
+            bot_loop.create_task(follow_gate(message, sent, tag))  # updates by itself
         await delete_links(message)
         return
 

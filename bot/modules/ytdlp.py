@@ -9,7 +9,7 @@ from yt_dlp import YoutubeDL
 from functools import partial
 from time import time
 
-from bot import DOWNLOAD_DIR, bot, categories_dict, config_dict, user_data, LOGGER, MAX_SPLIT_SIZE
+from bot import DOWNLOAD_DIR, bot, bot_loop, categories_dict, config_dict, user_data, LOGGER, MAX_SPLIT_SIZE
 from bot.helper.ext_utils.user_tools import (
     default_upload,
     parse_size,
@@ -20,6 +20,8 @@ from bot.helper.ext_utils.user_tools import (
 )
 from bot.helper.ext_utils.task_manager import task_utils
 from bot.helper.telegram_helper.message_utils import (
+    follow_gate,
+    is_gate_only,
     sendMessage,
     editMessage,
     deleteMessage,
@@ -470,7 +472,9 @@ async def _ytdl(client, message, isLeech=False, sameDir=None, bulk=[], multi_tag
             final_msg += f"\n<b>{__i}</b>: {__msg}\n"
         if error_button is not None:
             error_button = error_button.build_menu(2)
-        await sendMessage(message, final_msg, error_button)
+        sent = await sendMessage(message, final_msg, error_button)
+        if is_gate_only(error_msg) and not isinstance(sent, str):
+            bot_loop.create_task(follow_gate(message, sent, tag))  # updates by itself
         await delete_links(message)
         return
 
