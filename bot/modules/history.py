@@ -36,7 +36,7 @@ async def history(_, message):
             f"\u200e<b>{no}.</b> {name}\n"
             f"\u200e┊ <b>Size:</b> {get_readable_file_size(task.get('size', 0))}"
             f" | <b>Mode:</b> {task.get('mode', '')}\n"
-            f"\u200e╰ <b>Done:</b> {ago} ago"
+            f"\u200e<b>╰</b> <b>Done:</b> {ago} ago"
         )
     text = f"㊂ <b><u>History of {escape(user.first_name or str(user.id))} :</u></b>\n\n"
     text += "<blockquote expandable>" + "\n\n".join(lines) + "</blockquote>"

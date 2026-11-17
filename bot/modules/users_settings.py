@@ -697,8 +697,8 @@ async def get_user_settings(from_user, key=None, edit_type=None, edit_mode=None)
         example = f"<{ex_font}>Movie.2024.1080p.mkv</{ex_font}>" if ex_font else "Movie.2024.1080p.mkv"
         text = f"""㊂ <b><u>Caption Font Settings :</u></b>
 
-<blockquote>╭<b> Caption Font :</b> <i>{cap_font_name(user_dict)}</i>
-╰<b> Example :</b> {example}</blockquote>
+<blockquote><b>╭</b><b> Caption Font :</b> <i>{cap_font_name(user_dict)}</i>
+<b>╰</b><b> Example :</b> {example}</blockquote>
 
 <i>Choose how the file name looks in the caption of your leeched files.</i>"""
         button = buttons.build_menu(2)

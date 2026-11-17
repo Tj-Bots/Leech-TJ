@@ -198,12 +198,12 @@ def _menu(state):
     else:
         buttons.ibutton("Close", f"vtool {uid} close", "footer")
     if chosen:
-        lines = "╭ <b>Selected:</b>\n" + "\n".join(f"┊ {c}" for c in chosen)
+        lines = "<b>╭</b> <b>Selected:</b>\n" + "\n".join(f"┊ {c}" for c in chosen)
     else:
-        lines = "╭ <b>Selected:</b> None"
+        lines = "<b>╭</b> <b>Selected:</b> None"
     text = (
         f"㊂ <b><u>Video Tools</u></b>\n\n<blockquote>{lines}\n"
-        f"╰ <b>Closes in:</b> {left}s</blockquote>\n\n"
+        f"<b>╰</b> <b>Closes in:</b> {left}s</blockquote>\n\n"
         f"<i>Pick one tool, Rename can be added to it. Nothing is re-encoded.</i>"
     )
     return text, buttons.build_menu(2, lb_cols=1, f_cols=2)

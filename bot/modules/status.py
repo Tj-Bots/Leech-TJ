@@ -117,10 +117,10 @@ def _confirm_content(dl, gid, user):
     buttons.ibutton("No", f"status cno {user_id}", style=SUCCESS)
     if hasattr(bot, "send_rich_message"):
         text = RichText(
-            f"<p>{head}</p><blockquote>╭ <b>Cancel this task?</b><br>\u200e╰ {name}</blockquote>"
+            f"<p>{head}</p><blockquote><b>╭</b> <b>Cancel this task?</b><br>\u200e<b>╰</b> {name}</blockquote>"
         )
     else:
-        text = f"{head}\n\n<blockquote>╭ <b>Cancel this task?</b>\n\u200e╰ {name}</blockquote>"
+        text = f"{head}\n\n<blockquote><b>╭</b> <b>Cancel this task?</b>\n\u200e<b>╰</b> {name}</blockquote>"
     return text, buttons.build_menu(2)
 
 

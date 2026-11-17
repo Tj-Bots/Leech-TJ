@@ -309,18 +309,18 @@ def tasks_overview():
     c = count
     return f"""㊂ <b><u>Tasks Overview :</u></b>
 
-<blockquote>╭ <b>Download:</b> {c["Download"]} | <b>Upload:</b> {c["Upload"]}
+<blockquote><b>╭</b> <b>Download:</b> {c["Download"]} | <b>Upload:</b> {c["Upload"]}
 ┊ <b>Seed:</b> {c["Seed"]} | <b>Archive:</b> {c["Archive"]}
 ┊ <b>Extract:</b> {c["Extract"]} | <b>Split:</b> {c["Split"]}
 ┊ <b>QueueDL:</b> {c["QueueDL"]} | <b>QueueUP:</b> {c["QueueUP"]}
 ┊ <b>Clone:</b> {c["Clone"]} | <b>CheckUp:</b> {c["CheckUp"]}
 ┊ <b>Paused:</b> {c["Paused"]} | <b>SamVideo:</b> {c["SamVideo"]}
 ┊ <b>Convert:</b> {c["Convert"]} | <b>FFmpeg:</b> {c["FFmpeg"]}
-╰ <b>Video Tools:</b> {c["Video Tools"]}</blockquote>
+<b>╰</b> <b>Video Tools:</b> {c["Video Tools"]}</blockquote>
 
-<blockquote>╭ <b>Total Download Speed:</b> {get_readable_file_size(dl_speed)}/s
+<blockquote><b>╭</b> <b>Total Download Speed:</b> {get_readable_file_size(dl_speed)}/s
 ┊ <b>Total Upload Speed:</b> {get_readable_file_size(up_speed)}/s
-╰ <b>Total Seeding Speed:</b> {get_readable_file_size(seed_speed)}/s</blockquote>"""
+<b>╰</b> <b>Total Seeding Speed:</b> {get_readable_file_size(seed_speed)}/s</blockquote>"""
 
 
 def speed_string_to_bytes(spd):
@@ -482,7 +482,7 @@ def get_readable_message(user_id=None):
                 actions.append(
                     rich_button("Select Files", f"status sel {download.gid()}", "primary")
                 )
-            msg += f"\n╰ {' '.join(actions)}</blockquote><hr/>"
+            msg += f"\n<b>╰</b> {' '.join(actions)}</blockquote><hr/>"
             continue
         msg += BotTheme("USER", User=download.message.from_user.mention(style="html"))
         msg += BotTheme("ID", Id=download.message.from_user.id)

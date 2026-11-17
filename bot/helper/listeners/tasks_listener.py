@@ -762,8 +762,8 @@ class MirrorLeechListener:
                     # name is hidden in the group: short message, files go to PM
                     hidden = (
                         f"㊂ <b><u>Task Completed</u></b> : {self.tag}\n\n"
-                        f"<blockquote>╭ <b>Your</b> {self.upload_details['mode']} <b>files for</b>\n"
-                        f"╰ <code>Hidden</code></blockquote>\n\n"
+                        f"<blockquote><b>╭</b> <b>Your</b> {self.upload_details['mode']} <b>files for</b>\n"
+                        f"<b>╰</b> <code>Hidden</code></blockquote>\n\n"
                         f"➲ <b><i>Sent to your PM</i></b>"
                     )
                     await sendMessage(
@@ -788,7 +788,7 @@ class MirrorLeechListener:
                     elif slink:
                         fmsg += (
                             f"\u200e{index}. <a href='{link}'>{name}</a>\n"
-                            f"╰ <b>Get Media :</b> <a href='{slink}'>Store Link</a> | "
+                            f"<b>╰</b> <b>Get Media :</b> <a href='{slink}'>Store Link</a> | "
                             f"<a href='{share}'>Share Link</a>\n"
                         )
                     else:
@@ -1072,10 +1072,10 @@ class MirrorLeechListener:
                 self.sameDir["total"] -= 1
         msg = f"""<i><b>〶 Download Stopped!</b></i>
         
-<blockquote>╭ <b>Task for:</b> {self.tag}
+<blockquote><b>╭</b> <b>Task for:</b> {self.tag}
 ┊ <b>Due To:</b> {escape(error)}
 ┊ <b>Mode:</b> {self.upload_details['mode']}
-╰ <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""
+<b>╰</b> <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""
         await sendMessage(self.message, msg, self.retry_button(error, button))
         if count == 0:
             await self.clean()
@@ -1114,10 +1114,10 @@ class MirrorLeechListener:
             count = len(download_dict)
         msg = f"""<i><b>〶 Upload Stopped!</b></i>
 
-<blockquote>╭ <b>Task for:</b> {self.tag}
+<blockquote><b>╭</b> <b>Task for:</b> {self.tag}
 ┊ <b>Due To:</b> {escape(error)}
 ┊ <b>Mode:</b> {self.upload_details['mode']}
-╰ <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""
+<b>╰</b> <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""
         await sendMessage(self.message, msg, self.retry_button(error))
         if count == 0:
             await self.clean()
