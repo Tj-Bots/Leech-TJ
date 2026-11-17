@@ -232,9 +232,9 @@ def users_home(uid):
     text = f"""㊂ <b><u>Users Overview :</u></b>
 
 <blockquote><b>╭</b> <b>Owner:</b> <code>{OWNER_ID}</code>
-┊ <b>Sudo:</b> {count("is_sudo")}
-┊ <b>Authorized:</b> {count("is_auth", 1)} users | {count("is_auth", -1)} chats
-┊ <b>Blacklisted:</b> {count("is_blacklist")}
+┠ <b>Sudo:</b> {count("is_sudo")}
+┠ <b>Authorized:</b> {count("is_auth", 1)} users | {count("is_auth", -1)} chats
+┠ <b>Blacklisted:</b> {count("is_blacklist")}
 <b>╰</b> <b>Saved Data:</b> {len(user_data)}</blockquote>"""
     buttons = ButtonMaker()
     buttons.ibutton("Sudo", f"ulist {uid} sudo")

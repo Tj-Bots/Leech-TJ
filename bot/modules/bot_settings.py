@@ -875,14 +875,14 @@ async def get_buttons(key=None, edit_type=None, edit_mode=None, mess=None):
         msg = f"""㊂ <b><u>Hyper Settings :</u></b>
 
 <blockquote><b>╭</b><b> Hyper Mode :</b> <code>{"Enabled" if config_dict["USE_HYPER"] else "Disabled"}</code>
-┊<b> Helper Bots :</b> <code>{len(helper_bots)}</code>
-┊<b> Helper Users :</b> <code>{len(helper_users)}</code>
-┊<b> User Session :</b> <code>{("Premium" if IS_PREMIUM_USER else "Normal") if user else "None"}</code>
+┠<b> Helper Bots :</b> <code>{len(helper_bots)}</code>
+┠<b> Helper Users :</b> <code>{len(helper_users)}</code>
+┠<b> User Session :</b> <code>{("Premium" if IS_PREMIUM_USER else "Normal") if user else "None"}</code>
 <b>╰</b><b> Total Clients :</b> <code>{clients}</code></blockquote>
 
 <blockquote><b>╭</b><b> Threads :</b> <code>{config_dict["HYPER_THREADS"] or "Auto"}</code>
-┊<b> Chunk Size :</b> <code>{f"{chunk // 1024} KB" if chunk else "256 KB"}</code>
-┊<b> Pipeline :</b> <code>{config_dict["HYPER_PIPELINE"] or 32}</code>
+┠<b> Chunk Size :</b> <code>{f"{chunk // 1024} KB" if chunk else "256 KB"}</code>
+┠<b> Pipeline :</b> <code>{config_dict["HYPER_PIPELINE"] or 32}</code>
 <b>╰</b><b> Dump Chat :</b> <code>{config_dict["LEECH_LOG_ID"] or "Not Set"}</code></blockquote>
 
 <blockquote>➲ <b>NOTE:</b> <i>Add all helper bots/users to LEECH_LOG_ID chat. Changes in tokens/sessions need restart.</i></blockquote>"""

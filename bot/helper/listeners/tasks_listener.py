@@ -1073,8 +1073,8 @@ class MirrorLeechListener:
         msg = f"""<i><b>〶 Download Stopped!</b></i>
         
 <blockquote><b>╭</b> <b>Task for:</b> {self.tag}
-┊ <b>Due To:</b> {escape(error)}
-┊ <b>Mode:</b> {self.upload_details['mode']}
+┠ <b>Due To:</b> {escape(error)}
+┠ <b>Mode:</b> {self.upload_details['mode']}
 <b>╰</b> <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""
         await sendMessage(self.message, msg, self.retry_button(error, button))
         if count == 0:
@@ -1115,8 +1115,8 @@ class MirrorLeechListener:
         msg = f"""<i><b>〶 Upload Stopped!</b></i>
 
 <blockquote><b>╭</b> <b>Task for:</b> {self.tag}
-┊ <b>Due To:</b> {escape(error)}
-┊ <b>Mode:</b> {self.upload_details['mode']}
+┠ <b>Due To:</b> {escape(error)}
+┠ <b>Mode:</b> {self.upload_details['mode']}
 <b>╰</b> <b>Elapsed:</b> {get_readable_time(time() - self.message.date.timestamp())}</blockquote>"""
         await sendMessage(self.message, msg, self.retry_button(error))
         if count == 0:

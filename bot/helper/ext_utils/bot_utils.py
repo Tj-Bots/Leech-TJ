@@ -310,16 +310,16 @@ def tasks_overview():
     return f"""㊂ <b><u>Tasks Overview :</u></b>
 
 <blockquote><b>╭</b> <b>Download:</b> {c["Download"]} | <b>Upload:</b> {c["Upload"]}
-┊ <b>Seed:</b> {c["Seed"]} | <b>Archive:</b> {c["Archive"]}
-┊ <b>Extract:</b> {c["Extract"]} | <b>Split:</b> {c["Split"]}
-┊ <b>QueueDL:</b> {c["QueueDL"]} | <b>QueueUP:</b> {c["QueueUP"]}
-┊ <b>Clone:</b> {c["Clone"]} | <b>CheckUp:</b> {c["CheckUp"]}
-┊ <b>Paused:</b> {c["Paused"]} | <b>SamVideo:</b> {c["SamVideo"]}
-┊ <b>Convert:</b> {c["Convert"]} | <b>FFmpeg:</b> {c["FFmpeg"]}
+┠ <b>Seed:</b> {c["Seed"]} | <b>Archive:</b> {c["Archive"]}
+┠ <b>Extract:</b> {c["Extract"]} | <b>Split:</b> {c["Split"]}
+┠ <b>QueueDL:</b> {c["QueueDL"]} | <b>QueueUP:</b> {c["QueueUP"]}
+┠ <b>Clone:</b> {c["Clone"]} | <b>CheckUp:</b> {c["CheckUp"]}
+┠ <b>Paused:</b> {c["Paused"]} | <b>SamVideo:</b> {c["SamVideo"]}
+┠ <b>Convert:</b> {c["Convert"]} | <b>FFmpeg:</b> {c["FFmpeg"]}
 <b>╰</b> <b>Video Tools:</b> {c["Video Tools"]}</blockquote>
 
 <blockquote><b>╭</b> <b>Total Download Speed:</b> {get_readable_file_size(dl_speed)}/s
-┊ <b>Total Upload Speed:</b> {get_readable_file_size(up_speed)}/s
+┠ <b>Total Upload Speed:</b> {get_readable_file_size(up_speed)}/s
 <b>╰</b> <b>Total Seeding Speed:</b> {get_readable_file_size(seed_speed)}/s</blockquote>"""
 
 

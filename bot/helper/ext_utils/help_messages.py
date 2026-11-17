@@ -51,12 +51,12 @@ help_string = [f'''⌬ <b><i>Bᴀsɪᴄ Cᴏᴍᴍᴀɴᴅs!</i></b>
 
 <b>Use Leech commands for upload to Telegram:</b>
 <b>╭</b> /{BotCommands.LeechCommand[0]} or /{BotCommands.LeechCommand[1]}: Upload to Telegram.
-┊ /{BotCommands.QbLeechCommand[0]} or /{BotCommands.QbLeechCommand[1]}: Download using qBittorrent and upload to Telegram(For torrents only).
+┠ /{BotCommands.QbLeechCommand[0]} or /{BotCommands.QbLeechCommand[1]}: Download using qBittorrent and upload to Telegram(For torrents only).
 <b>╰</b> /{BotCommands.YtdlLeechCommand[0]} or /{BotCommands.YtdlLeechCommand[1]}: Download using Yt-Dlp(supported link) and upload to telegram.
 
 <b>G-Drive commands:</b>
 <b>╭</b> /{BotCommands.CloneCommand[0]}: Copy file/folder to Cloud Drive.
-┊ /{BotCommands.CountCommand} [drive_url]: Count file/folder of Google Drive.
+┠ /{BotCommands.CountCommand} [drive_url]: Count file/folder of Google Drive.
 <b>╰</b> /{BotCommands.DeleteCommand} [drive_url]: Delete file/folder from Google Drive (Only Owner & Sudo).
 
 <b>Cancel Tasks:</b>
@@ -65,7 +65,7 @@ help_string = [f'''⌬ <b><i>Bᴀsɪᴄ Cᴏᴍᴍᴀɴᴅs!</i></b>
 f'''⌬ <b><i>Usᴇʀs Cᴏᴍᴍᴀɴᴅs!</i></b>
 
 <blockquote><b>Bot Settings:</b>
-┊ /{BotCommands.UserSetCommand[0]} or /{BotCommands.UserSetCommand[1]} [query]: Open User Settings (PM also)
+┠ /{BotCommands.UserSetCommand[0]} or /{BotCommands.UserSetCommand[1]} [query]: Open User Settings (PM also)
 <b>╰</b> /{BotCommands.CoverCommand}: Reply to a video to set your Thumbnail / TMDB poster as its cover
 
 <b>Authentication:</b>
@@ -73,8 +73,8 @@ f'''⌬ <b><i>Usᴇʀs Cᴏᴍᴍᴀɴᴅs!</i></b>
 
 <b>Bot Stats:</b>
 <b>╭</b> /{BotCommands.StatusCommand[0]} or /{BotCommands.StatusCommand[1]}: Shows a status page of all active tasks. Add <code>me</code> or a user id to see only those tasks.
-┊ /{BotCommands.HistoryCommand}: Your last 10 finished tasks with their links.
-┊ /{BotCommands.StatsCommand[0]} or /{BotCommands.StatsCommand[1]}: Show Server detailed stats.
+┠ /{BotCommands.HistoryCommand}: Your last 10 finished tasks with their links.
+┠ /{BotCommands.StatsCommand[0]} or /{BotCommands.StatsCommand[1]}: Show Server detailed stats.
 <b>╰</b> /{BotCommands.PingCommand[0]} or /{BotCommands.PingCommand[1]}: Check how long it takes to Ping the Bot.
 
 <b>RSS Feed:</b>
@@ -88,12 +88,12 @@ f'''⌬ <b><i>Oᴡɴᴇʀ ᴏʀ Sᴜᴅᴏs Cᴏᴍᴍᴀɴᴅs!</i></b>
 
 <b>Authentication:</b>
 <b>╭</b> /{BotCommands.AuthorizeCommand[0]} or /{BotCommands.AuthorizeCommand[1]}: Authorize a chat or a user to use the bot (Only Owner & Sudo).
-┊ /{BotCommands.UnAuthorizeCommand[0]} or /{BotCommands.UnAuthorizeCommand[1]}: Unauthorize a chat or a user to use the bot (Only Owner & Sudo).
-┊ /{BotCommands.AuthListCommand}: List the authorized users and chats (Only Owner & Sudo).
-┊ /{BotCommands.SudoListCommand}: List the sudo users (Only Owner & Sudo).
-┊ /{BotCommands.AddSudoCommand}: Add sudo user (Only Owner).
-┊ /{BotCommands.RmSudoCommand}: Remove sudo users (Only Owner).
-┊ /{BotCommands.AddBlackListCommand[0]} or /{BotCommands.AddBlackListCommand[1]}: Add User in BlackListed, so that user can't use the Bot anymore.
+┠ /{BotCommands.UnAuthorizeCommand[0]} or /{BotCommands.UnAuthorizeCommand[1]}: Unauthorize a chat or a user to use the bot (Only Owner & Sudo).
+┠ /{BotCommands.AuthListCommand}: List the authorized users and chats (Only Owner & Sudo).
+┠ /{BotCommands.SudoListCommand}: List the sudo users (Only Owner & Sudo).
+┠ /{BotCommands.AddSudoCommand}: Add sudo user (Only Owner).
+┠ /{BotCommands.RmSudoCommand}: Remove sudo users (Only Owner).
+┠ /{BotCommands.AddBlackListCommand[0]} or /{BotCommands.AddBlackListCommand[1]}: Add User in BlackListed, so that user can't use the Bot anymore.
 <b>╰</b> /{BotCommands.RmBlackListCommand[0]} or /{BotCommands.RmBlackListCommand[1]}: Remove a BlackListed User, so that user can again use the Bot.
 
 <b>Bot Stats:</b>
@@ -107,14 +107,14 @@ f'''⌬ <b><i>Oᴡɴᴇʀ ᴏʀ Sᴜᴅᴏs Cᴏᴍᴍᴀɴᴅs!</i></b>
 
 <b>Maintainance:</b>
 <b>╭</b> /{BotCommands.RestartCommand[0]} or /{BotCommands.RestartCommand[1]}: Restart and Update the Bot (Only Owner & Sudo).
-┊ /{BotCommands.RestartCommand[2]}: Restart and Update all Bots (Only Owner & Sudo).
+┠ /{BotCommands.RestartCommand[2]}: Restart and Update all Bots (Only Owner & Sudo).
 <b>╰</b> /{BotCommands.LogCommand}: Get a log file of the bot. Handy for getting crash reports (Only Owner & Sudo).
 
 <b>Executors:</b>
 <b>╭</b> /{BotCommands.ShellCommand}: Run shell commands (Only Owner).
-┊ /{BotCommands.EvalCommand}: Run Python Code Line | Lines (Only Owner).
-┊ /{BotCommands.ExecCommand}: Run Commands In Exec (Only Owner).
-┊ /{BotCommands.ClearLocalsCommand}: Clear {BotCommands.EvalCommand} or {BotCommands.ExecCommand} locals (Only Owner).
+┠ /{BotCommands.EvalCommand}: Run Python Code Line | Lines (Only Owner).
+┠ /{BotCommands.ExecCommand}: Run Commands In Exec (Only Owner).
+┠ /{BotCommands.ClearLocalsCommand}: Clear {BotCommands.EvalCommand} or {BotCommands.ExecCommand} locals (Only Owner).
 <b>╰</b> /exportsession: Generate User StringSession of Same Pyro Version (Only Owner).
 
 <b>RSS Feed:</b>
@@ -136,8 +136,8 @@ f'''⌬ <b><i>Mɪsᴄᴇʟʟᴀɴᴇᴏᴜs Cᴏᴍᴍᴀɴᴅs!</i></b>
 
 <b>Movie/TV Shows/Drama Search:</b>
 <b>╭</b> /{BotCommands.IMDBCommand}: Search in IMDB.
-┊ /{BotCommands.AniListCommand}: Search for anime in AniList.
-┊ /{BotCommands.AnimeHelpCommand}: Anime help guide.
+┠ /{BotCommands.AniListCommand}: Search for anime in AniList.
+┠ /{BotCommands.AnimeHelpCommand}: Anime help guide.
 <b>╰</b> /{BotCommands.MyDramaListCommand}: Search in MyDramaList.</blockquote>
 ''']
 

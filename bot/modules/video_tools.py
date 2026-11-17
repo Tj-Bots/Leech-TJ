@@ -198,7 +198,7 @@ def _menu(state):
     else:
         buttons.ibutton("Close", f"vtool {uid} close", "footer")
     if chosen:
-        lines = "<b>╭</b> <b>Selected:</b>\n" + "\n".join(f"┊ {c}" for c in chosen)
+        lines = "<b>╭</b> <b>Selected:</b>\n" + "\n".join(f"┠ {c}" for c in chosen)
     else:
         lines = "<b>╭</b> <b>Selected:</b> None"
     text = (

@@ -34,7 +34,7 @@ async def history(_, message):
         # \u200e keeps every line left-to-right, also with a Hebrew name
         lines.append(
             f"\u200e<b>{no}.</b> {name}\n"
-            f"\u200e┊ <b>Size:</b> {get_readable_file_size(task.get('size', 0))}"
+            f"\u200e┠ <b>Size:</b> {get_readable_file_size(task.get('size', 0))}"
             f" | <b>Mode:</b> {task.get('mode', '')}\n"
             f"\u200e<b>╰</b> <b>Done:</b> {ago} ago"
         )
